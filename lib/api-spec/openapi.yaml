@@ -1,22 +1,39 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Hexpertify Therapist Dashboard API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: dashboard
+    description: Dashboard overview
+  - name: clients
+    description: Client management
+  - name: calendar
+    description: Calendar and availability
+  - name: outcomes
+    description: Therapy outcomes
+  - name: revenue
+    description: Revenue and payments
+  - name: reviews
+    description: Client reviews
+  - name: blog
+    description: Blog management
+  - name: profile
+    description: Therapist profile
+  - name: sessions
+    description: Session management
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +41,522 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard quick statistics
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/upcoming-sessions:
+    get:
+      operationId: getUpcomingSessions
+      tags: [dashboard]
+      summary: Get upcoming sessions for today
+      responses:
+        "200":
+          description: Upcoming sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UpcomingSession"
+
+  /dashboard/pending-reports:
+    get:
+      operationId: getPendingReports
+      tags: [dashboard]
+      summary: Get sessions pending report submission
+      responses:
+        "200":
+          description: Pending reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PendingReport"
+
+  /dashboard/weekly-schedule:
+    get:
+      operationId: getWeeklySchedule
+      tags: [dashboard]
+      summary: Get weekly schedule data for chart
+      responses:
+        "200":
+          description: Weekly schedule data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WeeklyScheduleDay"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent client activity feed
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  /dashboard/client-improvement:
+    get:
+      operationId: getClientImprovementSummary
+      tags: [dashboard]
+      summary: Get average client improvement score
+      responses:
+        "200":
+          description: Client improvement summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientImprovementSummary"
+
+  /clients:
+    get:
+      operationId: getClients
+      tags: [clients]
+      summary: Get client list
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, completed, inactive, high_priority, new]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Client list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Client"
+
+  /clients/{id}:
+    get:
+      operationId: getClient
+      tags: [clients]
+      summary: Get client workspace detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Client detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientDetail"
+
+  /clients/{id}/assessments:
+    get:
+      operationId: getClientAssessments
+      tags: [clients]
+      summary: Get client assessments
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Client assessments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Assessment"
+
+  /clients/{id}/mood:
+    get:
+      operationId: getClientMood
+      tags: [clients]
+      summary: Get client mood tracking data
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Mood tracking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MoodTracking"
+
+  /clients/{id}/homework:
+    get:
+      operationId: getClientHomework
+      tags: [clients]
+      summary: Get client homework and activities
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Homework list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HomeworkItem"
+
+  /clients/{id}/session-history:
+    get:
+      operationId: getClientSessionHistory
+      tags: [clients]
+      summary: Get client session history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Session history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SessionHistory"
+
+  /sessions/{id}/report:
+    post:
+      operationId: submitSessionReport
+      tags: [sessions]
+      summary: Submit session completion report
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionReportInput"
+      responses:
+        "201":
+          description: Report submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionReport"
+
+  /calendar/events:
+    get:
+      operationId: getCalendarEvents
+      tags: [calendar]
+      summary: Get calendar events
+      parameters:
+        - name: start
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: view
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month]
+      responses:
+        "200":
+          description: Calendar events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CalendarEvent"
+
+  /calendar/availability:
+    get:
+      operationId: getAvailability
+      tags: [calendar]
+      summary: Get therapist availability slots
+      responses:
+        "200":
+          description: Availability
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AvailabilitySlot"
+    post:
+      operationId: setAvailability
+      tags: [calendar]
+      summary: Set therapist availability
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AvailabilityInput"
+      responses:
+        "200":
+          description: Availability updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvailabilitySlot"
+
+  /outcomes/individual/{clientId}:
+    get:
+      operationId: fetchClientOutcomes
+      tags: [outcomes]
+      summary: Get individual client outcomes
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Client outcomes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientOutcomes"
+
+  /outcomes/caseload:
+    get:
+      operationId: getCaseloadOutcomes
+      tags: [outcomes]
+      summary: Get therapist caseload outcomes summary
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [week, month, year, custom]
+      responses:
+        "200":
+          description: Caseload outcomes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaseloadOutcomes"
+
+  /revenue/summary:
+    get:
+      operationId: getRevenueSummary
+      tags: [revenue]
+      summary: Get revenue summary cards
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [week, month, year, custom]
+      responses:
+        "200":
+          description: Revenue summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevenueSummary"
+
+  /revenue/analytics:
+    get:
+      operationId: getRevenueAnalytics
+      tags: [revenue]
+      summary: Get revenue analytics chart data
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [week, month, year, custom]
+      responses:
+        "200":
+          description: Revenue analytics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RevenueDataPoint"
+
+  /revenue/transactions:
+    get:
+      operationId: getTransactions
+      tags: [revenue]
+      summary: Get transaction history
+      responses:
+        "200":
+          description: Transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+
+  /reviews/summary:
+    get:
+      operationId: getReviewsSummary
+      tags: [reviews]
+      summary: Get reviews summary and analytics
+      responses:
+        "200":
+          description: Reviews summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewsSummary"
+
+  /reviews:
+    get:
+      operationId: getReviews
+      tags: [reviews]
+      summary: Get review list
+      responses:
+        "200":
+          description: Reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+
+  /blog/posts:
+    post:
+      operationId: submitBlogPost
+      tags: [blog]
+      summary: Submit a full blog post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogPostInput"
+      responses:
+        "201":
+          description: Blog post submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+    get:
+      operationId: getBlogPosts
+      tags: [blog]
+      summary: Get all blog posts
+      responses:
+        "200":
+          description: Blog posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BlogPost"
+
+  /blog/outlines:
+    post:
+      operationId: submitBlogOutline
+      tags: [blog]
+      summary: Submit a blog outline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogOutlineInput"
+      responses:
+        "201":
+          description: Blog outline submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogOutline"
+    get:
+      operationId: getBlogOutlines
+      tags: [blog]
+      summary: Get all blog outlines
+      responses:
+        "200":
+          description: Blog outlines
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BlogOutline"
+
+  /profile:
+    get:
+      operationId: getProfile
+      tags: [profile]
+      summary: Get therapist profile
+      responses:
+        "200":
+          description: Therapist profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TherapistProfile"
+    patch:
+      operationId: updateProfile
+      tags: [profile]
+      summary: Update therapist profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TherapistProfile"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +564,899 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    DashboardStats:
+      type: object
+      properties:
+        sessionsToday:
+          type: integer
+        sessionsRemaining:
+          type: integer
+        activeClients:
+          type: integer
+        newClientsThisWeek:
+          type: integer
+        pendingReports:
+          type: integer
+        homeworkToReview:
+          type: integer
+        homeworkDueToday:
+          type: integer
+        therapyHoursThisWeek:
+          type: number
+        improvementAverage:
+          type: number
+        totalClientsCount:
+          type: integer
+        therapistName:
+          type: string
+        therapistTitle:
+          type: string
+        isAvailable:
+          type: boolean
+        therapyHoursToday:
+          type: string
+      required:
+        - sessionsToday
+        - sessionsRemaining
+        - activeClients
+        - newClientsThisWeek
+        - pendingReports
+        - homeworkToReview
+        - homeworkDueToday
+        - therapyHoursThisWeek
+        - improvementAverage
+        - totalClientsCount
+        - therapistName
+        - therapistTitle
+        - isAvailable
+        - therapyHoursToday
+
+    UpcomingSession:
+      type: object
+      properties:
+        id:
+          type: integer
+        clientName:
+          type: string
+        clientInitials:
+          type: string
+        sessionType:
+          type: string
+        sessionSubtype:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        durationMinutes:
+          type: integer
+        countdownLabel:
+          type: string
+        sessionNumber:
+          type: integer
+        isNext:
+          type: boolean
+      required:
+        - id
+        - clientName
+        - clientInitials
+        - sessionType
+        - startTime
+        - endTime
+        - durationMinutes
+        - countdownLabel
+        - sessionNumber
+        - isNext
+
+    PendingReport:
+      type: object
+      properties:
+        sessionId:
+          type: integer
+        clientName:
+          type: string
+        clientInitials:
+          type: string
+        sessionDate:
+          type: string
+        sessionTime:
+          type: string
+        sessionType:
+          type: string
+        sessionNumber:
+          type: integer
+      required:
+        - sessionId
+        - clientName
+        - clientInitials
+        - sessionDate
+        - sessionTime
+        - sessionType
+        - sessionNumber
+
+    WeeklyScheduleDay:
+      type: object
+      properties:
+        day:
+          type: string
+        booked:
+          type: integer
+        completed:
+          type: integer
+        available:
+          type: integer
+      required: [day, booked, completed, available]
+
+    ActivityItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        clientName:
+          type: string
+        clientInitials:
+          type: string
+        activityType:
+          type: string
+          enum: [homework_completed, assessment_completed, mood_checkin, journal_shared, message_received]
+        description:
+          type: string
+        timeAgo:
+          type: string
+      required: [id, clientName, clientInitials, activityType, description, timeAgo]
+
+    ClientImprovementSummary:
+      type: object
+      properties:
+        score:
+          type: number
+        changePercent:
+          type: number
+        changeDirection:
+          type: string
+          enum: [up, down, stable]
+        trend:
+          type: array
+          items:
+            type: object
+            properties:
+              month:
+                type: string
+              score:
+                type: number
+            required: [month, score]
+      required: [score, changePercent, changeDirection, trend]
+
+    Client:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        initials:
+          type: string
+        age:
+          type: integer
+        gender:
+          type: string
+        status:
+          type: string
+          enum: [active, completed, inactive, high_priority, new]
+        primaryGoal:
+          type: string
+        lastSession:
+          type: ["string", "null"]
+        nextSession:
+          type: ["string", "null"]
+        progressPercent:
+          type: integer
+      required:
+        - id
+        - name
+        - initials
+        - age
+        - gender
+        - status
+        - primaryGoal
+        - progressPercent
+
+    ClientDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        initials:
+          type: string
+        age:
+          type: integer
+        gender:
+          type: string
+        status:
+          type: string
+        primaryGoal:
+          type: string
+        presentingProblems:
+          type: array
+          items:
+            type: string
+        identifiedConcerns:
+          type: array
+          items:
+            type: string
+        therapyGoals:
+          type: array
+          items:
+            type: string
+        preferredLanguage:
+          type: string
+        communicationPreference:
+          type: string
+        therapyTimeline:
+          type: string
+        aiIntakeSummary:
+          type: string
+        sessionCount:
+          type: integer
+        startDate:
+          type: string
+      required:
+        - id
+        - name
+        - initials
+        - age
+        - gender
+        - status
+        - primaryGoal
+        - presentingProblems
+        - identifiedConcerns
+        - therapyGoals
+        - preferredLanguage
+        - communicationPreference
+        - therapyTimeline
+        - aiIntakeSummary
+        - sessionCount
+        - startDate
+
+    Assessment:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [PHQ-9, GAD-7, PANAS, other]
+        name:
+          type: string
+        currentScore:
+          type: number
+        maxScore:
+          type: number
+        previousScore:
+          type: ["number", "null"]
+        severity:
+          type: string
+        completedAt:
+          type: string
+        trend:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+              score:
+                type: number
+            required: [date, score]
+      required:
+        - id
+        - type
+        - name
+        - currentScore
+        - maxScore
+        - severity
+        - completedAt
+        - trend
+
+    MoodTracking:
+      type: object
+      properties:
+        today:
+          type: ["number", "null"]
+        weeklyTrend:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+              mood:
+                type: number
+              note:
+                type: ["string", "null"]
+            required: [date, mood]
+      required: [weeklyTrend]
+
+    HomeworkItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        activity:
+          type: string
+        instructions:
+          type: string
+        frequency:
+          type: string
+        dueDate:
+          type: string
+        status:
+          type: string
+          enum: [completed, pending, missed]
+        completionPercent:
+          type: integer
+        streak:
+          type: integer
+        clientReflection:
+          type: ["string", "null"]
+      required:
+        - id
+        - activity
+        - instructions
+        - frequency
+        - dueDate
+        - status
+        - completionPercent
+        - streak
+
+    SessionHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        durationMinutes:
+          type: integer
+        sessionType:
+          type: string
+        summary:
+          type: string
+        homeworkAssigned:
+          type: ["string", "null"]
+        therapistNotes:
+          type: ["string", "null"]
+      required:
+        - id
+        - date
+        - durationMinutes
+        - sessionType
+        - summary
+
+    SessionReportInput:
+      type: object
+      properties:
+        durationMinutes:
+          type: integer
+        clientCooperation:
+          type: string
+          enum: [excellent, good, fair, poor]
+        clientEngagementLevel:
+          type: string
+          enum: [high, medium, low]
+        moodComparedToPrevious:
+          type: string
+          enum: [much_better, better, same, worse, much_worse]
+        progressTowardsGoals:
+          type: string
+          enum: [significant, moderate, minimal, none]
+        techniquesUsed:
+          type: array
+          items:
+            type: string
+        topicsDiscussed:
+          type: array
+          items:
+            type: string
+        riskFlags:
+          type: ["string", "null"]
+        clinicalSummary:
+          type: string
+        internalNotes:
+          type: ["string", "null"]
+        homeworkActivity:
+          type: ["string", "null"]
+        homeworkInstructions:
+          type: ["string", "null"]
+        homeworkFrequency:
+          type: ["string", "null"]
+        nextSessionRecommendation:
+          type: string
+          enum: [3_days, 1_week, 2_weeks, 1_month, custom]
+        followUpMessage:
+          type: ["string", "null"]
+      required:
+        - durationMinutes
+        - clientCooperation
+        - clientEngagementLevel
+        - moodComparedToPrevious
+        - progressTowardsGoals
+        - techniquesUsed
+        - topicsDiscussed
+        - clinicalSummary
+        - nextSessionRecommendation
+
+    SessionReport:
+      type: object
+      properties:
+        id:
+          type: integer
+        sessionId:
+          type: integer
+        submittedAt:
+          type: string
+        paymentEligible:
+          type: boolean
+      required: [id, sessionId, submittedAt, paymentEligible]
+
+    CalendarEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        clientName:
+          type: ["string", "null"]
+        start:
+          type: string
+        end:
+          type: string
+        type:
+          type: string
+          enum: [session, blocked, holiday, available]
+        sessionType:
+          type: ["string", "null"]
+        isRecurring:
+          type: boolean
+      required: [id, title, start, end, type, isRecurring]
+
+    AvailabilitySlot:
+      type: object
+      properties:
+        id:
+          type: integer
+        dayOfWeek:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        isRecurring:
+          type: boolean
+      required: [id, dayOfWeek, startTime, endTime, isRecurring]
+
+    AvailabilityInput:
+      type: object
+      properties:
+        dayOfWeek:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        isRecurring:
+          type: boolean
+      required: [dayOfWeek, startTime, endTime, isRecurring]
+
+    ClientOutcomes:
+      type: object
+      properties:
+        clientId:
+          type: integer
+        clientName:
+          type: string
+        improvementScore:
+          type: number
+        goalAchievementRate:
+          type: number
+        totalGoals:
+          type: integer
+        completedGoals:
+          type: integer
+        goalsInProgress:
+          type: integer
+        attendancePercent:
+          type: number
+        sessionsAttended:
+          type: integer
+        missedSessions:
+          type: integer
+        rescheduledSessions:
+          type: integer
+        homeworkCompletionPercent:
+          type: number
+        assignedActivities:
+          type: integer
+        completedActivities:
+          type: integer
+        currentStreak:
+          type: integer
+        engagementScore:
+          type: number
+        engagementLevel:
+          type: string
+          enum: [high, medium, low]
+        assessmentTrends:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                    score:
+                      type: number
+                  required: [date, score]
+            required: [name, data]
+      required:
+        - clientId
+        - clientName
+        - improvementScore
+        - goalAchievementRate
+        - totalGoals
+        - completedGoals
+        - goalsInProgress
+        - attendancePercent
+        - sessionsAttended
+        - missedSessions
+        - rescheduledSessions
+        - homeworkCompletionPercent
+        - assignedActivities
+        - completedActivities
+        - currentStreak
+        - engagementScore
+        - engagementLevel
+        - assessmentTrends
+
+    CaseloadOutcomes:
+      type: object
+      properties:
+        averageImprovementScore:
+          type: number
+        averageGoalAchievementRate:
+          type: number
+        averageAssessmentImprovement:
+          type: number
+        overallAttendanceRate:
+          type: number
+        averageHomeworkAdherence:
+          type: number
+        averageEngagementScore:
+          type: number
+        period:
+          type: string
+        clientBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              clientId:
+                type: integer
+              clientName:
+                type: string
+              improvementScore:
+                type: number
+              engagementScore:
+                type: number
+              status:
+                type: string
+            required: [clientId, clientName, improvementScore, engagementScore, status]
+      required:
+        - averageImprovementScore
+        - averageGoalAchievementRate
+        - averageAssessmentImprovement
+        - overallAttendanceRate
+        - averageHomeworkAdherence
+        - averageEngagementScore
+        - period
+        - clientBreakdown
+
+    RevenueSummary:
+      type: object
+      properties:
+        totalRevenue:
+          type: number
+        pendingPayments:
+          type: number
+        completedConsultations:
+          type: integer
+        therapyHours:
+          type: number
+        revenueChange:
+          type: number
+        period:
+          type: string
+      required:
+        - totalRevenue
+        - pendingPayments
+        - completedConsultations
+        - therapyHours
+        - revenueChange
+        - period
+
+    RevenueDataPoint:
+      type: object
+      properties:
+        label:
+          type: string
+        revenue:
+          type: number
+        consultations:
+          type: integer
+        hours:
+          type: number
+        avgPerConsultation:
+          type: number
+      required: [label, revenue, consultations, hours, avgPerConsultation]
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        clientName:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+          enum: [paid, pending, overdue]
+        invoiceNumber:
+          type: string
+      required: [id, date, clientName, amount, status, invoiceNumber]
+
+    ReviewsSummary:
+      type: object
+      properties:
+        averageRating:
+          type: number
+        totalReviews:
+          type: integer
+        recommendationPercent:
+          type: number
+        ratingTrend:
+          type: array
+          items:
+            type: object
+            properties:
+              month:
+                type: string
+              rating:
+                type: number
+              count:
+                type: integer
+            required: [month, rating, count]
+        ratingDistribution:
+          type: array
+          items:
+            type: object
+            properties:
+              stars:
+                type: integer
+              count:
+                type: integer
+            required: [stars, count]
+      required:
+        - averageRating
+        - totalReviews
+        - recommendationPercent
+        - ratingTrend
+        - ratingDistribution
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+        rating:
+          type: integer
+        reviewText:
+          type: string
+        date:
+          type: string
+        therapistReply:
+          type: ["string", "null"]
+      required: [id, rating, reviewText, date]
+
+    BlogPostInput:
+      type: object
+      properties:
+        title:
+          type: string
+        featuredImage:
+          type: ["string", "null"]
+        category:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        content:
+          type: string
+      required: [title, category, content]
+
+    BlogPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        category:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        content:
+          type: string
+        status:
+          type: string
+          enum: [draft, submitted, published]
+        createdAt:
+          type: string
+      required: [id, title, category, tags, content, status, createdAt]
+
+    BlogOutlineInput:
+      type: object
+      properties:
+        proposedTitle:
+          type: string
+        keyPoints:
+          type: array
+          items:
+            type: string
+        targetAudience:
+          type: string
+        keywords:
+          type: array
+          items:
+            type: string
+        notes:
+          type: ["string", "null"]
+      required: [proposedTitle, keyPoints, targetAudience, keywords]
+
+    BlogOutline:
+      type: object
+      properties:
+        id:
+          type: integer
+        proposedTitle:
+          type: string
+        keyPoints:
+          type: array
+          items:
+            type: string
+        targetAudience:
+          type: string
+        keywords:
+          type: array
+          items:
+            type: string
+        notes:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        createdAt:
+          type: string
+      required:
+        - id
+        - proposedTitle
+        - keyPoints
+        - targetAudience
+        - keywords
+        - status
+        - createdAt
+
+    TherapistProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        title:
+          type: string
+        bio:
+          type: string
+        qualifications:
+          type: array
+          items:
+            type: string
+        experience:
+          type: integer
+        languages:
+          type: array
+          items:
+            type: string
+        specializations:
+          type: array
+          items:
+            type: string
+        verificationStatus:
+          type: string
+          enum: [verified, pending, unverified]
+        consultationFee:
+          type: number
+        workingDays:
+          type: array
+          items:
+            type: string
+        consultationHours:
+          type: string
+        isAvailable:
+          type: boolean
+        photoUrl:
+          type: ["string", "null"]
+      required:
+        - id
+        - name
+        - title
+        - bio
+        - qualifications
+        - experience
+        - languages
+        - specializations
+        - verificationStatus
+        - consultationFee
+        - workingDays
+        - consultationHours
+        - isAvailable
+
+    ProfileUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        title:
+          type: string
+        bio:
+          type: string
+        qualifications:
+          type: array
+          items:
+            type: string
+        experience:
+          type: integer
+        languages:
+          type: array
+          items:
+            type: string
+        specializations:
+          type: array
+          items:
+            type: string
+        consultationFee:
+          type: number
+        workingDays:
+          type: array
+          items:
+            type: string
+        consultationHours:
+          type: string
+        isAvailable:
+          type: boolean
