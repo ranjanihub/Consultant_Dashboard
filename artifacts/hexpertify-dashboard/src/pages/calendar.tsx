@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useGetCalendarEvents } from "@workspace/api-client-react";
+import SetAvailabilityDialog from "@/components/SetAvailabilityDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import { cn } from "@/lib/utils";
 export default function Calendar() {
   const [view, setView] = useState<"day" | "week" | "month">("week");
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [availabilityOpen, setAvailabilityOpen] = useState(false);
 
   const { data: events, isLoading } = useGetCalendarEvents({
     query: {
@@ -50,7 +52,7 @@ export default function Calendar() {
           <p className="text-muted-foreground mt-1">Manage your availability and scheduled sessions.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="bg-white">Set Availability</Button>
+          <Button variant="outline" className="bg-white" onClick={() => setAvailabilityOpen(true)}>Set Availability</Button>
           <Button className="shrink-0 bg-primary text-white">
             <Plus className="w-4 h-4 mr-2" />
             Add Event
@@ -158,6 +160,8 @@ export default function Calendar() {
           </div>
         </CardContent>
       </Card>
+
+      <SetAvailabilityDialog open={availabilityOpen} onOpenChange={setAvailabilityOpen} />
     </div>
   );
 }
