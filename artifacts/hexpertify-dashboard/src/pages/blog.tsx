@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { PenTool, FileText, Send } from "lucide-react";
+import { PenTool, FileText, Send, Type, Upload, X } from "lucide-react";
 
 /* ── schemas ──────────────────────────────────────────────── */
 const postSchema = z.object({
@@ -54,6 +54,8 @@ function Tab({ active, onClick, icon: Icon, label }: {
 function FullBlogForm() {
   const { toast } = useToast();
   const submitPost = useSubmitBlogPost();
+  const [contentMode, setContentMode] = useState<"text" | "file">("text");
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const form = useForm<z.infer<typeof postSchema>>({
     resolver: zodResolver(postSchema),
@@ -127,15 +129,91 @@ function FullBlogForm() {
               )} />
             </div>
 
-            <FormField control={form.control} name="content" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Article Content</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="Write your article content here..." className="min-h-[280px] resize-y text-sm" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium leading-none">Article Content</label>
+                <div className="flex items-center gap-1 p-1 bg-secondary rounded-lg border border-border">
+                  <button
+                    type="button"
+                    onClick={() => { setContentMode("text"); setUploadedFile(null); }}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold transition-all",
+                      contentMode === "text"
+                        ? "bg-white text-primary shadow-sm border border-border"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Type className="w-3 h-3" /> Write
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setContentMode("file")}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold transition-all",
+                      contentMode === "file"
+                        ? "bg-white text-primary shadow-sm border border-border"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Upload className="w-3 h-3" /> Upload
+                  </button>
+                </div>
+              </div>
+
+              {contentMode === "text" ? (
+                <FormField control={form.control} name="content" render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Textarea placeholder="Write your article content here..." className="min-h-[280px] resize-y text-sm" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              ) : (
+                <div>
+                  {uploadedFile ? (
+                    <div className="flex items-center gap-3 p-4 rounded-lg border border-primary/30 bg-primary/5">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <FileText className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{uploadedFile.name}</p>
+                        <p className="text-xs text-muted-foreground">{(uploadedFile.size / 1024).toFixed(1)} KB</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setUploadedFile(null)}
+                        className="text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center gap-3 min-h-[180px] rounded-lg border-2 border-dashed border-border hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer">
+                      <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
+                        <Upload className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-medium">Drop your file here or <span className="text-primary">browse</span></p>
+                        <p className="text-xs text-muted-foreground mt-1">Supports PDF, DOC, DOCX — up to 10 MB</p>
+                      </div>
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        className="sr-only"
+                        onChange={e => {
+                          const f = e.target.files?.[0];
+                          if (f) {
+                            setUploadedFile(f);
+                            form.setValue("content", f.name);
+                          }
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button type="button" variant="outline">Save Draft</Button>
