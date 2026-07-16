@@ -111,23 +111,7 @@ export default function Reviews() {
                     </div>
                     <span className="text-sm text-muted-foreground">{formatDate(review.date)}</span>
                   </div>
-                  <p className="text-slate-700 leading-relaxed mb-4">{review.reviewText}</p>
-                  
-                  {review.therapistReply ? (
-                    <div className="bg-secondary/50 rounded-lg p-4 ml-4 border-l-2 border-primary">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Avatar className="w-5 h-5">
-                          <AvatarFallback className="bg-primary/20 text-primary text-[10px] font-bold">SW</AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-semibold text-primary">Your Reply</span>
-                      </div>
-                      <p className="text-sm text-slate-600 italic">"{review.therapistReply}"</p>
-                    </div>
-                  ) : (
-                    <button className="text-sm font-medium text-primary hover:underline flex items-center gap-1.5 ml-1">
-                      <MessageSquare className="w-4 h-4" /> Reply to review
-                    </button>
-                  )}
+                  <p className="text-slate-700 leading-relaxed">{review.reviewText}</p>
                 </div>
               ))
             )}
