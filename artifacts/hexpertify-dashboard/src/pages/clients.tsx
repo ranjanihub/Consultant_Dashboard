@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useGetClients } from "@workspace/api-client-react";
+import AddClientDialog from "@/components/AddClientDialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { formatDate } from "@/lib/format";
 export default function Clients() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [addClientOpen, setAddClientOpen] = useState(false);
 
   const { data: clients, isLoading } = useGetClients({
     query: {
@@ -43,11 +45,13 @@ export default function Clients() {
           <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
           <p className="text-muted-foreground mt-1">Manage your caseload, progress, and upcoming sessions.</p>
         </div>
-        <Button className="shrink-0 bg-primary text-white">
+        <Button className="shrink-0 bg-primary text-white" onClick={() => setAddClientOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Add Client
         </Button>
       </div>
+
+      <AddClientDialog open={addClientOpen} onOpenChange={setAddClientOpen} />
 
       <Card className="shadow-sm border-border">
         <CardHeader className="pb-4">
