@@ -251,54 +251,6 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Charts Row */}
-      <div className="pb-8">
-        <Card className="shadow-sm border-border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle className="text-lg">Client Improvement</CardTitle>
-              <CardDescription>Average outcomes across caseload</CardDescription>
-            </div>
-            {improvement && (
-              <div className="flex flex-col items-end">
-                <div className="text-2xl font-bold">{improvement.score}</div>
-                <div className={cn(
-                  "flex items-center text-xs font-medium",
-                  improvement.changeDirection === 'up' ? "text-green-600" : "text-red-600"
-                )}>
-                  {improvement.changeDirection === 'up' ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
-                  {improvement.changePercent}% from last month
-                </div>
-              </div>
-            )}
-          </CardHeader>
-          <CardContent>
-            {improvementLoading ? (
-              <Skeleton className="h-[200px] w-full" />
-            ) : (
-              <div className="h-[200px] w-full mt-2">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={improvement?.trend} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#532bce" stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor="#532bce" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} dy={10} />
-                    <YAxis domain={['dataMin - 5', 'dataMax + 5']} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
-                    <RechartsTooltip 
-                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                    />
-                    <Area type="monotone" dataKey="score" stroke="#532bce" strokeWidth={3} fillOpacity={1} fill="url(#colorScore)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
 
       <SessionReportDialog 
         open={reportSessionId !== null} 
