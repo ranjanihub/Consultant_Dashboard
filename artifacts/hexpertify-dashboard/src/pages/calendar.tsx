@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useGetCalendarEvents } from "@workspace/api-client-react";
 import SetAvailabilityDialog from "@/components/SetAvailabilityDialog";
+import AddEventDialog from "@/components/AddEventDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -82,6 +83,7 @@ export default function Calendar() {
   const [month, setMonth] = useState(6); // 0-indexed, 6 = July
   const [selectedDay, setSelectedDay] = useState(7); // July 7
   const [availabilityOpen, setAvailabilityOpen] = useState(false);
+  const [addEventOpen, setAddEventOpen] = useState(false);
   const [confirmedSlot, setConfirmedSlot] = useState<string | null>(null);
 
   const { data: events } = useGetCalendarEvents({ query: {} });
@@ -122,7 +124,7 @@ export default function Calendar() {
           <Button variant="outline" className="bg-white" onClick={() => setAvailabilityOpen(true)}>
             Set Availability
           </Button>
-          <Button className="shrink-0 bg-primary text-white">
+          <Button className="shrink-0 bg-primary text-white" onClick={() => setAddEventOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Add Event
           </Button>
@@ -347,6 +349,11 @@ export default function Calendar() {
       </div>
 
       <SetAvailabilityDialog open={availabilityOpen} onOpenChange={setAvailabilityOpen} />
+      <AddEventDialog
+        open={addEventOpen}
+        onOpenChange={setAddEventOpen}
+        defaultDate={`${year}-${String(month + 1).padStart(2, "0")}-${String(selectedDay).padStart(2, "0")}`}
+      />
     </div>
   );
 }
