@@ -252,35 +252,7 @@ export default function Dashboard() {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
-        <Card className="shadow-sm border-border">
-          <CardHeader>
-            <CardTitle className="text-lg">Weekly Schedule</CardTitle>
-            <CardDescription>Sessions booked vs completed</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {scheduleLoading ? (
-              <Skeleton className="h-[250px] w-full" />
-            ) : (
-              <div className="h-[250px] w-full mt-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={schedule} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
-                    <RechartsTooltip 
-                      cursor={{ fill: '#F3F4F6' }}
-                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                    />
-                    <Bar dataKey="completed" name="Completed" stackId="a" fill="#532bce" radius={[0, 0, 4, 4]} barSize={32} />
-                    <Bar dataKey="booked" name="Upcoming" stackId="a" fill="#a78bfa" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
+      <div className="pb-8">
         <Card className="shadow-sm border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div>
