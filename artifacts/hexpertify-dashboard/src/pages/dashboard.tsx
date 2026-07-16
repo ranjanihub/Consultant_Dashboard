@@ -93,7 +93,7 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard 
           title="Sessions today" 
           value={stats?.sessionsToday} 
@@ -122,29 +122,11 @@ export default function Dashboard() {
           loading={statsLoading} 
         />
         <StatCard 
-          title="Homework to review" 
-          value={stats?.homeworkToReview} 
-          description={`${stats?.homeworkDueToday} due today`} 
-          icon={<BookOpen className="w-5 h-5 text-pink-500" />} 
-          trend="+4" 
-          trendPositive={false} 
-          loading={statsLoading} 
-        />
-        <StatCard 
           title="Therapy hours" 
           value={`${stats?.therapyHoursThisWeek}h`} 
           description="This week" 
           icon={<Clock className="w-5 h-5 text-emerald-500" />} 
           trend="+6h" 
-          trendPositive={true} 
-          loading={statsLoading} 
-        />
-        <StatCard 
-          title="Improvement avg." 
-          value={stats?.improvementAverage} 
-          description={`Across ${stats?.totalClientsCount} clients`} 
-          icon={<TrendingUp className="w-5 h-5 text-primary" />} 
-          trend="+12%" 
           trendPositive={true} 
           loading={statsLoading} 
         />
