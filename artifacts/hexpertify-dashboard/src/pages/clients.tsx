@@ -95,7 +95,6 @@ export default function Clients() {
                 <TableHead>Status</TableHead>
                 <TableHead>Primary Goal</TableHead>
                 <TableHead>Next Session</TableHead>
-                <TableHead className="w-[200px]">Progress</TableHead>
                 <TableHead className="text-right pr-6"></TableHead>
               </TableRow>
             </TableHeader>
@@ -107,13 +106,12 @@ export default function Clients() {
                     <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-2 w-full" /></TableCell>
                     <TableCell></TableCell>
                   </TableRow>
                 ))
               ) : clients?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
                     No clients found matching your search.
                   </TableCell>
                 </TableRow>
@@ -141,12 +139,6 @@ export default function Clients() {
                       <div className="flex items-center text-sm">
                         <Calendar className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
                         {client.nextSession ? formatDate(client.nextSession) : <span className="text-muted-foreground italic">Unscheduled</span>}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Progress value={client.progressPercent} className="h-2 bg-secondary" indicatorClassName="bg-primary" />
-                        <span className="text-xs font-medium w-9">{client.progressPercent}%</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right pr-6">
