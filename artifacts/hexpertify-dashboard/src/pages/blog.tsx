@@ -11,24 +11,42 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { PenTool, FileText, Send, Type, Upload, X } from "lucide-react";
+import { PenTool, FileText, Send, Type, Upload, X, Clock, Trash2, Tag } from "lucide-react";
 
 /* ── schemas ──────────────────────────────────────────────── */
 const postSchema = z.object({
   title:         z.string().min(5, "Title must be at least 5 characters.").max(100),
   category:      z.string().min(1, "Please select a category."),
   tags:          z.string().optional(),
-  content:       z.string().min(50, "Content must be at least 50 characters."),
+  content:       z.string().min(1, "Content is required."),
   featuredImage: z.string().url("Must be a valid URL.").optional().or(z.literal("")),
 });
 
 const outlineSchema = z.object({
   proposedTitle:  z.string().min(5, "Title must be at least 5 characters."),
-  keyPoints:      z.string().min(10, "Please list a few key points."),
-  targetAudience: z.string().min(3, "Please describe the audience."),
-  keywords:       z.string().min(3, "Please provide keywords."),
+  keyPoints:      z.string().min(1, "Please list at least one key point."),
+  targetAudience: z.string().min(1, "Please describe the audience."),
+  keywords:       z.string().min(1, "Please provide keywords."),
   notes:          z.string().optional(),
 });
+
+/* ── draft types ──────────────────────────────────────────── */
+interface PostDraft {
+  id: string; kind: "post";
+  title: string; category: string; tags: string; content: string; savedAt: Date;
+}
+interface OutlineDraft {
+  id: string; kind: "outline";
+  proposedTitle: string; keyPoints: string; targetAudience: string; keywords: string; notes: string; savedAt: Date;
+}
+type Draft = PostDraft | OutlineDraft;
+
+function timeAgo(date: Date) {
+  const secs = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (secs < 60) return "just now";
+  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+  return `${Math.floor(secs / 3600)}h ago`;
+}
 
 /* ── tab pill ─────────────────────────────────────────────── */
 function Tab({ active, onClick, icon: Icon, label }: {
@@ -50,8 +68,77 @@ function Tab({ active, onClick, icon: Icon, label }: {
   );
 }
 
+/* ── Drafts panel ─────────────────────────────────────────── */
+function DraftsPanel({
+  drafts, onDelete, onRestore,
+}: {
+  drafts: Draft[];
+  onDelete: (id: string) => void;
+  onRestore: (draft: Draft) => void;
+}) {
+  if (drafts.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        Saved Drafts ({drafts.length})
+      </p>
+      <div className="space-y-2">
+        {drafts.map(draft => {
+          const title = draft.kind === "post" ? draft.title : draft.proposedTitle;
+          const sub   = draft.kind === "post"
+            ? draft.category || "No category"
+            : (draft.keywords || "No keywords");
+          return (
+            <div
+              key={draft.id}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-white hover:border-primary/30 hover:bg-primary/[0.02] transition-all group"
+            >
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                {draft.kind === "post"
+                  ? <PenTool className="w-4 h-4 text-primary" />
+                  : <FileText className="w-4 h-4 text-primary" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{title || "Untitled draft"}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <Tag className="w-3 h-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground truncate">{sub}</span>
+                  <span className="text-muted-foreground/40 text-xs">·</span>
+                  <Clock className="w-3 h-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">{timeAgo(draft.savedAt)}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  size="sm" variant="ghost"
+                  className="h-7 px-3 text-xs text-primary hover:bg-primary/10"
+                  onClick={() => onRestore(draft)}
+                >
+                  Edit
+                </Button>
+                <button
+                  onClick={() => onDelete(draft.id)}
+                  className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ── Full blog form ───────────────────────────────────────── */
-function FullBlogForm() {
+function FullBlogForm({
+  onSaveDraft, defaultValues,
+}: {
+  onSaveDraft: (values: z.infer<typeof postSchema>) => void;
+  defaultValues?: Partial<z.infer<typeof postSchema>>;
+}) {
   const { toast } = useToast();
   const submitPost = useSubmitBlogPost();
   const [contentMode, setContentMode] = useState<"text" | "file">("text");
@@ -59,7 +146,10 @@ function FullBlogForm() {
 
   const form = useForm<z.infer<typeof postSchema>>({
     resolver: zodResolver(postSchema),
-    defaultValues: { title: "", category: "", tags: "", content: "", featuredImage: "" },
+    defaultValues: {
+      title: "", category: "", tags: "", content: "", featuredImage: "",
+      ...defaultValues,
+    },
   });
 
   function onSubmit(values: z.infer<typeof postSchema>) {
@@ -80,18 +170,24 @@ function FullBlogForm() {
     });
   }
 
+  function handleSaveDraft() {
+    const values = form.getValues();
+    onSaveDraft(values);
+    toast({ title: "Draft saved", description: "You can find it in the drafts list above." });
+  }
+
   return (
     <Card className="shadow-sm border-border">
       <CardHeader className="bg-secondary/30 pb-4 border-b border-border">
         <CardTitle className="text-lg flex items-center gap-2">
-          <PenTool className="w-5 h-5 text-primary" />
-          Post Editor
+          <PenTool className="w-5 h-5 text-primary" /> Post Editor
         </CardTitle>
         <CardDescription>Articles should be evidence-based and written for a general audience.</CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
             <FormField control={form.control} name="title" render={({ field }) => (
               <FormItem>
                 <FormLabel>Article Title</FormLabel>
@@ -106,7 +202,7 @@ function FullBlogForm() {
               <FormField control={form.control} name="category" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Anxiety">Anxiety & Stress</SelectItem>
@@ -129,32 +225,19 @@ function FullBlogForm() {
               )} />
             </div>
 
+            {/* Content with Write / Upload toggle */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium leading-none">Article Content</label>
                 <div className="flex items-center gap-1 p-1 bg-secondary rounded-lg border border-border">
-                  <button
-                    type="button"
-                    onClick={() => { setContentMode("text"); setUploadedFile(null); }}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold transition-all",
-                      contentMode === "text"
-                        ? "bg-white text-primary shadow-sm border border-border"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
+                  <button type="button" onClick={() => { setContentMode("text"); setUploadedFile(null); }}
+                    className={cn("flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold transition-all",
+                      contentMode === "text" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground")}>
                     <Type className="w-3 h-3" /> Write
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setContentMode("file")}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold transition-all",
-                      contentMode === "file"
-                        ? "bg-white text-primary shadow-sm border border-border"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
+                  <button type="button" onClick={() => setContentMode("file")}
+                    className={cn("flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold transition-all",
+                      contentMode === "file" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground")}>
                     <Upload className="w-3 h-3" /> Upload
                   </button>
                 </div>
@@ -170,53 +253,41 @@ function FullBlogForm() {
                   </FormItem>
                 )} />
               ) : (
-                <div>
-                  {uploadedFile ? (
-                    <div className="flex items-center gap-3 p-4 rounded-lg border border-primary/30 bg-primary/5">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                        <FileText className="w-5 h-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{uploadedFile.name}</p>
-                        <p className="text-xs text-muted-foreground">{(uploadedFile.size / 1024).toFixed(1)} KB</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setUploadedFile(null)}
-                        className="text-muted-foreground hover:text-destructive transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                uploadedFile ? (
+                  <div className="flex items-center gap-3 p-4 rounded-lg border border-primary/30 bg-primary/5">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <FileText className="w-5 h-5 text-primary" />
                     </div>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center gap-3 min-h-[180px] rounded-lg border-2 border-dashed border-border hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer">
-                      <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
-                        <Upload className="w-5 h-5 text-muted-foreground" />
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm font-medium">Drop your file here or <span className="text-primary">browse</span></p>
-                        <p className="text-xs text-muted-foreground mt-1">Supports PDF, DOC, DOCX — up to 10 MB</p>
-                      </div>
-                      <input
-                        type="file"
-                        accept=".pdf,.doc,.docx"
-                        className="sr-only"
-                        onChange={e => {
-                          const f = e.target.files?.[0];
-                          if (f) {
-                            setUploadedFile(f);
-                            form.setValue("content", f.name);
-                          }
-                        }}
-                      />
-                    </label>
-                  )}
-                </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{uploadedFile.name}</p>
+                      <p className="text-xs text-muted-foreground">{(uploadedFile.size / 1024).toFixed(1)} KB</p>
+                    </div>
+                    <button type="button" onClick={() => { setUploadedFile(null); form.setValue("content", ""); }}
+                      className="text-muted-foreground hover:text-destructive transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center gap-3 min-h-[180px] rounded-lg border-2 border-dashed border-border hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer">
+                    <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
+                      <Upload className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium">Drop your file here or <span className="text-primary">browse</span></p>
+                      <p className="text-xs text-muted-foreground mt-1">Supports PDF, DOC, DOCX — up to 10 MB</p>
+                    </div>
+                    <input type="file" accept=".pdf,.doc,.docx" className="sr-only"
+                      onChange={e => {
+                        const f = e.target.files?.[0];
+                        if (f) { setUploadedFile(f); form.setValue("content", f.name); }
+                      }} />
+                  </label>
+                )
               )}
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-border">
-              <Button type="button" variant="outline">Save Draft</Button>
+              <Button type="button" variant="outline" onClick={handleSaveDraft}>Save Draft</Button>
               <Button type="submit" className="bg-primary text-white" disabled={submitPost.isPending}>
                 {submitPost.isPending ? "Submitting…" : <><Send className="w-4 h-4 mr-2" />Submit for Review</>}
               </Button>
@@ -229,13 +300,18 @@ function FullBlogForm() {
 }
 
 /* ── Outline form ─────────────────────────────────────────── */
-function OutlineForm() {
+function OutlineForm({
+  onSaveDraft, defaultValues,
+}: {
+  onSaveDraft: (values: z.infer<typeof outlineSchema>) => void;
+  defaultValues?: Partial<z.infer<typeof outlineSchema>>;
+}) {
   const { toast } = useToast();
   const submitOutline = useSubmitBlogOutline();
 
   const form = useForm<z.infer<typeof outlineSchema>>({
     resolver: zodResolver(outlineSchema),
-    defaultValues: { proposedTitle: "", keyPoints: "", targetAudience: "", keywords: "", notes: "" },
+    defaultValues: { proposedTitle: "", keyPoints: "", targetAudience: "", keywords: "", notes: "", ...defaultValues },
   });
 
   function onSubmit(values: z.infer<typeof outlineSchema>) {
@@ -256,18 +332,24 @@ function OutlineForm() {
     });
   }
 
+  function handleSaveDraft() {
+    const values = form.getValues();
+    onSaveDraft(values);
+    toast({ title: "Draft saved", description: "You can find it in the drafts list above." });
+  }
+
   return (
     <Card className="shadow-sm border-border">
       <CardHeader className="bg-secondary/30 pb-4 border-b border-border">
         <CardTitle className="text-lg flex items-center gap-2">
-          <FileText className="w-5 h-5 text-primary" />
-          Article Proposal
+          <FileText className="w-5 h-5 text-primary" /> Article Proposal
         </CardTitle>
         <CardDescription>Pitching ensures your topic aligns with our current content needs.</CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
             <FormField control={form.control} name="proposedTitle" render={({ field }) => (
               <FormItem>
                 <FormLabel>Proposed Title</FormLabel>
@@ -315,7 +397,8 @@ function OutlineForm() {
               </FormItem>
             )} />
 
-            <div className="flex justify-end pt-4 border-t border-border">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
+              <Button type="button" variant="outline" onClick={handleSaveDraft}>Save Draft</Button>
               <Button type="submit" className="bg-primary text-white" disabled={submitOutline.isPending}>
                 {submitOutline.isPending ? "Pitching…" : <><Send className="w-4 h-4 mr-2" />Pitch Outline</>}
               </Button>
@@ -330,6 +413,45 @@ function OutlineForm() {
 /* ── Page ─────────────────────────────────────────────────── */
 export default function Blog() {
   const [tab, setTab] = useState<"post" | "outline">("post");
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [restoreValues, setRestoreValues] = useState<Partial<z.infer<typeof postSchema>> | Partial<z.infer<typeof outlineSchema>> | undefined>(undefined);
+  const [restoreKey, setRestoreKey] = useState(0);
+
+  const postDrafts    = drafts.filter(d => d.kind === "post")    as PostDraft[];
+  const outlineDrafts = drafts.filter(d => d.kind === "outline") as OutlineDraft[];
+  const visibleDrafts = tab === "post" ? postDrafts : outlineDrafts;
+
+  function savePostDraft(values: z.infer<typeof postSchema>) {
+    setDrafts(prev => [
+      { id: crypto.randomUUID(), kind: "post", savedAt: new Date(), ...values },
+      ...prev,
+    ]);
+  }
+
+  function saveOutlineDraft(values: z.infer<typeof outlineSchema>) {
+    setDrafts(prev => [
+      { id: crypto.randomUUID(), kind: "outline", savedAt: new Date(), ...values },
+      ...prev,
+    ]);
+  }
+
+  function deleteDraft(id: string) {
+    setDrafts(prev => prev.filter(d => d.id !== id));
+  }
+
+  function restoreDraft(draft: Draft) {
+    if (draft.kind === "post") {
+      const { id, kind, savedAt, ...values } = draft;
+      setTab("post");
+      setRestoreValues(values);
+    } else {
+      const { id, kind, savedAt, ...values } = draft;
+      setTab("outline");
+      setRestoreValues(values);
+    }
+    setRestoreKey(k => k + 1); // force form remount with new defaultValues
+    deleteDraft(draft.id);
+  }
 
   return (
     <div className="space-y-6 pb-10 max-w-4xl mx-auto">
@@ -338,13 +460,29 @@ export default function Blog() {
         <p className="text-muted-foreground mt-1">Publish articles or pitch outlines to the Hexpertify patient portal.</p>
       </div>
 
-      {/* Slider tabs */}
+      {/* Tabs */}
       <div className="flex items-center gap-3">
         <Tab active={tab === "post"}    onClick={() => setTab("post")}    icon={PenTool}  label="Full Blog Post" />
         <Tab active={tab === "outline"} onClick={() => setTab("outline")} icon={FileText} label="Blog Outline" />
       </div>
 
-      {tab === "post" ? <FullBlogForm /> : <OutlineForm />}
+      {/* Drafts for current tab */}
+      <DraftsPanel drafts={visibleDrafts} onDelete={deleteDraft} onRestore={restoreDraft} />
+
+      {/* Form */}
+      {tab === "post" ? (
+        <FullBlogForm
+          key={`post-${restoreKey}`}
+          onSaveDraft={savePostDraft}
+          defaultValues={tab === "post" ? restoreValues as Partial<z.infer<typeof postSchema>> : undefined}
+        />
+      ) : (
+        <OutlineForm
+          key={`outline-${restoreKey}`}
+          onSaveDraft={saveOutlineDraft}
+          defaultValues={tab === "outline" ? restoreValues as Partial<z.infer<typeof outlineSchema>> : undefined}
+        />
+      )}
     </div>
   );
 }
