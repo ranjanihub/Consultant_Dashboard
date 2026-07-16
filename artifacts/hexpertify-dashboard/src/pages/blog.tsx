@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { PenTool, FileText, Send, Image as ImageIcon } from "lucide-react";
+import { PenTool, FileText, Send } from "lucide-react";
 
 /* ── schemas ──────────────────────────────────────────────── */
 const postSchema = z.object({
@@ -126,21 +126,6 @@ function FullBlogForm() {
                 </FormItem>
               )} />
             </div>
-
-            <FormField control={form.control} name="featuredImage" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Featured Image URL <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
-                <FormControl>
-                  <div className="flex gap-2">
-                    <Input placeholder="https://..." {...field} />
-                    <Button type="button" variant="outline" size="icon" className="shrink-0">
-                      <ImageIcon className="w-4 h-4 text-muted-foreground" />
-                    </Button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
 
             <FormField control={form.control} name="content" render={({ field }) => (
               <FormItem>
