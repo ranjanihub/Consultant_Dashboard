@@ -35,8 +35,7 @@ const SIDEBAR_ITEMS = [
   {
     label: "CONTENT",
     items: [
-      { name: "Submit Blog", href: "/blog/submit", icon: PenTool },
-      { name: "Blog Outline", href: "/blog/outline", icon: FileText },
+      { name: "Blog", href: "/blog", icon: PenTool },
     ],
   },
 ];
