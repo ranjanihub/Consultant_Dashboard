@@ -131,9 +131,8 @@ function FullBlogForm() {
               <FormItem>
                 <FormLabel>Article Content</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Write your article content here..." className="min-h-[280px] resize-y font-mono text-sm" {...field} />
+                  <Textarea placeholder="Write your article content here..." className="min-h-[280px] resize-y text-sm" {...field} />
                 </FormControl>
-                <FormDescription>Supports Markdown formatting.</FormDescription>
                 <FormMessage />
               </FormItem>
             )} />
