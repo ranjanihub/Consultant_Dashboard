@@ -153,7 +153,7 @@ export default function Profile() {
             <StatPill icon={Users}     value="24"                                 label="Active Clients" />
             <StatPill icon={DollarSign} value={`$${profile?.consultationFee ?? 150}`} label="Per Session" />
             <StatPill icon={Star}      value="4.9"                                label="Rating" />
-            <StatPill icon={Globe}     value={(profile?.languages ?? ["English"]).length.toString()} label="Languages" />
+            <StatPill icon={Globe}     value={(Array.isArray(profile?.languages) ? profile.languages : ["English"]).length.toString()} label="Languages" />
           </div>
         </CardContent>
       </Card>
@@ -169,7 +169,7 @@ export default function Profile() {
             <CardContent className="p-6">
               <SectionHeading>Specializations</SectionHeading>
               <div className="flex flex-wrap gap-2">
-                {(profile?.specializations ?? ["CBT", "EMDR", "Anxiety", "Depression", "Couples Therapy"]).map((spec, i) => (
+                {(Array.isArray(profile?.specializations) ? profile.specializations : ["CBT", "EMDR", "Anxiety", "Depression", "Couples Therapy"]).map((spec, i) => (
                   <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/8 text-primary text-xs font-semibold border border-primary/20">
                     <Award className="w-3 h-3" />{spec}
                   </span>
@@ -186,7 +186,7 @@ export default function Profile() {
             <CardContent className="p-6">
               <SectionHeading>Languages</SectionHeading>
               <div className="flex flex-wrap gap-2">
-                {(profile?.languages ?? ["English", "Spanish"]).map((lang, i) => (
+                {(Array.isArray(profile?.languages) ? profile.languages : ["English", "Spanish"]).map((lang, i) => (
                   <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-foreground text-xs font-semibold border border-border">
                     <Globe className="w-3 h-3 text-muted-foreground" />{lang}
                   </span>

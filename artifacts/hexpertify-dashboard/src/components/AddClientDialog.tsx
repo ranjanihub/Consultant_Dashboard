@@ -57,17 +57,21 @@ export default function AddClientDialog({ open, onOpenChange }: AddClientDialogP
   const [problemInput, setProblemInput] = useState("");
 
   const [form, setForm] = useState({
-    name: "",
-    age: "",
-    gender: "",
+    name: "Sophia Carter",
+    age: "31",
+    gender: "Female",
     preferredLanguage: "English",
     communicationPreference: "Video",
     status: "new",
-    primaryGoal: "",
-    presentingProblems: [] as string[],
-    therapyTimeline: "",
-    therapyGoals: ["", "", ""],
-    aiIntakeSummary: "",
+    primaryGoal: "Reduce work-related anxiety and manage panic attacks",
+    presentingProblems: ["Generalized Anxiety", "Social Anxiety", "Burnout"],
+    therapyTimeline: "6 to 12 Months",
+    therapyGoals: [
+      "Identify and reframe automatic negative thoughts about work evaluation",
+      "Practice grounding and 4-7-8 breathing during acute anxiety episodes",
+      "Establish clear boundaries between professional and personal life"
+    ],
+    aiIntakeSummary: "Client reports 6-month history of panic episodes triggered by high-pressure presentations. Responds well to structured CBT interventions and weekly homework tracking.",
   });
 
   const set = (field: string, value: unknown) =>

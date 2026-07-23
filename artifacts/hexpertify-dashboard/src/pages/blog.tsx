@@ -33,11 +33,11 @@ const outlineSchema = z.object({
 /* ── draft types ──────────────────────────────────────────── */
 interface PostDraft {
   id: string; kind: "post";
-  title: string; category: string; tags: string; content: string; savedAt: Date;
+  title: string; category: string; tags?: string; content: string; savedAt: Date;
 }
 interface OutlineDraft {
   id: string; kind: "outline";
-  proposedTitle: string; keyPoints: string; targetAudience: string; keywords: string; notes: string; savedAt: Date;
+  proposedTitle: string; keyPoints: string; targetAudience: string; keywords: string; notes?: string; savedAt: Date;
 }
 type Draft = PostDraft | OutlineDraft;
 
@@ -76,7 +76,7 @@ function DraftsPanel({
   onDelete: (id: string) => void;
   onRestore: (draft: Draft) => void;
 }) {
-  if (drafts.length === 0) return null;
+  if (!Array.isArray(drafts) || drafts.length === 0) return null;
 
   return (
     <div className="space-y-2">
@@ -84,7 +84,7 @@ function DraftsPanel({
         Saved Drafts ({drafts.length})
       </p>
       <div className="space-y-2">
-        {drafts.map(draft => {
+        {(Array.isArray(drafts) ? drafts : []).map(draft => {
           const title = draft.kind === "post" ? draft.title : draft.proposedTitle;
           const sub   = draft.kind === "post"
             ? draft.category || "No category"
@@ -147,7 +147,11 @@ function FullBlogForm({
   const form = useForm<z.infer<typeof postSchema>>({
     resolver: zodResolver(postSchema),
     defaultValues: {
-      title: "", category: "", tags: "", content: "", featuredImage: "",
+      title: "Understanding Cognitive Behavioral Therapy for Panic and Anxiety",
+      category: "Anxiety",
+      tags: "cbt, anxiety, coping-skills, mental-health",
+      content: "Cognitive Behavioral Therapy (CBT) is an evidence-based psychological treatment that helps individuals identify and challenge negative thought patterns.\n\n### Key Concepts of CBT\n1. **Cognitive Triad**: Understanding the connection between thoughts, feelings, and behaviors.\n2. **Automatic Thoughts**: Uncovering habitual negative self-talk.\n3. **Behavioral Experiments**: Testing beliefs in real-world scenarios to reduce anxiety.\n\n### Practical Exercises\n- Daily Thought Logs\n- Gradual Exposure Tracking\n- Box Breathing Protocols (4-4-4-4)",
+      featuredImage: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&auto=format&fit=crop",
       ...defaultValues,
     },
   });
@@ -311,7 +315,14 @@ function OutlineForm({
 
   const form = useForm<z.infer<typeof outlineSchema>>({
     resolver: zodResolver(outlineSchema),
-    defaultValues: { proposedTitle: "", keyPoints: "", targetAudience: "", keywords: "", notes: "", ...defaultValues },
+    defaultValues: {
+      proposedTitle: "5 Practical Strategies to Prevent Clinical Burnout in Healthcare",
+      keyPoints: "1. Identifying early physiological indicators of stress\n2. Setting clear professional boundaries with client schedules\n3. Implementing active recovery micro-breaks between sessions\n4. Re-evaluating caseload intensity and administrative protocols",
+      targetAudience: "Healthcare professionals, clinical therapists, and social workers",
+      keywords: "burnout, stress-management, self-care, clinical-practice",
+      notes: "References recent 2024 APA research on practitioner wellbeing.",
+      ...defaultValues,
+    },
   });
 
   function onSubmit(values: z.infer<typeof outlineSchema>) {
@@ -457,7 +468,7 @@ export default function Blog() {
     <div className="space-y-6 pb-10 max-w-4xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Blog</h1>
-        <p className="text-muted-foreground mt-1">Publish articles or pitch outlines to the Hexpertify patient portal.</p>
+        <p className="text-muted-foreground mt-1">Publish articles or pitch outlines to the Hexpertify client portal.</p>
       </div>
 
       {/* Tabs */}

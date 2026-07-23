@@ -21,32 +21,131 @@ import { cn } from "@/lib/utils";
 export default function ClientDetail() {
   const { id } = useParams();
   const clientId = Number(id);
+  const { data: clientData, isLoading: clientLoading } = useGetClient(clientId, { query: { enabled: !!clientId, queryKey: ['client', clientId] } });
+  const { data: assessmentsData, isLoading: assessmentsLoading } = useGetClientAssessments(clientId, { query: { enabled: !!clientId, queryKey: ['assessments', clientId] } });
+  const { data: moodData, isLoading: moodLoading } = useGetClientMood(clientId, { query: { enabled: !!clientId, queryKey: ['mood', clientId] } });
+  const { data: homeworkData, isLoading: homeworkLoading } = useGetClientHomework(clientId, { query: { enabled: !!clientId, queryKey: ['homework', clientId] } });
+  const { data: historyData, isLoading: historyLoading } = useGetClientSessionHistory(clientId, { query: { enabled: !!clientId, queryKey: ['history', clientId] } });
 
-  const { data: client, isLoading: clientLoading } = useGetClient(clientId, { query: { enabled: !!clientId, queryKey: ['client', clientId] } });
-  const { data: assessments, isLoading: assessmentsLoading } = useGetClientAssessments(clientId, { query: { enabled: !!clientId, queryKey: ['assessments', clientId] } });
-  const { data: mood, isLoading: moodLoading } = useGetClientMood(clientId, { query: { enabled: !!clientId, queryKey: ['mood', clientId] } });
-  const { data: homework, isLoading: homeworkLoading } = useGetClientHomework(clientId, { query: { enabled: !!clientId, queryKey: ['homework', clientId] } });
-  const { data: history, isLoading: historyLoading } = useGetClientSessionHistory(clientId, { query: { enabled: !!clientId, queryKey: ['history', clientId] } });
+  const DEMO_CLIENT = {
+    id: clientId || 1,
+    name: "Sarah Jenkins",
+    initials: "SJ",
+    age: 29,
+    gender: "Female",
+    status: "active",
+    primaryGoal: "Manage generalized anxiety and workplace stress",
+    presentingProblems: ["Generalized Anxiety Disorder", "Insomnia", "Workplace Stress", "Imposter Syndrome"],
+    identifiedConcerns: ["Frequent panic sensations during team presentations", "Ruminative night thoughts", "Fear of failure"],
+    therapyGoals: ["Reduce GAD-7 score below 5", "Establish healthy sleep hygiene routine", "Practice assertiveness techniques at work"],
+    preferredLanguage: "English",
+    communicationPreference: "Video",
+    therapyTimeline: "3-6 months",
+    aiIntakeSummary: "Client reports 6-month history of escalating anxiety following a promotion. High motivation for CBT intervention. Responding very well to cognitive restructuring.",
+    progressPercent: 75,
+    startDate: "2026-02-10",
+    lastSession: "2026-07-20",
+    nextSession: "2026-07-27",
+    sessionCount: 12,
+  };
 
-  if (clientLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-16 w-16 rounded-full" />
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-4 w-32" />
-          </div>
-        </div>
-        <Skeleton className="h-10 w-[600px]" />
-        <Skeleton className="h-[400px] w-full" />
-      </div>
-    );
-  }
+  const client = clientData || DEMO_CLIENT;
 
-  if (!client) {
-    return <div>Client not found</div>;
-  }
+  const DEMO_ASSESSMENTS = [
+    {
+      id: 101,
+      type: "GAD-7",
+      name: "Generalized Anxiety Disorder-7",
+      currentScore: 6.0,
+      maxScore: 21.0,
+      previousScore: 14.0,
+      severity: "Mild Anxiety",
+      completedAt: "2026-07-18",
+      trend: [
+        { date: "2026-04-15", score: 18 },
+        { date: "2026-05-15", score: 14 },
+        { date: "2026-06-15", score: 9 },
+        { date: "2026-07-18", score: 6 },
+      ]
+    },
+    {
+      id: 102,
+      type: "PHQ-9",
+      name: "Patient Health Questionnaire-9",
+      currentScore: 4.0,
+      maxScore: 27.0,
+      previousScore: 9.0,
+      severity: "Minimal Depression",
+      completedAt: "2026-07-18",
+      trend: [
+        { date: "2026-04-15", score: 14 },
+        { date: "2026-05-15", score: 10 },
+        { date: "2026-06-15", score: 7 },
+        { date: "2026-07-18", score: 4 },
+      ]
+    }
+  ];
+
+  const DEMO_HOMEWORK = [
+    {
+      id: 201,
+      activity: "CBT Thought Record Log",
+      instructions: "Complete daily thought record whenever stress level exceeds 5/10.",
+      frequency: "Daily",
+      dueDate: "2026-07-27",
+      status: "completed",
+      completionPercent: 90,
+      streak: 5,
+      clientReflection: "Recognized catastrophizing thoughts early and reframed effectively.",
+    },
+    {
+      id: 202,
+      activity: "Box Breathing & Grounding",
+      instructions: "Practice 5 minutes of 4-4-4-4 box breathing before work team meetings.",
+      frequency: "Daily",
+      dueDate: "2026-07-28",
+      status: "pending",
+      completionPercent: 80,
+      streak: 4,
+      clientReflection: "Helped reduce physical heart rate elevation prior to speaking.",
+    }
+  ];
+
+  const DEMO_HISTORY = [
+    {
+      id: 301,
+      date: "2026-07-20",
+      durationMinutes: 60,
+      sessionType: "CBT",
+      summary: "CBT Cognitive Restructuring - Session #12",
+      homeworkAssigned: "Daily Thought Record Log",
+      therapistNotes: "Client showed high engagement and successfully identified catastrophizing triggers.",
+    },
+    {
+      id: 302,
+      date: "2026-07-13",
+      durationMinutes: 60,
+      sessionType: "CBT",
+      summary: "CBT Exposure Hierarchy Construction - Session #11",
+      homeworkAssigned: "Box Breathing Protocol",
+      therapistNotes: "Constructed 10-step workplace exposure hierarchy. Client motivated to proceed.",
+    }
+  ];
+
+  const DEMO_MOOD = [
+    { date: "2026-07-17", mood: 6.0, note: "Slight anxiety regarding morning presentation." },
+    { date: "2026-07-18", mood: 6.5, note: "Practiced box breathing, felt steady." },
+    { date: "2026-07-19", mood: 7.0, note: "Weekend rest, enjoyable outdoor walk." },
+    { date: "2026-07-20", mood: 7.5, note: "Good sleep, positive session discussion." },
+    { date: "2026-07-21", mood: 7.0, note: "Productive workday." },
+    { date: "2026-07-22", mood: 8.0, note: "Completed thought record log with ease." },
+    { date: "2026-07-23", mood: 8.5, note: "Felt confident and calm all day." },
+  ];
+
+  const assessments = (Array.isArray(assessmentsData) && assessmentsData.length > 0) ? assessmentsData : DEMO_ASSESSMENTS;
+  const homework = (Array.isArray(homeworkData) && homeworkData.length > 0) ? homeworkData : DEMO_HOMEWORK;
+  const history = (Array.isArray(historyData) && historyData.length > 0) ? historyData : DEMO_HISTORY;
+  const moodTrend = (Array.isArray(moodData?.weeklyTrend) && moodData.weeklyTrend.length > 0) ? moodData.weeklyTrend : DEMO_MOOD;
 
   return (
     <div className="space-y-6 pb-10">
@@ -106,7 +205,7 @@ export default function ClientDetail() {
                     <div>
                       <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Therapy Goals</h4>
                       <div className="space-y-3">
-                        {client.therapyGoals.map((goal, i) => (
+                        {(Array.isArray(client.therapyGoals) ? client.therapyGoals : []).map((goal, i) => (
                           <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50">
                             <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                             <span className="text-sm font-medium">{goal}</span>
@@ -118,7 +217,7 @@ export default function ClientDetail() {
                       <div>
                         <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">Presenting Problems</h4>
                         <div className="flex flex-wrap gap-2">
-                          {client.presentingProblems.map((prob, i) => (
+                          {(Array.isArray(client.presentingProblems) ? client.presentingProblems : []).map((prob, i) => (
                             <Badge key={i} variant="secondary" className="bg-muted text-muted-foreground hover:bg-muted font-normal">{prob}</Badge>
                           ))}
                         </div>
@@ -193,14 +292,14 @@ export default function ClientDetail() {
                     <CardTitle className="text-lg text-primary">Next Session</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {client.nextSession ? (
+                    {(client as any).nextSession ? (
                       <div className="space-y-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
                             <Calendar className="w-5 h-5" />
                           </div>
                           <div>
-                            <p className="font-medium">{formatDate(client.nextSession)}</p>
+                            <p className="font-medium">{formatDate((client as any).nextSession)}</p>
                             <p className="text-sm text-muted-foreground">Follow-up · Video</p>
                           </div>
                         </div>
@@ -241,7 +340,7 @@ export default function ClientDetail() {
                   <CardContent>
                     <div className="h-[200px] w-full mt-4">
                       <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={assessment.trend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                        <LineChart data={Array.isArray(assessment?.trend) ? assessment.trend : []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                           <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} dy={10} tickFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short' })} />
                           <YAxis domain={[0, assessment.maxScore]} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
@@ -268,7 +367,7 @@ export default function ClientDetail() {
               <CardContent>
                 <div className="h-[300px] w-full mt-2">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={mood?.weeklyTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <AreaChart data={moodTrend || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorMood" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
@@ -290,7 +389,7 @@ export default function ClientDetail() {
             </Card>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {mood?.weeklyTrend.filter(t => t.note).map((entry, i) => (
+              {moodTrend.filter(t => t.note).map((entry, i) => (
                 <Card key={i} className="shadow-sm border-border bg-amber-50/50">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start mb-2">

@@ -25,11 +25,11 @@ export default function BlogOutline() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      proposedTitle: "",
-      keyPoints: "",
-      targetAudience: "",
-      keywords: "",
-      notes: "",
+      proposedTitle: "Integrating Mindfulness into Daily CBT Interventions",
+      keyPoints: "1. Introduction to Mindfulness-Based Cognitive Therapy (MBCT)\n2. 5-minute grounding exercises for acute panic\n3. Body scan techniques for physical stress tension\n4. Maintaining longitudinal patient adherence",
+      targetAudience: "Adult clients managing chronic anxiety and stress",
+      keywords: "mindfulness, MBCT, anxiety, grounding, coping",
+      notes: "Includes downloadable client tracking sheet outline.",
     },
   });
 

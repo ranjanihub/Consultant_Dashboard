@@ -57,12 +57,12 @@ export default function AddEventDialog({ open, onOpenChange, defaultDate }: Prop
 
   const [form, setForm] = useState({
     type:     "session",
-    client:   "",
+    client:   "Emma Martinez",
     date:     defaultDate ?? new Date().toISOString().slice(0, 10),
     start:    "10:00 AM",
     end:      "10:50 AM",
     duration: "50 min",
-    title:    "",
+    title:    "CBT Follow-up Session",
   });
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));

@@ -86,7 +86,7 @@ export default function Calendar() {
   const [addEventOpen, setAddEventOpen] = useState(false);
   const [confirmedSlot, setConfirmedSlot] = useState<string | null>(null);
 
-  const { data: events } = useGetCalendarEvents({ query: {} });
+  const { data: events } = useGetCalendarEvents();
 
   const sessionKey = `${year}-${month + 1}-${selectedDay}`;
   const daySessions = SESSION_DATA[sessionKey] ?? [];

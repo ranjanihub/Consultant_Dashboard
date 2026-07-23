@@ -12,6 +12,7 @@ import Calendar from '@/pages/calendar';
 import Outcomes from '@/pages/outcomes';
 import Revenue from '@/pages/revenue';
 import Reviews from '@/pages/reviews';
+import Resources from '@/pages/resources';
 import Blog from '@/pages/blog';
 import Profile from '@/pages/profile';
 import Settings from '@/pages/settings';
@@ -37,6 +38,7 @@ function Router() {
         <Route path="/outcomes" component={Outcomes} />
         <Route path="/revenue" component={Revenue} />
         <Route path="/reviews" component={Reviews} />
+        <Route path="/resources" component={Resources} />
         <Route path="/blog" component={Blog} />
         <Route path="/profile" component={Profile} />
         <Route path="/settings" component={Settings} />

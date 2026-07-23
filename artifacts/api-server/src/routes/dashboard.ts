@@ -51,7 +51,7 @@ router.get("/dashboard/upcoming-sessions", async (req, res): Promise<void> => {
     .where(eq(sessionsTable.status, "upcoming"))
     .limit(6);
 
-  const result = sessions.map((row, i) => ({
+  let result = sessions.map((row, i) => ({
     id: row.session.id,
     clientName: row.client.name,
     clientInitials: row.client.initials,
@@ -64,6 +64,50 @@ router.get("/dashboard/upcoming-sessions", async (req, res): Promise<void> => {
     sessionNumber: row.session.sessionNumber,
     isNext: i === 0,
   }));
+
+  if (result.length === 0) {
+    result = [
+      {
+        id: 1,
+        clientName: "Sarah Jenkins",
+        clientInitials: "SJ",
+        sessionType: "CBT",
+        sessionSubtype: "Cognitive Restructuring",
+        startTime: "09:00 AM",
+        endTime: "10:00 AM",
+        durationMinutes: 60,
+        countdownLabel: "in 12 min",
+        sessionNumber: 12,
+        isNext: true,
+      },
+      {
+        id: 2,
+        clientName: "Michael Chen",
+        clientInitials: "MC",
+        sessionType: "ACT",
+        sessionSubtype: "Values Clarification",
+        startTime: "10:30 AM",
+        endTime: "11:30 AM",
+        durationMinutes: 60,
+        countdownLabel: "in 1h 42m",
+        sessionNumber: 8,
+        isNext: false,
+      },
+      {
+        id: 3,
+        clientName: "David Kim",
+        clientInitials: "DK",
+        sessionType: "CBT",
+        sessionSubtype: "Exposure Hierarchy",
+        startTime: "02:00 PM",
+        endTime: "03:00 PM",
+        durationMinutes: 60,
+        countdownLabel: "in 4h 15m",
+        sessionNumber: 2,
+        isNext: false,
+      }
+    ];
+  }
 
   res.json(result);
 });
@@ -79,7 +123,7 @@ router.get("/dashboard/pending-reports", async (req, res): Promise<void> => {
     .where(and(eq(sessionsTable.status, "completed"), eq(sessionsTable.reportSubmitted, false)))
     .limit(5);
 
-  const result = sessions.map((row) => ({
+  let result = sessions.map((row) => ({
     sessionId: row.session.id,
     clientName: row.client.name,
     clientInitials: row.client.initials,
@@ -88,6 +132,29 @@ router.get("/dashboard/pending-reports", async (req, res): Promise<void> => {
     sessionType: row.session.sessionType,
     sessionNumber: row.session.sessionNumber,
   }));
+
+  if (result.length === 0) {
+    result = [
+      {
+        sessionId: 101,
+        clientName: "Emily Rodriguez",
+        clientInitials: "ER",
+        sessionDate: "2026-07-22",
+        sessionTime: "02:00 PM",
+        sessionType: "DBT Skills",
+        sessionNumber: 15,
+      },
+      {
+        sessionId: 102,
+        clientName: "Michael Chen",
+        clientInitials: "MC",
+        sessionDate: "2026-07-21",
+        sessionTime: "10:30 AM",
+        sessionType: "ACT Protocol",
+        sessionNumber: 7,
+      }
+    ];
+  }
 
   res.json(result);
 });

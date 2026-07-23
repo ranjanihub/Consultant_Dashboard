@@ -12,16 +12,94 @@ import { cn } from "@/lib/utils";
 import { SessionReportDialog } from "@/components/session-report-dialog";
 
 export default function Dashboard() {
-  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useGetDashboardStats();
-  const { data: sessions, isLoading: sessionsLoading } = useGetUpcomingSessions();
-  const { data: reports, isLoading: reportsLoading, refetch: refetchReports } = useGetPendingReports();
-  const { data: schedule, isLoading: scheduleLoading } = useGetWeeklySchedule();
-  const { data: improvement, isLoading: improvementLoading } = useGetClientImprovementSummary();
+  const { data: statsData, isLoading: statsLoading, refetch: refetchStats } = useGetDashboardStats();
+  const { data: sessionsData, isLoading: sessionsLoading } = useGetUpcomingSessions();
+  const { data: reportsData, isLoading: reportsLoading, refetch: refetchReports } = useGetPendingReports();
 
   const [reportSessionId, setReportSessionId] = useState<number | null>(null);
   const [reportClientName, setReportClientName] = useState<string>("");
 
-  const nextSession = sessions?.find(s => s.isNext) || sessions?.[0];
+  const stats = statsData || {
+    sessionsToday: 6,
+    sessionsRemaining: 2,
+    activeClients: 18,
+    newClientsThisWeek: 3,
+    pendingReports: 2,
+    homeworkToReview: 5,
+    homeworkDueToday: 5,
+    therapyHoursThisWeek: 28,
+    improvementAverage: 74.2,
+    totalClientsCount: 24,
+    therapistName: "Dr. Alex Harrison",
+    therapistTitle: "Licensed Clinical Psychologist",
+    isAvailable: true,
+    therapyHoursToday: "5h 45m",
+  };
+
+  const sessionList = (Array.isArray(sessionsData) && sessionsData.length > 0) ? sessionsData : [
+    {
+      id: 1,
+      clientName: "Sarah Jenkins",
+      clientInitials: "SJ",
+      sessionType: "CBT",
+      sessionSubtype: "Cognitive Restructuring",
+      startTime: "09:00 AM",
+      endTime: "10:00 AM",
+      durationMinutes: 60,
+      countdownLabel: "in 12 min",
+      sessionNumber: 12,
+      isNext: true,
+    },
+    {
+      id: 2,
+      clientName: "Michael Chen",
+      clientInitials: "MC",
+      sessionType: "ACT",
+      sessionSubtype: "Values Clarification",
+      startTime: "10:30 AM",
+      endTime: "11:30 AM",
+      durationMinutes: 60,
+      countdownLabel: "in 1h 42m",
+      sessionNumber: 8,
+      isNext: false,
+    },
+    {
+      id: 3,
+      clientName: "David Kim",
+      clientInitials: "DK",
+      sessionType: "CBT",
+      sessionSubtype: "Exposure Hierarchy",
+      startTime: "02:00 PM",
+      endTime: "03:00 PM",
+      durationMinutes: 60,
+      countdownLabel: "in 4h 15m",
+      sessionNumber: 2,
+      isNext: false,
+    }
+  ];
+
+  const reportList = (Array.isArray(reportsData) && reportsData.length > 0) ? reportsData : [
+    {
+      sessionId: 101,
+      clientName: "Emily Rodriguez",
+      clientInitials: "ER",
+      sessionDate: "2026-07-22",
+      sessionTime: "02:00 PM",
+      sessionType: "DBT Skills",
+      sessionNumber: 15,
+    },
+    {
+      sessionId: 102,
+      clientName: "Michael Chen",
+      clientInitials: "MC",
+      sessionDate: "2026-07-21",
+      sessionTime: "10:30 AM",
+      sessionType: "ACT Protocol",
+      sessionNumber: 7,
+    }
+  ];
+
+  const nextSession = sessionList.find((s) => s.isNext) || sessionList[0];
 
   return (
     <div className="space-y-6">
@@ -29,13 +107,13 @@ export default function Dashboard() {
       <div className="rounded-2xl bg-gradient-to-r from-primary to-[#4323a6] p-8 text-white shadow-lg overflow-hidden relative">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-black/10 rounded-full blur-3xl translate-y-1/2"></div>
-        
+
         <div className="relative z-10 flex flex-col lg:flex-row gap-8 justify-between items-start lg:items-center">
           <div className="space-y-6 flex-1">
             <div className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-sm font-medium backdrop-blur-sm border border-white/10">
               Tuesday, July 7 · Week 27
             </div>
-            
+
             <div className="space-y-2">
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
                 {statsLoading ? <Skeleton className="h-10 w-64 bg-white/20" /> : `Welcome back, ${stats?.therapistName || 'Dr. Sarah Wilson'}`}
@@ -67,7 +145,7 @@ export default function Dashboard() {
                   {nextSession.countdownLabel}
                 </Badge>
               </div>
-              
+
               <div className="flex items-center gap-4 mb-5">
                 <Avatar className="h-12 w-12 border-2 border-white/20">
                   <AvatarFallback className="bg-white/10 text-white">{nextSession.clientInitials}</AvatarFallback>
@@ -94,41 +172,41 @@ export default function Dashboard() {
 
       {/* Quick Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard 
-          title="Sessions today" 
-          value={stats?.sessionsToday} 
-          description={`${stats?.sessionsRemaining} remaining`} 
-          icon={<Video className="w-5 h-5 text-blue-500" />} 
-          trend="+2" 
-          trendPositive={true} 
-          loading={statsLoading} 
+        <StatCard
+          title="Sessions today"
+          value={stats?.sessionsToday}
+          description={`${stats?.sessionsRemaining} remaining`}
+          icon={<Video className="w-5 h-5 text-blue-500" />}
+          trend="+2"
+          trendPositive={true}
+          loading={statsLoading}
         />
-        <StatCard 
-          title="Active clients" 
-          value={stats?.activeClients} 
-          description={`${stats?.newClientsThisWeek} new this week`} 
-          icon={<Users className="w-5 h-5 text-indigo-500" />} 
-          trend="+3" 
-          trendPositive={true} 
-          loading={statsLoading} 
+        <StatCard
+          title="Active clients"
+          value={stats?.activeClients}
+          description={`${stats?.newClientsThisWeek} new this week`}
+          icon={<Users className="w-5 h-5 text-indigo-500" />}
+          trend="+3"
+          trendPositive={true}
+          loading={statsLoading}
         />
-        <StatCard 
-          title="Pending reports" 
-          value={stats?.pendingReports} 
-          description="Payment gated" 
-          icon={<FileText className="w-5 h-5 text-orange-500" />} 
-          trend="-1" 
-          trendPositive={true} 
-          loading={statsLoading} 
+        <StatCard
+          title="Pending reports"
+          value={stats?.pendingReports}
+          description="Payment gated"
+          icon={<FileText className="w-5 h-5 text-orange-500" />}
+          trend="-1"
+          trendPositive={true}
+          loading={statsLoading}
         />
-        <StatCard 
-          title="Therapy hours" 
-          value={`${stats?.therapyHoursThisWeek}h`} 
-          description="This week" 
-          icon={<Clock className="w-5 h-5 text-emerald-500" />} 
-          trend="+6h" 
-          trendPositive={true} 
-          loading={statsLoading} 
+        <StatCard
+          title="Therapy hours"
+          value={`${stats?.therapyHoursThisWeek}h`}
+          description="This week"
+          icon={<Clock className="w-5 h-5 text-emerald-500" />}
+          trend="+6h"
+          trendPositive={true}
+          loading={statsLoading}
         />
       </div>
 
@@ -139,7 +217,7 @@ export default function Dashboard() {
             <div>
               <CardTitle className="text-xl">Today's schedule</CardTitle>
               <CardDescription>
-                {stats?.sessionsToday || 0} sessions · {stats?.therapyHoursToday || '0h'} of clinical time
+                {stats?.sessionsToday || 0} sessions
               </CardDescription>
             </div>
             <Tabs defaultValue="today" className="w-[200px]">
@@ -157,7 +235,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="space-y-4">
-                {sessions?.map((session) => (
+                {sessionList.map((session) => (
                   <div key={session.id} className="flex items-center justify-between p-4 rounded-xl border border-border hover:border-border/80 hover:bg-secondary/30 transition-colors group">
                     <div className="flex items-center gap-4">
                       <Avatar className="h-10 w-10 border border-border">
@@ -190,7 +268,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 ))}
-                {!sessions?.length && (
+                {!sessionList.length && (
                   <div className="text-center py-8 text-muted-foreground">No sessions scheduled for today.</div>
                 )}
               </div>
@@ -213,7 +291,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="space-y-4 flex-1">
-                {reports?.map((report) => (
+                {reportList.map((report) => (
                   <div key={report.sessionId} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 border border-transparent hover:border-border transition-colors">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
@@ -224,9 +302,9 @@ export default function Dashboard() {
                         <span className="text-xs text-muted-foreground">{report.sessionType} · {report.sessionDate}</span>
                       </div>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       className="text-primary hover:text-primary hover:bg-primary/10 h-8 px-3 rounded-lg"
                       onClick={() => {
                         setReportSessionId(report.sessionId);
@@ -237,12 +315,12 @@ export default function Dashboard() {
                     </Button>
                   </div>
                 ))}
-                {!reports?.length && (
+                {!reportList.length && (
                   <div className="text-center py-8 text-muted-foreground text-sm">All caught up!</div>
                 )}
               </div>
             )}
-            
+
             <div className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2 text-amber-800">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
               <p className="text-xs font-medium leading-relaxed">Payment becomes eligible only after report submission.</p>
@@ -252,8 +330,8 @@ export default function Dashboard() {
       </div>
 
 
-      <SessionReportDialog 
-        open={reportSessionId !== null} 
+      <SessionReportDialog
+        open={reportSessionId !== null}
         onOpenChange={(open) => !open && setReportSessionId(null)}
         sessionId={reportSessionId}
         clientName={reportClientName}
@@ -266,19 +344,19 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ 
-  title, 
-  value, 
-  description, 
-  icon, 
-  trend, 
+function StatCard({
+  title,
+  value,
+  description,
+  icon,
+  trend,
   trendPositive,
-  loading 
-}: { 
-  title: string; 
-  value: React.ReactNode; 
-  description: string; 
-  icon: React.ReactNode; 
+  loading
+}: {
+  title: string;
+  value: React.ReactNode;
+  description: string;
+  icon: React.ReactNode;
   trend: string;
   trendPositive: boolean;
   loading?: boolean;

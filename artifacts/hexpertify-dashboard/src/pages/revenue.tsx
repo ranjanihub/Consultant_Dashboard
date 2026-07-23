@@ -14,9 +14,10 @@ import { cn } from "@/lib/utils";
 export default function Revenue() {
   const [period, setPeriod] = useState("month");
   
-  const { data: summary, isLoading: summaryLoading } = useGetRevenueSummary({ query: { period: period as any } });
-  const { data: analytics, isLoading: analyticsLoading } = useGetRevenueAnalytics({ query: { period: period as any } });
-  const { data: transactions, isLoading: transactionsLoading } = useGetTransactions();
+  const { data: summary, isLoading: summaryLoading } = useGetRevenueSummary({ period: period as any });
+  const { data: analytics, isLoading: analyticsLoading } = useGetRevenueAnalytics({ period: period as any });
+  const { data: transactionsData, isLoading: transactionsLoading } = useGetTransactions();
+  const transactions = Array.isArray(transactionsData) ? transactionsData : [];
 
   return (
     <div className="space-y-6 pb-10">
@@ -109,7 +110,7 @@ export default function Revenue() {
               <Skeleton className="h-full w-full" />
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={analytics} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={Array.isArray(analytics) ? analytics : []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#532bce" stopOpacity={0.3}/>
@@ -150,7 +151,7 @@ export default function Revenue() {
               {transactionsLoading ? (
                 <TableRow><TableCell colSpan={5} className="h-24 text-center"><Skeleton className="h-6 w-32 mx-auto" /></TableCell></TableRow>
               ) : (
-                transactions?.map((tx) => (
+                (Array.isArray(transactions) ? transactions : []).map((tx) => (
                   <TableRow key={tx.id}>
                     <TableCell className="pl-6 font-medium font-mono text-xs">{tx.invoiceNumber}</TableCell>
                     <TableCell className="text-muted-foreground">{formatDate(tx.date)}</TableCell>
@@ -165,7 +166,7 @@ export default function Revenue() {
                         {tx.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right pr-6 font-bold">${tx.amount.toFixed(2)}</TableCell>
+                    <TableCell className="text-right pr-6 font-bold">${(tx.amount || 0).toFixed(2)}</TableCell>
                   </TableRow>
                 ))
               )}

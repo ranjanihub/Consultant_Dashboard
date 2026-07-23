@@ -7,6 +7,7 @@ import {
   LineChart,
   DollarSign,
   Star,
+  FolderOpen,
   PenTool,
   FileText,
   User,
@@ -30,6 +31,7 @@ const SIDEBAR_ITEMS = [
       { name: "Outcomes", href: "/outcomes", icon: LineChart },
       { name: "Revenue", href: "/revenue", icon: DollarSign },
       { name: "Reviews", href: "/reviews", icon: Star },
+      { name: "Resources", href: "/resources", icon: FolderOpen },
     ],
   },
   {
@@ -115,12 +117,7 @@ export function Sidebar() {
             </div>
           </div>
           
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-medium text-muted-foreground">Available / Accepting</span>
-            <div className="w-8 h-4 bg-primary rounded-full relative cursor-pointer">
-              <div className="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div>
-            </div>
-          </div>
+
 
           <button className="flex items-center gap-3 px-3 py-2 w-full text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors">
             <LogOut className="w-4 h-4" />

@@ -6,17 +6,40 @@ const router: IRouter = Router();
 
 router.get("/blog/posts", async (_req, res): Promise<void> => {
   const posts = await db.select().from(blogPostsTable);
-  res.json(
-    posts.map((p) => ({
-      id: p.id,
-      title: p.title,
-      category: p.category,
-      tags: p.tags,
-      content: p.content,
-      status: p.status,
-      createdAt: p.createdAt.toISOString(),
-    }))
-  );
+  let result = posts.map((p) => ({
+    id: p.id,
+    title: p.title,
+    category: p.category,
+    tags: p.tags,
+    content: p.content,
+    status: p.status,
+    createdAt: p.createdAt.toISOString(),
+  }));
+
+  if (result.length === 0) {
+    result = [
+      {
+        id: 1,
+        title: "5 Proven CBT Techniques to Overcome Workplace Burnout",
+        category: "CBT Insights",
+        tags: ["Burnout", "CBT", "Stress Management"],
+        content: "Workplace burnout is a state of emotional, physical, and mental exhaustion caused by excessive stress...",
+        status: "published",
+        createdAt: "2026-07-20T10:00:00.000Z",
+      },
+      {
+        id: 2,
+        title: "Understanding Mindfulness in Modern Psychotherapy",
+        category: "Mindfulness",
+        tags: ["Mindfulness", "ACT", "Self-Care"],
+        content: "Mindfulness has transitioned from ancient traditions into a core pillar of modern clinical psychology...",
+        status: "published",
+        createdAt: "2026-07-15T14:30:00.000Z",
+      }
+    ];
+  }
+
+  res.json(result);
 });
 
 router.post("/blog/posts", async (req, res): Promise<void> => {
@@ -45,18 +68,33 @@ router.post("/blog/posts", async (req, res): Promise<void> => {
 
 router.get("/blog/outlines", async (_req, res): Promise<void> => {
   const outlines = await db.select().from(blogOutlinesTable);
-  res.json(
-    outlines.map((o) => ({
-      id: o.id,
-      proposedTitle: o.proposedTitle,
-      keyPoints: o.keyPoints,
-      targetAudience: o.targetAudience,
-      keywords: o.keywords,
-      notes: o.notes,
-      status: o.status,
-      createdAt: o.createdAt.toISOString(),
-    }))
-  );
+  let result = outlines.map((o) => ({
+    id: o.id,
+    proposedTitle: o.proposedTitle,
+    keyPoints: o.keyPoints,
+    targetAudience: o.targetAudience,
+    keywords: o.keywords,
+    notes: o.notes,
+    status: o.status,
+    createdAt: o.createdAt.toISOString(),
+  }));
+
+  if (result.length === 0) {
+    result = [
+      {
+        id: 1,
+        proposedTitle: "Navigating Life Transitions with Acceptance & Commitment Therapy (ACT)",
+        keyPoints: ["Defining ACT", "Values clarification", "Defusion techniques"],
+        targetAudience: "Adults dealing with major career or life changes",
+        keywords: ["ACT", "Life Transitions", "Values"],
+        notes: "Approved outline ready for draft.",
+        status: "approved",
+        createdAt: "2026-07-18T11:00:00.000Z",
+      }
+    ];
+  }
+
+  res.json(result);
 });
 
 router.post("/blog/outlines", async (req, res): Promise<void> => {

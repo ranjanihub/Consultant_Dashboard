@@ -26,11 +26,11 @@ export default function BlogSubmit() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      category: "",
-      tags: "",
-      content: "",
-      featuredImage: "",
+      title: "Navigating Trauma-Informed Care: Best Practices for Therapists",
+      category: "Therapy_Guide",
+      tags: "trauma, clinical-guide, patient-care, EMDR",
+      content: "Trauma-informed care shifts the clinical focus from 'What is wrong with you?' to 'What happened to you?' This approach incorporates key principles of safety, trustworthiness, choice, collaboration, and empowerment.\n\n### Core Principles\n1. **Physical & Psychological Safety**: Creating a non-judgmental, calming environment.\n2. **Trustworthiness & Transparency**: Building clear expectations for each session.\n3. **Empowerment**: Supporting autonomous decision-making for treatment goals.",
+      featuredImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop",
     },
   });
 
@@ -58,7 +58,7 @@ export default function BlogSubmit() {
     <div className="space-y-6 pb-10 max-w-4xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Submit Blog Post</h1>
-        <p className="text-muted-foreground mt-1">Publish an article to the Hexpertify patient portal.</p>
+        <p className="text-muted-foreground mt-1">Publish an article to the Hexpertify client portal.</p>
       </div>
 
       <Card className="shadow-sm border-border">
