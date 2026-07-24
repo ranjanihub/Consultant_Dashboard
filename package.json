@@ -2,6 +2,7 @@
   "name": "workspace",
   "version": "0.0.0",
   "license": "MIT",
+  "packageManager": "pnpm@10.2.0",
   "scripts": {
     "dev": "pnpm --filter @workspace/hexpertify-dashboard dev",
     "dev:dashboard": "pnpm --filter @workspace/hexpertify-dashboard dev",
