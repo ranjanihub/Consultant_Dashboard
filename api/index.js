@@ -42028,7 +42028,7 @@ app.use((err, _req, res, _next) => {
 });
 var app_default = app;
 
-// ../../api/index.ts
+// api/index.ts
 function handler(req, res) {
   return app_default(req, res);
 }

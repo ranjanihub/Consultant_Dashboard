@@ -121,7 +121,7 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
 
   // Bundle Vercel Serverless Function entrypoint at root
   await esbuild({
-    entryPoints: [path.resolve(artifactDir, "../../api/index.ts")],
+    entryPoints: [path.resolve(artifactDir, "api/index.ts")],
     platform: "node",
     bundle: true,
     format: "esm",
