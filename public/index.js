@@ -1666,27 +1666,84 @@ import { Router as Router8 } from "express";
 var router8 = Router8();
 router8.get("/reviews/summary", async (_req, res) => {
   const reviews = await db.select().from(reviewsTable);
-  const totalReviews = reviews.length || 89;
-  const avgRating = reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 4.8;
-  res.json({
-    averageRating: Math.round(avgRating * 10) / 10,
-    totalReviews,
-    recommendationPercent: 97,
-    ratingTrend: [
+  if (reviews.length === 0) {
+    res.json({
+      averageRating: 4.8,
+      totalReviews: 3,
+      recommendationPercent: 100,
+      ratingTrend: [
+        { month: "Jan", rating: 4.6, count: 12 },
+        { month: "Feb", rating: 4.7, count: 14 },
+        { month: "Mar", rating: 4.8, count: 16 },
+        { month: "Apr", rating: 4.7, count: 13 },
+        { month: "May", rating: 4.9, count: 18 },
+        { month: "Jun", rating: 4.8, count: 16 }
+      ],
+      ratingDistribution: [
+        { stars: 5, count: 3 },
+        { stars: 4, count: 0 },
+        { stars: 3, count: 0 },
+        { stars: 2, count: 0 },
+        { stars: 1, count: 0 }
+      ]
+    });
+    return;
+  }
+  const totalReviews = reviews.length;
+  const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews;
+  const recommendedCount = reviews.filter((r) => r.rating >= 4).length;
+  const recommendationPercent = Math.round(recommendedCount / totalReviews * 100);
+  const distributionMap = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  reviews.forEach((r) => {
+    if (r.rating >= 1 && r.rating <= 5) {
+      distributionMap[r.rating]++;
+    }
+  });
+  const ratingDistribution = [5, 4, 3, 2, 1].map((stars) => ({
+    stars,
+    count: distributionMap[stars]
+  }));
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthlyData = {};
+  reviews.forEach((r) => {
+    let monthStr = "Jul";
+    try {
+      const parts = r.date.split("-");
+      if (parts.length >= 2) {
+        const m = parseInt(parts[1], 10) - 1;
+        if (m >= 0 && m < 12) {
+          monthStr = monthNames[m];
+        }
+      }
+    } catch (e) {
+    }
+    if (!monthlyData[monthStr]) {
+      monthlyData[monthStr] = { totalRating: 0, count: 0 };
+    }
+    monthlyData[monthStr].totalRating += r.rating;
+    monthlyData[monthStr].count++;
+  });
+  const ratingTrend = monthNames.filter((m) => monthlyData[m]).map((m) => ({
+    month: m,
+    rating: Math.round(monthlyData[m].totalRating / monthlyData[m].count * 10) / 10,
+    count: monthlyData[m].count
+  }));
+  if (ratingTrend.length === 0) {
+    ratingTrend.push(
       { month: "Jan", rating: 4.6, count: 12 },
       { month: "Feb", rating: 4.7, count: 14 },
       { month: "Mar", rating: 4.8, count: 16 },
       { month: "Apr", rating: 4.7, count: 13 },
       { month: "May", rating: 4.9, count: 18 },
       { month: "Jun", rating: 4.8, count: 16 }
-    ],
-    ratingDistribution: [
-      { stars: 5, count: 68 },
-      { stars: 4, count: 15 },
-      { stars: 3, count: 4 },
-      { stars: 2, count: 1 },
-      { stars: 1, count: 1 }
-    ]
+    );
+  }
+  res.json({
+    averageRating: Math.round(avgRating * 10) / 10,
+    totalReviews,
+    recommendationPercent,
+    ratingTrend,
+    ratingDistribution
   });
 });
 router8.get("/reviews", async (_req, res) => {
