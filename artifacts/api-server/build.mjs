@@ -342,7 +342,7 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     },
   });
 
-  const publicDir = path.resolve(artifactDir, "../hexpertify-dashboard/dist/public");
+  const publicDir = path.resolve(artifactDir, "../../public");
   try {
     await cp(path.resolve(artifactDir, "../../api"), path.resolve(publicDir, "api"), { recursive: true });
     await cp(path.resolve(artifactDir, "../../index.js"), path.resolve(publicDir, "index.js"));
@@ -350,9 +350,9 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     await cp(path.resolve(artifactDir, "../../pino-file.js"), path.resolve(publicDir, "pino-file.js"));
     await cp(path.resolve(artifactDir, "../../pino-pretty.js"), path.resolve(publicDir, "pino-pretty.js"));
     await cp(path.resolve(artifactDir, "../../thread-stream-worker.js"), path.resolve(publicDir, "thread-stream-worker.js"));
-    console.log("Copied serverless functions to hexpertify-dashboard output directory.");
+    console.log("Copied serverless functions to root public directory.");
   } catch (e) {
-    console.warn("Could not copy files to hexpertify-dashboard:", e.message);
+    console.warn("Could not copy files to root public directory:", e.message);
   }
 }
 
