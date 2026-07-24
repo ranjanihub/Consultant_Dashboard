@@ -14,7 +14,8 @@
   "private": true,
   "dependencies": {
     "@replit/connectors-sdk": "^0.4.1",
-    "dotenv": "^17.4.2"
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
   },
   "devDependencies": {
     "@parcel/watcher": "^2.6.0",
