@@ -8,7 +8,7 @@
     "dev": "pnpm --filter @workspace/hexpertify-dashboard dev",
     "dev:dashboard": "pnpm --filter @workspace/hexpertify-dashboard dev",
     "dev:api": "pnpm --filter @workspace/api-server dev",
-    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "build": "pnpm run typecheck && pnpm --filter @workspace/hexpertify-dashboard build && pnpm --filter @workspace/api-server build",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },
