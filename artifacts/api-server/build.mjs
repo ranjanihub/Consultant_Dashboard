@@ -28,6 +28,11 @@ async function buildAll() {
     // - uses native modules and loads them dynamically (e.g. sharp)
     // - use path traversal to read files (e.g. @google-cloud/secret-manager loads sibling .proto files)
     external: [
+      "express",
+      "cors",
+      "cookie-parser",
+      "pino-http",
+      "pino",
       "*.node",
       "sharp",
       "better-sqlite3",
@@ -128,6 +133,11 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     outdir: path.resolve(artifactDir, "../../api"),
     logLevel: "info",
     external: [
+      "express",
+      "cors",
+      "cookie-parser",
+      "pino-http",
+      "pino",
       "*.node",
       "sharp",
       "better-sqlite3",
@@ -226,6 +236,11 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     outdir: path.resolve(artifactDir, "../../"),
     logLevel: "info",
     external: [
+      "express",
+      "cors",
+      "cookie-parser",
+      "pino-http",
+      "pino",
       "*.node",
       "sharp",
       "better-sqlite3",
