@@ -93,6 +93,12 @@ importers:
       '@tailwindcss/oxide-win32-x64-msvc':
         specifier: 4.3.2
         version: 4.3.2
+      '@types/express':
+        specifier: ^5.0.6
+        version: 5.0.6
+      '@types/node':
+        specifier: ^25.3.3
+        version: 25.9.4
       lightningcss:
         specifier: ^1.33.0
         version: 1.33.0

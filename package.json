@@ -21,6 +21,8 @@
     "@parcel/watcher": "^2.6.0",
     "@rollup/rollup-win32-x64-msvc": "^4.62.2",
     "@tailwindcss/oxide-win32-x64-msvc": "4.3.2",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.3.3",
     "lightningcss": "^1.33.0",
     "lightningcss-win32-x64-msvc": "^1.33.0",
     "prettier": "^3.9.4",
