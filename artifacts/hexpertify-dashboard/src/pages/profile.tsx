@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
   ShieldCheck, Mail, Save, Camera, MapPin,
-  Briefcase, Users, DollarSign, Star, Globe, Award,
+  Briefcase, Users, IndianRupee, Star, Globe, Award,
 } from "lucide-react";
 import { useEffect } from "react";
 
@@ -98,21 +98,12 @@ export default function Profile() {
       <Card className="overflow-hidden shadow-sm border-border">
         {/* gradient header */}
         <div className="h-40 bg-gradient-to-br from-primary via-violet-600 to-indigo-500 relative">
-          {/* subtle pattern */}
-          <svg className="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-                <circle cx="4" cy="4" r="1.5" fill="white" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#dots)" />
-          </svg>
         </div>
 
         <CardContent className="px-8 pb-0">
           {/* avatar row */}
-          <div className="flex flex-col sm:flex-row sm:items-end gap-5 -mt-14 mb-6">
-            <div className="relative shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-5 mb-6">
+            <div className="relative shrink-0 -mt-14">
               <Avatar className="w-28 h-28 border-4 border-white shadow-lg bg-white">
                 {profile?.photoUrl
                   ? <AvatarImage src={profile.photoUrl} alt={profile.name} />
@@ -151,7 +142,7 @@ export default function Profile() {
           <div className="flex items-stretch border-t border-border divide-x divide-border -mx-8">
             <StatPill icon={Briefcase} value={`${profile?.experience ?? 12}y`}  label="Experience" />
             <StatPill icon={Users}     value="24"                                 label="Active Clients" />
-            <StatPill icon={DollarSign} value={`$${profile?.consultationFee ?? 150}`} label="Per Session" />
+            <StatPill icon={IndianRupee} value={`₹${profile?.consultationFee ?? 150}`} label="Per Session" />
             <StatPill icon={Star}      value="4.9"                                label="Rating" />
             <StatPill icon={Globe}     value={(Array.isArray(profile?.languages) ? profile.languages : ["English"]).length.toString()} label="Languages" />
           </div>
@@ -271,10 +262,10 @@ export default function Profile() {
 
                     <FormField control={form.control} name="consultationFee" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Session Fee (USD)</FormLabel>
+                        <FormLabel>Session Fee (INR)</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
                             <Input type="number" {...field} className="pl-7" />
                           </div>
                         </FormControl>

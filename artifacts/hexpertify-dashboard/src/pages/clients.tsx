@@ -151,7 +151,6 @@ export default function Clients() {
               <TableRow className="hover:bg-transparent">
                 <TableHead className="w-[300px] pl-6">Client Name</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Primary Goal</TableHead>
                 <TableHead>Next Session</TableHead>
                 <TableHead className="text-right pr-6"></TableHead>
               </TableRow>
@@ -162,14 +161,18 @@ export default function Clients() {
                   <TableRow key={i}>
                     <TableCell className="pl-6"><Skeleton className="h-10 w-48" /></TableCell>
                     <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell></TableCell>
+                    <TableCell className="text-right pr-6">
+                      <div className="flex items-center justify-end gap-2">
+                        <Skeleton className="h-8 w-24" />
+                        <Skeleton className="h-8 w-8" />
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))
               ) : clientList.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                  <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
                     No clients found matching your search.
                   </TableCell>
                 </TableRow>
@@ -190,9 +193,6 @@ export default function Clients() {
                     <TableCell>
                       {getStatusBadge(client.status)}
                     </TableCell>
-                    <TableCell className="text-sm max-w-[200px] truncate" title={client.primaryGoal}>
-                      {client.primaryGoal}
-                    </TableCell>
                     <TableCell>
                       <div className="flex items-center text-sm">
                         <Calendar className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
@@ -200,24 +200,29 @@ export default function Clients() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right pr-6">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/clients/${client.id}`}>View Workspace</Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>Schedule Session</DropdownMenuItem>
-                          <DropdownMenuItem>Assign Homework</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive focus:bg-destructive/10">Archive Client</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="outline" size="sm" asChild className="h-8 text-xs">
+                          <Link href={`/clients/${client.id}`}>View Client</Link>
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem asChild>
+                              <Link href={`/clients/${client.id}`}>View Workspace</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>Schedule Session</DropdownMenuItem>
+                            <DropdownMenuItem>Assign Homework</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive focus:bg-destructive/10">Archive Client</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
