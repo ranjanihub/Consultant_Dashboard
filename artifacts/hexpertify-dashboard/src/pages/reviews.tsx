@@ -200,16 +200,6 @@ export default function Reviews() {
                     </div>
 
                     <p className="text-slate-700 leading-relaxed text-sm pl-13">{review.reviewText}</p>
-
-                    {review.therapistReply && (
-                      <div className="ml-13 mt-3 p-3.5 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-600 space-y-1">
-                        <div className="flex items-center gap-1.5 font-semibold text-slate-900">
-                          <MessageSquare className="w-3.5 h-3.5 text-primary" />
-                          Therapist Response:
-                        </div>
-                        <p className="text-slate-600 leading-normal">{review.therapistReply}</p>
-                      </div>
-                    )}
                   </div>
                 );
               })
