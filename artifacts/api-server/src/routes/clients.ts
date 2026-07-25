@@ -157,15 +157,10 @@ router.get("/clients", async (req, res): Promise<void> => {
 router.get("/clients/:id", async (req, res): Promise<void> => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10) || 1;
+  const fallback = HARDCODED_CLIENTS_MAP[id] || HARDCODED_CLIENTS_MAP[1];
 
   try {
     const [client] = await db.select().from(clientsTable).where(eq(clientsTable.id, id));
-
-    if (!client) {
-      const fallback = HARDCODED_CLIENTS_MAP[id] || HARDCODED_CLIENTS_MAP[1];
-      res.json(fallback);
-      return;
-    }
 
     const sessions = await db
       .select()
@@ -173,12 +168,12 @@ router.get("/clients/:id", async (req, res): Promise<void> => {
       .where(eq(sessionsTable.clientId, id));
 
     res.json({
-      ...client,
-      sessionCount: sessions.length || 12,
+      ...fallback,
+      ...(client || {}),
+      sessionCount: (sessions && sessions.length > 0) ? sessions.length : fallback.sessionCount,
     });
   } catch (err) {
     console.error(`Error fetching client ${id}, returning fallback:`, err);
-    const fallback = HARDCODED_CLIENTS_MAP[id] || HARDCODED_CLIENTS_MAP[1];
     res.json(fallback);
   }
 });

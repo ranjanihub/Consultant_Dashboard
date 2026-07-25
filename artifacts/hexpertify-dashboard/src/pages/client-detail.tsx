@@ -135,7 +135,26 @@ export default function ClientDetail() {
     },
   };
 
-  const client = clientData || DEMO_CLIENTS_MAP[clientId] || DEMO_CLIENTS_MAP[1];
+  const rawFallback = DEMO_CLIENTS_MAP[clientId] || DEMO_CLIENTS_MAP[1];
+
+  const client = {
+    ...rawFallback,
+    ...(clientData || {}),
+    name: clientData?.name || rawFallback.name,
+    initials: (clientData as any)?.initials || rawFallback.initials,
+    age: (clientData as any)?.age || rawFallback.age,
+    gender: (clientData as any)?.gender || rawFallback.gender,
+    status: clientData?.status || rawFallback.status,
+    primaryGoal: clientData?.primaryGoal || rawFallback.primaryGoal,
+    presentingProblems: (Array.isArray((clientData as any)?.presentingProblems) && (clientData as any).presentingProblems.length > 0) ? (clientData as any).presentingProblems : rawFallback.presentingProblems,
+    therapyGoals: (Array.isArray((clientData as any)?.therapyGoals) && (clientData as any).therapyGoals.length > 0) ? (clientData as any).therapyGoals : rawFallback.therapyGoals,
+    preferredLanguage: (clientData as any)?.preferredLanguage || rawFallback.preferredLanguage,
+    communicationPreference: (clientData as any)?.communicationPreference || rawFallback.communicationPreference,
+    therapyTimeline: (clientData as any)?.therapyTimeline || rawFallback.therapyTimeline,
+    startDate: (clientData as any)?.startDate || rawFallback.startDate,
+    sessionCount: clientData?.sessionCount ?? rawFallback.sessionCount,
+    progressPercent: (clientData as any)?.progressPercent ?? rawFallback.progressPercent,
+  };
 
   const DEMO_ASSESSMENTS = [
     {
