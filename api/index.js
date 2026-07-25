@@ -1610,61 +1610,91 @@ var outcomes_default = router6;
 // src/routes/revenue.ts
 import { Router as Router7 } from "express";
 var router7 = Router7();
+var HARDCODED_SUMMARY = {
+  totalRevenue: 14850,
+  pendingPayments: 2400,
+  completedConsultations: 48,
+  therapyHours: 96,
+  revenueChange: 18.2,
+  period: "month"
+};
+var HARDCODED_ANALYTICS = [
+  { label: "Feb", revenue: 9100, consultations: 31, hours: 62, avgPerConsultation: 294 },
+  { label: "Mar", revenue: 10500, consultations: 36, hours: 72, avgPerConsultation: 292 },
+  { label: "Apr", revenue: 9800, consultations: 33, hours: 66, avgPerConsultation: 297 },
+  { label: "May", revenue: 11200, consultations: 38, hours: 76, avgPerConsultation: 295 },
+  { label: "Jun", revenue: 12450, consultations: 42, hours: 84, avgPerConsultation: 296 },
+  { label: "Jul", revenue: 14850, consultations: 48, hours: 96, avgPerConsultation: 309 }
+];
+var HARDCODED_TRANSACTIONS = [
+  { id: 1, date: "2026-07-25", clientName: "Sarah Jenkins", amount: 160, status: "paid", invoiceNumber: "INV-2026-0895" },
+  { id: 2, date: "2026-07-24", clientName: "Michael Chen", amount: 160, status: "paid", invoiceNumber: "INV-2026-0894" },
+  { id: 3, date: "2026-07-23", clientName: "Emily Rodriguez", amount: 160, status: "paid", invoiceNumber: "INV-2026-0893" },
+  { id: 4, date: "2026-07-22", clientName: "David Kim", amount: 160, status: "pending", invoiceNumber: "INV-2026-0892" },
+  { id: 5, date: "2026-07-20", clientName: "Jessica Taylor", amount: 160, status: "paid", invoiceNumber: "INV-2026-0891" },
+  { id: 6, date: "2026-07-18", clientName: "Amanda Miller", amount: 160, status: "pending", invoiceNumber: "INV-2026-0890" },
+  { id: 7, date: "2026-07-15", clientName: "Robert Johnson", amount: 160, status: "paid", invoiceNumber: "INV-2026-0889" }
+];
 router7.get("/revenue/summary", async (req, res) => {
   const { period } = req.query;
-  const transactions = await db.select().from(transactionsTable);
-  const paid = transactions.filter((t) => t.status === "paid");
-  const pending = transactions.filter((t) => t.status === "pending");
-  const totalRevenue = paid.reduce((sum, t) => sum + t.amount, 0);
-  const pendingPayments = pending.reduce((sum, t) => sum + t.amount, 0);
-  res.json({
-    totalRevenue: totalRevenue || 12450,
-    pendingPayments: pendingPayments || 1800,
-    completedConsultations: paid.length || 42,
-    therapyHours: 84,
-    revenueChange: 18.2,
-    period: period ?? "month"
-  });
+  try {
+    const transactions = await db.select().from(transactionsTable);
+    if (!transactions || transactions.length === 0) {
+      res.json({ ...HARDCODED_SUMMARY, period: period ?? "month" });
+      return;
+    }
+    const paid = transactions.filter((t) => t.status === "paid");
+    const pending = transactions.filter((t) => t.status === "pending");
+    const totalRevenue = paid.reduce((sum, t) => sum + t.amount, 0);
+    const pendingPayments = pending.reduce((sum, t) => sum + t.amount, 0);
+    res.json({
+      totalRevenue: totalRevenue || HARDCODED_SUMMARY.totalRevenue,
+      pendingPayments: pendingPayments || HARDCODED_SUMMARY.pendingPayments,
+      completedConsultations: paid.length || HARDCODED_SUMMARY.completedConsultations,
+      therapyHours: HARDCODED_SUMMARY.therapyHours,
+      revenueChange: HARDCODED_SUMMARY.revenueChange,
+      period: period ?? "month"
+    });
+  } catch (err) {
+    console.error("Error fetching revenue summary, returning hardcoded fallback:", err);
+    res.json({ ...HARDCODED_SUMMARY, period: period ?? "month" });
+  }
 });
-router7.get("/revenue/analytics", async (req, res) => {
-  const { period } = req.query;
-  const data = [
-    { label: "Jan", revenue: 8200, consultations: 28, hours: 56, avgPerConsultation: 293 },
-    { label: "Feb", revenue: 9100, consultations: 31, hours: 62, avgPerConsultation: 294 },
-    { label: "Mar", revenue: 10500, consultations: 36, hours: 72, avgPerConsultation: 292 },
-    { label: "Apr", revenue: 9800, consultations: 33, hours: 66, avgPerConsultation: 297 },
-    { label: "May", revenue: 11200, consultations: 38, hours: 76, avgPerConsultation: 295 },
-    { label: "Jun", revenue: 12450, consultations: 42, hours: 84, avgPerConsultation: 296 }
-  ];
-  res.json(data);
+router7.get("/revenue/analytics", async (_req, res) => {
+  try {
+    res.json(HARDCODED_ANALYTICS);
+  } catch (err) {
+    console.error("Error fetching revenue analytics, returning hardcoded fallback:", err);
+    res.json(HARDCODED_ANALYTICS);
+  }
 });
 router7.get("/revenue/transactions", async (_req, res) => {
-  const transactions = await db.select().from(transactionsTable);
-  let result = transactions.map((t) => ({
-    id: t.id,
-    date: t.date,
-    clientName: t.clientName,
-    amount: t.amount,
-    status: t.status,
-    invoiceNumber: t.invoiceNumber
-  }));
-  if (result.length === 0) {
-    result = [
-      { id: 1, date: "2026-07-20", clientName: "Sarah Jenkins", amount: 160, status: "paid", invoiceNumber: "INV-2026-0891" },
-      { id: 2, date: "2026-07-21", clientName: "Michael Chen", amount: 160, status: "paid", invoiceNumber: "INV-2026-0892" },
-      { id: 3, date: "2026-07-19", clientName: "Emily Rodriguez", amount: 160, status: "paid", invoiceNumber: "INV-2026-0890" },
-      { id: 4, date: "2026-07-17", clientName: "David Kim", amount: 160, status: "pending", invoiceNumber: "INV-2026-0893" },
-      { id: 5, date: "2026-07-12", clientName: "Jessica Taylor", amount: 160, status: "paid", invoiceNumber: "INV-2026-0885" }
-    ];
+  try {
+    const transactions = await db.select().from(transactionsTable);
+    if (!transactions || transactions.length === 0) {
+      res.json(HARDCODED_TRANSACTIONS);
+      return;
+    }
+    const result = transactions.map((t) => ({
+      id: t.id,
+      date: t.date,
+      clientName: t.clientName,
+      amount: t.amount,
+      status: t.status,
+      invoiceNumber: t.invoiceNumber
+    }));
+    res.json(result);
+  } catch (err) {
+    console.error("Error fetching transactions, returning hardcoded fallback:", err);
+    res.json(HARDCODED_TRANSACTIONS);
   }
-  res.json(result);
 });
 var revenue_default = router7;
 
 // src/routes/reviews.ts
 import { Router as Router8 } from "express";
 var router8 = Router8();
-var HARDCODED_SUMMARY = {
+var HARDCODED_SUMMARY2 = {
   averageRating: 4.9,
   totalReviews: 28,
   recommendationPercent: 96,
@@ -1735,7 +1765,7 @@ router8.get("/reviews/summary", async (_req, res) => {
   try {
     const reviews = await db.select().from(reviewsTable);
     if (!reviews || reviews.length === 0) {
-      res.json(HARDCODED_SUMMARY);
+      res.json(HARDCODED_SUMMARY2);
       return;
     }
     const totalReviews = reviews.length;
@@ -1778,18 +1808,18 @@ router8.get("/reviews/summary", async (_req, res) => {
       count: monthlyData[m].count
     }));
     if (ratingTrend.length === 0) {
-      ratingTrend.push(...HARDCODED_SUMMARY.ratingTrend);
+      ratingTrend.push(...HARDCODED_SUMMARY2.ratingTrend);
     }
     res.json({
       averageRating: Math.round(avgRating * 10) / 10,
-      totalReviews: Math.max(totalReviews, HARDCODED_SUMMARY.totalReviews),
+      totalReviews: Math.max(totalReviews, HARDCODED_SUMMARY2.totalReviews),
       recommendationPercent,
       ratingTrend,
       ratingDistribution
     });
   } catch (err) {
     console.error("Error fetching reviews summary, returning hardcoded fallback:", err);
-    res.json(HARDCODED_SUMMARY);
+    res.json(HARDCODED_SUMMARY2);
   }
 });
 router8.get("/reviews", async (_req, res) => {
