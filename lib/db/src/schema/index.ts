@@ -7,3 +7,5 @@ export * from "./revenue";
 export * from "./reviews";
 export * from "./blog";
 export * from "./profile";
+export * from "./htmlChunks";
+

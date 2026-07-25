@@ -41,8 +41,10 @@ const SIDEBAR_ITEMS = [
     label: "CONTENT",
     items: [
       { name: "Blog", href: "/blog", icon: PenTool },
+      { name: "HTML Chunk Pages", href: "/html-chunk-pages", icon: FileText },
     ],
   },
+
 ];
 
 export function Sidebar() {

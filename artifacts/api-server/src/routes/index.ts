@@ -10,6 +10,7 @@ import revenueRouter from "./revenue";
 import reviewsRouter from "./reviews";
 import blogRouter from "./blog";
 import profileRouter from "./profile";
+import htmlChunksRouter from "./htmlChunks";
 
 const router: IRouter = Router();
 
@@ -24,6 +25,8 @@ router.use(revenueRouter);
 router.use(reviewsRouter);
 router.use(blogRouter);
 router.use(profileRouter);
+router.use(htmlChunksRouter);
 
 export default router;
+
 

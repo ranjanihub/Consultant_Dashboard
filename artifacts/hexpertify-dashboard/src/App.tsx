@@ -17,6 +17,9 @@ import Reviews from '@/pages/reviews';
 import Resources from '@/pages/resources';
 import Messages from '@/pages/messages';
 import Blog from '@/pages/blog';
+import HtmlChunkPages from '@/pages/html-chunk-pages';
+import HtmlChunkEditor from '@/pages/html-chunk-editor';
+import PublicHtmlChunkPage from '@/pages/public-html-chunk-page';
 import Profile from '@/pages/profile';
 import Settings from '@/pages/settings';
 
@@ -34,6 +37,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
+      <Route path="/p/:slug" component={PublicHtmlChunkPage} />
       <Route>
         {() => (
           <AppLayout>
@@ -48,6 +52,9 @@ function Router() {
               <Route path="/reviews" component={Reviews} />
               <Route path="/resources" component={Resources} />
               <Route path="/blog" component={Blog} />
+              <Route path="/html-chunk-pages" component={HtmlChunkPages} />
+              <Route path="/html-chunk-pages/new" component={HtmlChunkEditor} />
+              <Route path="/html-chunk-pages/:id/edit" component={HtmlChunkEditor} />
               <Route path="/profile" component={Profile} />
               <Route path="/settings" component={Settings} />
               <Route component={NotFound} />
@@ -58,6 +65,7 @@ function Router() {
     </Switch>
   );
 }
+
 
 function App() {
   return (
