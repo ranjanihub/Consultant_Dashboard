@@ -484,30 +484,6 @@ export default function HtmlChunkEditor() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-gray-700 block mb-1">Canonical URL</label>
-                  <Input
-                    placeholder="https://hexpertify.com/career-guidance"
-                    value={seo.canonicalUrl}
-                    onChange={(e) => setSeo({ ...seo, canonicalUrl: e.target.value })}
-                    className="rounded-xl text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-gray-700 block mb-1">Robots Indexing</label>
-                  <select
-                    value={seo.robotsIndexing}
-                    onChange={(e) => setSeo({ ...seo, robotsIndexing: e.target.value })}
-                    className="w-full h-10 px-3 border border-border rounded-xl text-xs bg-white focus:outline-none"
-                  >
-                    <option value="index, follow">index, follow (Allow search engines)</option>
-                    <option value="noindex, follow">noindex, follow (Hide page, follow links)</option>
-                    <option value="noindex, nofollow">noindex, nofollow (Strictly hide)</option>
-                  </select>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -834,30 +810,6 @@ export default function HtmlChunkEditor() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-gray-700 block mb-1">Canonical URL</label>
-                  <Input
-                    placeholder="https://hexpertify.com/career-guidance"
-                    value={seo.canonicalUrl}
-                    onChange={(e) => setSeo({ ...seo, canonicalUrl: e.target.value })}
-                    className="rounded-xl text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-gray-700 block mb-1">Robots Indexing</label>
-                  <select
-                    value={seo.robotsIndexing}
-                    onChange={(e) => setSeo({ ...seo, robotsIndexing: e.target.value })}
-                    className="w-full h-10 px-3 border border-border rounded-xl text-xs bg-white focus:outline-none"
-                  >
-                    <option value="index, follow">index, follow (Allow search engines)</option>
-                    <option value="noindex, follow">noindex, follow (Hide page, follow links)</option>
-                    <option value="noindex, nofollow">noindex, nofollow (Strictly hide)</option>
-                  </select>
-                </div>
-              </div>
             </div>
           </div>
 
