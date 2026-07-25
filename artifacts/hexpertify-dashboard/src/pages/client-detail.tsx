@@ -27,29 +27,115 @@ export default function ClientDetail() {
   const { data: homeworkData, isLoading: homeworkLoading } = useGetClientHomework(clientId, { query: { enabled: !!clientId, queryKey: ['homework', clientId] } });
   const { data: historyData, isLoading: historyLoading } = useGetClientSessionHistory(clientId, { query: { enabled: !!clientId, queryKey: ['history', clientId] } });
 
-  const DEMO_CLIENT = {
-    id: clientId || 1,
-    name: "Sarah Jenkins",
-    initials: "SJ",
-    age: 29,
-    gender: "Female",
-    status: "active",
-    primaryGoal: "Manage generalized anxiety and workplace stress",
-    presentingProblems: ["Generalized Anxiety Disorder", "Insomnia", "Workplace Stress", "Imposter Syndrome"],
-    identifiedConcerns: ["Frequent panic sensations during team presentations", "Ruminative night thoughts", "Fear of failure"],
-    therapyGoals: ["Reduce GAD-7 score below 5", "Establish healthy sleep hygiene routine", "Practice assertiveness techniques at work"],
-    preferredLanguage: "English",
-    communicationPreference: "Video",
-    therapyTimeline: "3-6 months",
-    aiIntakeSummary: "Client reports 6-month history of escalating anxiety following a promotion. High motivation for CBT intervention. Responding very well to cognitive restructuring.",
-    progressPercent: 75,
-    startDate: "2026-02-10",
-    lastSession: "2026-07-20",
-    nextSession: "2026-07-27",
-    sessionCount: 12,
+  const DEMO_CLIENTS_MAP: Record<number, any> = {
+    1: {
+      id: 1,
+      name: "Sarah Jenkins",
+      initials: "SJ",
+      age: 29,
+      gender: "Female",
+      status: "active",
+      primaryGoal: "Manage generalized anxiety and workplace stress",
+      presentingProblems: ["Generalized Anxiety Disorder", "Insomnia", "Workplace Stress", "Imposter Syndrome"],
+      identifiedConcerns: ["Frequent panic sensations during team presentations", "Ruminative night thoughts", "Fear of failure"],
+      therapyGoals: ["Reduce GAD-7 score below 5", "Establish healthy sleep hygiene routine", "Practice assertiveness techniques at work"],
+      preferredLanguage: "English",
+      communicationPreference: "Video",
+      therapyTimeline: "3-6 months",
+      aiIntakeSummary: "Client reports 6-month history of escalating anxiety following a promotion. High motivation for CBT intervention. Responding very well to cognitive restructuring.",
+      progressPercent: 75,
+      startDate: "2026-02-10",
+      lastSession: "2026-07-20",
+      nextSession: "2026-07-27",
+      sessionCount: 12,
+    },
+    2: {
+      id: 2,
+      name: "Michael Chen",
+      initials: "MC",
+      age: 36,
+      gender: "Male",
+      status: "high_priority",
+      primaryGoal: "Overcome depressive episodes and build daily routine",
+      presentingProblems: ["Major Depressive Disorder (Mild)", "Social Isolation", "Low Energy"],
+      identifiedConcerns: ["Lack of motivation for exercise", "Negative self-talk", "Withdrawal from friendships"],
+      therapyGoals: ["Complete behavioral activation logs 5x/week", "Re-engage in weekend cycling group", "Identify and challenge 3 cognitive distortions daily"],
+      preferredLanguage: "English",
+      communicationPreference: "Video",
+      therapyTimeline: "6-12 months",
+      aiIntakeSummary: "Client reports persistent low mood following recent career pivot. Responding positively to Behavioral Activation and ACT values clarification exercises.",
+      progressPercent: 60,
+      startDate: "2026-03-01",
+      lastSession: "2026-07-21",
+      nextSession: "2026-07-28",
+      sessionCount: 8,
+    },
+    3: {
+      id: 3,
+      name: "Emily Rodriguez",
+      initials: "ER",
+      age: 42,
+      gender: "Female",
+      status: "active",
+      primaryGoal: "Process relationship dynamics and improve emotional regulation",
+      presentingProblems: ["Emotional Dysregulation", "Work-Life Imbalance", "Chronic Stress"],
+      identifiedConcerns: ["Difficulty setting boundaries with extended family", "Overworking under tight deadlines", "Tension headaches"],
+      therapyGoals: ["Master DBT TIPP & STOP distress tolerance skills", "Set clear boundaries at work and home", "Engage in daily mindfulness practice"],
+      preferredLanguage: "Spanish",
+      communicationPreference: "Video",
+      therapyTimeline: "6-12 months",
+      aiIntakeSummary: "Client seeking support for burnout and interpersonal effectiveness. Highly engaged in DBT skill rehearsals.",
+      progressPercent: 80,
+      startDate: "2026-01-15",
+      lastSession: "2026-07-22",
+      nextSession: "2026-07-26",
+      sessionCount: 15,
+    },
+    4: {
+      id: 4,
+      name: "David Kim",
+      initials: "DK",
+      age: 31,
+      gender: "Male",
+      status: "new",
+      primaryGoal: "Manage social anxiety in leadership role",
+      presentingProblems: ["Social Anxiety Disorder", "Public Speaking Anxiety", "Performance Fear"],
+      identifiedConcerns: ["Heart palpitations before executive briefings", "Avoidance of optional networking events", "Self-consciousness"],
+      therapyGoals: ["Build 10-tier exposure hierarchy for public speaking", "Practice grounding techniques during meetings", "Reduce post-event rumination"],
+      preferredLanguage: "English",
+      communicationPreference: "In-Person",
+      therapyTimeline: "3-6 months",
+      aiIntakeSummary: "New client presenting with performance anxiety following recent promotion to VP of Engineering. Motivated for CBT exposure therapy.",
+      progressPercent: 35,
+      startDate: "2026-07-01",
+      lastSession: "2026-07-17",
+      nextSession: "2026-07-24",
+      sessionCount: 2,
+    },
+    5: {
+      id: 5,
+      name: "Jessica Taylor",
+      initials: "JT",
+      age: 25,
+      gender: "Female",
+      status: "completed",
+      primaryGoal: "Address panic symptoms and return to comfortable social activities",
+      presentingProblems: ["Panic Disorder", "Agoraphobia (Mild)"],
+      identifiedConcerns: ["Avoidance of crowded subways", "Interoceptive panic triggers", "Fear of fainting"],
+      therapyGoals: ["Completed interoceptive exposure exercises", "Traveled independently on subway", "Achieved full remission of panic attacks"],
+      preferredLanguage: "English",
+      communicationPreference: "Video",
+      therapyTimeline: "3-6 months",
+      aiIntakeSummary: "Client completed 16-session CBT panic protocol. Achieved full symptom remission and successfully graduated therapy.",
+      progressPercent: 100,
+      startDate: "2026-02-01",
+      lastSession: "2026-07-12",
+      nextSession: undefined,
+      sessionCount: 16,
+    },
   };
 
-  const client = clientData || DEMO_CLIENT;
+  const client = clientData || DEMO_CLIENTS_MAP[clientId] || DEMO_CLIENTS_MAP[1];
 
   const DEMO_ASSESSMENTS = [
     {
@@ -205,7 +291,7 @@ export default function ClientDetail() {
                     <div>
                       <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Therapy Goals</h4>
                       <div className="space-y-3">
-                        {(Array.isArray(client.therapyGoals) ? client.therapyGoals : []).map((goal, i) => (
+                        {(Array.isArray(client.therapyGoals) ? client.therapyGoals : []).map((goal: string, i: number) => (
                           <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50">
                             <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                             <span className="text-sm font-medium">{goal}</span>
@@ -217,7 +303,7 @@ export default function ClientDetail() {
                       <div>
                         <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">Presenting Problems</h4>
                         <div className="flex flex-wrap gap-2">
-                          {(Array.isArray(client.presentingProblems) ? client.presentingProblems : []).map((prob, i) => (
+                          {(Array.isArray(client.presentingProblems) ? client.presentingProblems : []).map((prob: string, i: number) => (
                             <Badge key={i} variant="secondary" className="bg-muted text-muted-foreground hover:bg-muted font-normal">{prob}</Badge>
                           ))}
                         </div>
