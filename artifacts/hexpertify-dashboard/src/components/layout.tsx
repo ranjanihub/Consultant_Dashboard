@@ -134,15 +134,13 @@ export function Sidebar() {
 export function Header() {
   return (
     <header className="h-[64px] bg-white border-b border-border flex items-center justify-between px-6 fixed top-0 w-full z-20">
-      <div className="flex items-center gap-3 min-w-[240px]">
-        <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
-          <div className="w-4 h-4 border-2 border-white rounded-sm transform rotate-45"></div>
-        </div>
-        <div className="flex flex-col">
-          <span className="font-bold text-lg leading-none tracking-tight">Hexpertify</span>
-          <span className="text-[10px] font-semibold text-muted-foreground tracking-wider mt-0.5">CLINICAL SUITE</span>
-        </div>
-      </div>
+      <Link href="/" className="flex items-center gap-2 min-w-[220px] focus:outline-none cursor-pointer">
+        <img 
+          src="/hexpertify-logo.png" 
+          alt="Hexpertify — Anytime, Anywhere" 
+          className="h-10 w-auto object-contain mix-blend-multiply" 
+        />
+      </Link>
 
       <div className="flex-1 max-w-xl mx-8">
         <div className="relative group">
