@@ -45,57 +45,10 @@ interface SeoDetails {
   ogImage: string;
   ogAltText: string;
   robotsIndexing: string;
+  structuredData?: string;
 }
 
 const PRESET_CHUNKS: Array<{ type: string; name: string; icon: string; defaultContent: string }> = [
-  {
-    type: "hero",
-    name: "Hero Banner Section",
-    icon: "🚀",
-    defaultContent: `
-<div class="bg-gradient-to-r from-teal-600 to-indigo-700 text-white py-16 px-8 rounded-2xl text-center shadow-lg my-4">
-  <h1 class="text-4xl font-extrabold tracking-tight mb-4">Empower Your Health & Well-being</h1>
-  <p class="text-lg opacity-90 max-w-2xl mx-auto mb-6">Evidence-based clinical care and professional development anytime, anywhere.</p>
-  <a href="#get-started" class="inline-block bg-white text-teal-700 font-bold px-6 py-3 rounded-full shadow hover:bg-gray-100 transition">Get Started Today</a>
-</div>
-    `.trim(),
-  },
-  {
-    type: "feature",
-    name: "Feature Grid (3 Columns)",
-    icon: "✨",
-    defaultContent: `
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
-  <div class="p-6 border rounded-xl bg-white shadow-sm hover:shadow-md transition">
-    <div class="w-12 h-12 bg-teal-100 text-teal-700 rounded-lg flex items-center justify-center font-bold text-xl mb-4">01</div>
-    <h3 class="text-xl font-bold mb-2">Expert Counseling</h3>
-    <p class="text-gray-600 text-sm">Certified therapists delivering tailored clinical interventions.</p>
-  </div>
-  <div class="p-6 border rounded-xl bg-white shadow-sm hover:shadow-md transition">
-    <div class="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-lg flex items-center justify-center font-bold text-xl mb-4">02</div>
-    <h3 class="text-xl font-bold mb-2">Flexible Scheduling</h3>
-    <p class="text-gray-600 text-sm">Seamless video appointments that fit into your busy life.</p>
-  </div>
-  <div class="p-6 border rounded-xl bg-white shadow-sm hover:shadow-md transition">
-    <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-lg flex items-center justify-center font-bold text-xl mb-4">03</div>
-    <h3 class="text-xl font-bold mb-2">HIPAA Secure</h3>
-    <p class="text-gray-600 text-sm">End-to-end encrypted platform keeping your private data safe.</p>
-  </div>
-</div>
-    `.trim(),
-  },
-  {
-    type: "cta",
-    name: "Call to Action Box",
-    icon: "📣",
-    defaultContent: `
-<div class="bg-slate-900 text-white p-10 rounded-2xl text-center shadow-xl my-6">
-  <h2 class="text-3xl font-extrabold mb-3">Ready to transform your workplace or care?</h2>
-  <p class="text-slate-300 max-w-xl mx-auto mb-6">Contact Hexpertify specialists today to schedule your corporate or individual consultation.</p>
-  <button class="bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold px-8 py-3 rounded-full transition shadow-lg">Schedule Consultation</button>
-</div>
-    `.trim(),
-  },
   {
     type: "faq",
     name: "FAQ Accordion",
@@ -111,17 +64,6 @@ const PRESET_CHUNKS: Array<{ type: string; name: string; icon: string; defaultCo
     <h4 class="font-bold text-gray-900 mb-2">Is SEO metadata supported?</h4>
     <p class="text-gray-600 text-sm">Yes, you can configure Open Graph metadata, canonical URLs, and robots indexing directly in the editor.</p>
   </div>
-</div>
-    `.trim(),
-  },
-  {
-    type: "custom",
-    name: "Custom HTML Chunk",
-    icon: "💻",
-    defaultContent: `
-<div class="py-8 px-6 bg-white border border-gray-200 rounded-xl my-4">
-  <h3 class="text-xl font-bold mb-2">Custom Chunk Title</h3>
-  <p class="text-gray-700">Write your custom HTML and inline styles here.</p>
 </div>
     `.trim(),
   },
@@ -153,6 +95,7 @@ export default function HtmlChunkEditor() {
     ogImage: "",
     ogAltText: "",
     robotsIndexing: "index, follow",
+    structuredData: "",
   });
 
   // Identifier URL validation error
@@ -189,6 +132,7 @@ export default function HtmlChunkEditor() {
             ogImage: data.seoDetails.ogImage || "",
             ogAltText: data.seoDetails.ogAltText || "",
             robotsIndexing: data.seoDetails.robotsIndexing || "index, follow",
+            structuredData: data.seoDetails.structuredData || "",
           });
         }
       }
@@ -489,7 +433,173 @@ export default function HtmlChunkEditor() {
             )}
           </div>
 
-          {/* Central Header/Footer Branding Lock Notice */}
+          {/* SEO Metadata Card */}
+          <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-6">
+            <div>
+              <h3 className="text-base font-extrabold text-gray-900 border-b border-border pb-3">SEO Metadata</h3>
+              <p className="text-xs text-muted-foreground mt-1">Configure search engine titles, descriptions, and indexing parameters.</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs font-bold text-gray-700 block">
+                    Meta Title <span className="text-destructive">*</span>
+                  </label>
+                  <span className="text-[10px] text-muted-foreground">{seo.metaTitle?.length || 0}/60 characters</span>
+                </div>
+                <Input
+                  placeholder="Page title for search engines (50-60 characters)"
+                  value={seo.metaTitle}
+                  onChange={(e) => setSeo({ ...seo, metaTitle: e.target.value })}
+                  className="rounded-xl text-xs"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs font-bold text-gray-700 block">
+                    Meta Description <span className="text-destructive">*</span>
+                  </label>
+                  <span className="text-[10px] text-muted-foreground">{seo.metaDescription?.length || 0}/160 characters</span>
+                </div>
+                <Textarea
+                  rows={3}
+                  placeholder="Page description for search engines (150-160 characters)"
+                  value={seo.metaDescription}
+                  onChange={(e) => setSeo({ ...seo, metaDescription: e.target.value })}
+                  className="rounded-xl text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-700 block mb-1">
+                  Meta Keywords <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  placeholder="Enter a keyword and press Enter or click Add"
+                  value={seo.metaKeywords}
+                  onChange={(e) => setSeo({ ...seo, metaKeywords: e.target.value })}
+                  className="rounded-xl text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">Canonical URL</label>
+                  <Input
+                    placeholder="https://hexpertify.com/career-guidance"
+                    value={seo.canonicalUrl}
+                    onChange={(e) => setSeo({ ...seo, canonicalUrl: e.target.value })}
+                    className="rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">Robots Indexing</label>
+                  <select
+                    value={seo.robotsIndexing}
+                    onChange={(e) => setSeo({ ...seo, robotsIndexing: e.target.value })}
+                    className="w-full h-10 px-3 border border-border rounded-xl text-xs bg-white focus:outline-none"
+                  >
+                    <option value="index, follow">index, follow (Allow search engines)</option>
+                    <option value="noindex, follow">noindex, follow (Hide page, follow links)</option>
+                    <option value="noindex, nofollow">noindex, nofollow (Strictly hide)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Open Graph (Social Media) Card */}
+          <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-6">
+            <div>
+              <h3 className="text-base font-extrabold text-gray-900 border-b border-border pb-3">Open Graph (Social Media)</h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                These fields control how your page appears when shared on social media platforms like Facebook, Twitter, LinkedIn, etc.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs font-bold text-gray-700 block">
+                    OG Title <span className="text-destructive">*</span>
+                  </label>
+                  <span className="text-[10px] text-muted-foreground">{seo.ogTitle?.length || 0}/60 characters</span>
+                </div>
+                <Input
+                  placeholder="Title for social media sharing (leave empty to use Meta Title)"
+                  value={seo.ogTitle}
+                  onChange={(e) => setSeo({ ...seo, ogTitle: e.target.value })}
+                  className="rounded-xl text-xs"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs font-bold text-gray-700 block">
+                    OG Description <span className="text-destructive">*</span>
+                  </label>
+                  <span className="text-[10px] text-muted-foreground">{seo.ogDescription?.length || 0}/200 characters</span>
+                </div>
+                <Textarea
+                  rows={3}
+                  placeholder="Description for social media sharing (leave empty to use Meta Description)"
+                  value={seo.ogDescription}
+                  onChange={(e) => setSeo({ ...seo, ogDescription: e.target.value })}
+                  className="rounded-xl text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-700 block mb-1">
+                  OG Image URL <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  placeholder="https://example.com/og-image.jpg (1200x630px recommended)"
+                  value={seo.ogImage}
+                  onChange={(e) => setSeo({ ...seo, ogImage: e.target.value })}
+                  className="rounded-xl text-xs"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">Recommended size: 1200x630 pixels for optimal display</p>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-700 block mb-1">
+                  OG Image Alt Text <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  placeholder="Description of OG image"
+                  value={seo.ogAltText}
+                  onChange={(e) => setSeo({ ...seo, ogAltText: e.target.value })}
+                  className="rounded-xl text-xs"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Structured Data Card */}
+          <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-6">
+            <div>
+              <h3 className="text-base font-extrabold text-gray-900 border-b border-border pb-3">Structured Data</h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Add custom HTML/JSON-LD structured data for enhanced SEO (e.g., schema.org markup)
+              </p>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-700 block mb-1">HTML Chunk / JSON-LD (Optional)</label>
+              <Textarea
+                rows={5}
+                placeholder='<script type="application/ld+json"> ... </script>'
+                value={seo.structuredData || ""}
+                onChange={(e) => setSeo({ ...seo, structuredData: e.target.value })}
+                className="font-mono text-xs rounded-xl"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">You can add JSON-LD, microdata, or any other structured data markup here</p>
+            </div>
+          </div>
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3 text-amber-900 text-xs shadow-sm">
             <div className="p-2 bg-amber-500/20 text-amber-700 rounded-xl">
               <Lock className="w-5 h-5" />
@@ -626,17 +736,70 @@ export default function HtmlChunkEditor() {
 
         {/* TAB 2: SEO Settings */}
         <TabsContent value="seo" className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-6">
-            <div>
-              <h3 className="text-base font-extrabold text-gray-900">SEO & Open Graph Metadata</h3>
-              <p className="text-xs text-muted-foreground">Configure search engine indexing and social media preview cards.</p>
-            </div>
-
+          {/* Basic Page Information Card */}
+          <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-4">
+            <h3 className="text-base font-extrabold text-gray-900 border-b border-border pb-3">Basic Page Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="text-xs font-bold text-gray-700 block mb-1">Meta Title</label>
+                <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-1.5">
+                  Page Title <span className="text-destructive">*</span>
+                </label>
                 <Input
-                  placeholder="e.g. Career Guidance & Counseling | Hexpertify"
+                  placeholder="e.g. Career Guidance"
+                  value={title}
+                  onChange={(e) => handleTitleChange(e.target.value)}
+                  className="rounded-xl"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-1.5 flex items-center justify-between">
+                  <span>Identifier URL (Slug) <span className="text-destructive">*</span></span>
+                  <span className="text-[10px] text-muted-foreground font-normal">Must be unique</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-mono flex items-center gap-1">
+                    <Globe className="w-3.5 h-3.5" /> /
+                  </div>
+                  <Input
+                    placeholder="career-guidance"
+                    value={identifierUrl}
+                    onChange={(e) => handleIdentifierUrlChange(e.target.value)}
+                    className={`pl-8 rounded-xl font-mono text-xs ${
+                      urlError ? "border-destructive focus-visible:ring-destructive" : "border-border"
+                    }`}
+                  />
+                </div>
+                {urlError ? (
+                  <p className="text-xs text-destructive flex items-center gap-1 mt-1 font-semibold">
+                    <AlertCircle className="w-3.5 h-3.5" /> {urlError}
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-emerald-600 flex items-center gap-1 mt-1 font-medium">
+                    <Check className="w-3.5 h-3.5" /> URL valid: https://hexpertify.com/{identifierUrl || "..."}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* SEO Metadata Card */}
+          <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-6">
+            <div>
+              <h3 className="text-base font-extrabold text-gray-900">SEO Metadata</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Optimize for search engines</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs font-bold text-gray-700 block">
+                    Meta Title <span className="text-destructive">*</span>
+                  </label>
+                  <span className="text-[10px] text-muted-foreground">{seo.metaTitle?.length || 0}/60 characters</span>
+                </div>
+                <Input
+                  placeholder="Page title for search engines (50-60 characters)"
                   value={seo.metaTitle}
                   onChange={(e) => setSeo({ ...seo, metaTitle: e.target.value })}
                   className="rounded-xl text-xs"
@@ -644,20 +807,15 @@ export default function HtmlChunkEditor() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-700 block mb-1">Canonical URL</label>
-                <Input
-                  placeholder="https://hexpertify.com/career-guidance"
-                  value={seo.canonicalUrl}
-                  onChange={(e) => setSeo({ ...seo, canonicalUrl: e.target.value })}
-                  className="rounded-xl text-xs"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="text-xs font-bold text-gray-700 block mb-1">Meta Description</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs font-bold text-gray-700 block">
+                    Meta Description <span className="text-destructive">*</span>
+                  </label>
+                  <span className="text-[10px] text-muted-foreground">{seo.metaDescription?.length || 0}/160 characters</span>
+                </div>
                 <Textarea
                   rows={3}
-                  placeholder="Comprehensive description for Google search result snippets..."
+                  placeholder="Page description for search engines (150-160 characters)"
                   value={seo.metaDescription}
                   onChange={(e) => setSeo({ ...seo, metaDescription: e.target.value })}
                   className="rounded-xl text-xs"
@@ -665,72 +823,131 @@ export default function HtmlChunkEditor() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-700 block mb-1">Meta Keywords</label>
+                <label className="text-xs font-bold text-gray-700 block mb-1">
+                  Meta Keywords <span className="text-destructive">*</span>
+                </label>
                 <Input
-                  placeholder="career, guidance, counseling, hexpertify"
+                  placeholder="Enter a keyword and press Enter or click Add"
                   value={seo.metaKeywords}
                   onChange={(e) => setSeo({ ...seo, metaKeywords: e.target.value })}
                   className="rounded-xl text-xs"
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-gray-700 block mb-1">Robots Indexing</label>
-                <select
-                  value={seo.robotsIndexing}
-                  onChange={(e) => setSeo({ ...seo, robotsIndexing: e.target.value })}
-                  className="w-full h-10 px-3 border border-border rounded-xl text-xs bg-white focus:outline-none"
-                >
-                  <option value="index, follow">index, follow (Allow search engines)</option>
-                  <option value="noindex, follow">noindex, follow (Hide page, follow links)</option>
-                  <option value="noindex, nofollow">noindex, nofollow (Strictly hide)</option>
-                </select>
-              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">Canonical URL</label>
+                  <Input
+                    placeholder="https://hexpertify.com/career-guidance"
+                    value={seo.canonicalUrl}
+                    onChange={(e) => setSeo({ ...seo, canonicalUrl: e.target.value })}
+                    className="rounded-xl text-xs"
+                  />
+                </div>
 
-              <div className="md:col-span-2 pt-4 border-t border-border">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-primary mb-4">Open Graph (Social Sharing)</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-bold text-gray-700 block mb-1">OG Title</label>
-                    <Input
-                      placeholder="Open Graph Title for Facebook/LinkedIn"
-                      value={seo.ogTitle}
-                      onChange={(e) => setSeo({ ...seo, ogTitle: e.target.value })}
-                      className="rounded-xl text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-700 block mb-1">OG Image URL</label>
-                    <Input
-                      placeholder="https://example.com/social-preview.png"
-                      value={seo.ogImage}
-                      onChange={(e) => setSeo({ ...seo, ogImage: e.target.value })}
-                      className="rounded-xl text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-700 block mb-1">OG Description</label>
-                    <Input
-                      placeholder="Open Graph Description"
-                      value={seo.ogDescription}
-                      onChange={(e) => setSeo({ ...seo, ogDescription: e.target.value })}
-                      className="rounded-xl text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-700 block mb-1">OG Alt Text</label>
-                    <Input
-                      placeholder="Alt description for image"
-                      value={seo.ogAltText}
-                      onChange={(e) => setSeo({ ...seo, ogAltText: e.target.value })}
-                      className="rounded-xl text-xs"
-                    />
-                  </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">Robots Indexing</label>
+                  <select
+                    value={seo.robotsIndexing}
+                    onChange={(e) => setSeo({ ...seo, robotsIndexing: e.target.value })}
+                    className="w-full h-10 px-3 border border-border rounded-xl text-xs bg-white focus:outline-none"
+                  >
+                    <option value="index, follow">index, follow (Allow search engines)</option>
+                    <option value="noindex, follow">noindex, follow (Hide page, follow links)</option>
+                    <option value="noindex, nofollow">noindex, nofollow (Strictly hide)</option>
+                  </select>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Open Graph (Social Media) Card */}
+          <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-6">
+            <div>
+              <h3 className="text-base font-extrabold text-gray-900">Open Graph (Social Media)</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                These fields control how your page appears when shared on social media platforms like Facebook, Twitter, LinkedIn, etc.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs font-bold text-gray-700 block">
+                    OG Title <span className="text-destructive">*</span>
+                  </label>
+                  <span className="text-[10px] text-muted-foreground">{seo.ogTitle?.length || 0}/60 characters</span>
+                </div>
+                <Input
+                  placeholder="Title for social media sharing (leave empty to use Meta Title)"
+                  value={seo.ogTitle}
+                  onChange={(e) => setSeo({ ...seo, ogTitle: e.target.value })}
+                  className="rounded-xl text-xs"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs font-bold text-gray-700 block">
+                    OG Description <span className="text-destructive">*</span>
+                  </label>
+                  <span className="text-[10px] text-muted-foreground">{seo.ogDescription?.length || 0}/200 characters</span>
+                </div>
+                <Textarea
+                  rows={3}
+                  placeholder="Description for social media sharing (leave empty to use Meta Description)"
+                  value={seo.ogDescription}
+                  onChange={(e) => setSeo({ ...seo, ogDescription: e.target.value })}
+                  className="rounded-xl text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-700 block mb-1">
+                  OG Image URL <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  placeholder="https://example.com/og-image.jpg (1200x630px recommended)"
+                  value={seo.ogImage}
+                  onChange={(e) => setSeo({ ...seo, ogImage: e.target.value })}
+                  className="rounded-xl text-xs"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">Recommended size: 1200x630 pixels for optimal display</p>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-700 block mb-1">
+                  OG Image Alt Text <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  placeholder="Description of OG image"
+                  value={seo.ogAltText}
+                  onChange={(e) => setSeo({ ...seo, ogAltText: e.target.value })}
+                  className="rounded-xl text-xs"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Structured Data Card */}
+          <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-6">
+            <div>
+              <h3 className="text-base font-extrabold text-gray-900">Structured Data</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Add custom HTML/JSON-LD structured data for enhanced SEO (e.g., schema.org markup)
+              </p>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-700 block mb-1">HTML Chunk / JSON-LD (Optional)</label>
+              <Textarea
+                rows={5}
+                placeholder='<script type="application/ld+json"> ... </script>'
+                value={seo.structuredData || ""}
+                onChange={(e) => setSeo({ ...seo, structuredData: e.target.value })}
+                className="font-mono text-xs rounded-xl"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">You can add JSON-LD, microdata, or any other structured data markup here</p>
             </div>
           </div>
         </TabsContent>

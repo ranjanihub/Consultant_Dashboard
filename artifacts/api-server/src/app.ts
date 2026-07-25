@@ -25,7 +25,7 @@ const publicPath = path.resolve(globalThis.__dirname || process.cwd(), "public")
 app.use(express.static(publicPath));
 
 // Fallback to index.html for React SPA routing
-app.get("*", (req: Request, res: Response) => {
+app.get("/{*splat}", (req: Request, res: Response) => {
   res.sendFile(path.join(publicPath, "index.html"));
 });
 
