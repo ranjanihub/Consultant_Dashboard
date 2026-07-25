@@ -5,6 +5,8 @@ import NotFound from '@/pages/not-found';
 import { Route, Switch, Router as WouterRouter } from 'wouter';
 import { AppLayout } from '@/components/layout';
 
+import Login from '@/pages/login';
+
 import Dashboard from '@/pages/dashboard';
 import Clients from '@/pages/clients';
 import ClientDetail from '@/pages/client-detail';
@@ -30,23 +32,30 @@ const queryClient = new QueryClient({
 
 function Router() {
   return (
-    <AppLayout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/clients" component={Clients} />
-        <Route path="/clients/:id" component={ClientDetail} />
-        <Route path="/calendar" component={Calendar} />
-        <Route path="/messages" component={Messages} />
-        <Route path="/outcomes" component={Outcomes} />
-        <Route path="/revenue" component={Revenue} />
-        <Route path="/reviews" component={Reviews} />
-        <Route path="/resources" component={Resources} />
-        <Route path="/blog" component={Blog} />
-        <Route path="/profile" component={Profile} />
-        <Route path="/settings" component={Settings} />
-        <Route component={NotFound} />
-      </Switch>
-    </AppLayout>
+    <Switch>
+      <Route path="/login" component={Login} />
+      <Route>
+        {() => (
+          <AppLayout>
+            <Switch>
+              <Route path="/" component={Dashboard} />
+              <Route path="/clients" component={Clients} />
+              <Route path="/clients/:id" component={ClientDetail} />
+              <Route path="/calendar" component={Calendar} />
+              <Route path="/messages" component={Messages} />
+              <Route path="/outcomes" component={Outcomes} />
+              <Route path="/revenue" component={Revenue} />
+              <Route path="/reviews" component={Reviews} />
+              <Route path="/resources" component={Resources} />
+              <Route path="/blog" component={Blog} />
+              <Route path="/profile" component={Profile} />
+              <Route path="/settings" component={Settings} />
+              <Route component={NotFound} />
+            </Switch>
+          </AppLayout>
+        )}
+      </Route>
+    </Switch>
   );
 }
 

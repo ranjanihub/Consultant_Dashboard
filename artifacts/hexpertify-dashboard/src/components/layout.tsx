@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
+import { logoutUser, getAuthUser } from "@/lib/auth";
 import {
   LayoutDashboard,
   Users,
@@ -45,7 +46,13 @@ const SIDEBAR_ITEMS = [
 ];
 
 export function Sidebar() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const user = getAuthUser();
+
+  const handleSignOut = () => {
+    logoutUser();
+    setLocation("/login");
+  };
 
   return (
     <div className="w-[240px] flex-shrink-0 flex flex-col bg-white border-r border-border h-[calc(100vh-64px)] fixed left-0 top-[64px] z-10 overflow-y-auto">
@@ -58,30 +65,27 @@ export function Sidebar() {
             <div className="space-y-1">
               {section.items.map((item) => {
                 const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+                const Icon = item.icon;
                 return (
                   <Link
-                    key={item.name}
+                    key={item.href}
                     href={item.href}
                     className={cn(
                       "flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors group",
                       isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-foreground hover:bg-secondary"
+                        ? "bg-primary text-primary-foreground font-semibold"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                     )}
                   >
                     <div className="flex items-center gap-3">
-                      <item.icon
-                        className={cn("w-5 h-5", isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")}
-                      />
-                      <span className="font-medium text-sm">{item.name}</span>
+                      <Icon className={cn("w-4 h-4", isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
+                      <span className="text-sm">{item.name}</span>
                     </div>
                     {item.badge && (
-                      <span
-                        className={cn(
-                          "text-xs font-semibold px-2 py-0.5 rounded-full",
-                          isActive ? "bg-primary-foreground/20 text-white" : "bg-muted text-muted-foreground"
-                        )}
-                      >
+                      <span className={cn(
+                        "text-[10px] px-1.5 py-0.5 rounded-full font-bold",
+                        isActive ? "bg-white/20 text-white" : "bg-secondary text-muted-foreground"
+                      )}>
                         {item.badge}
                       </span>
                     )}
@@ -93,7 +97,18 @@ export function Sidebar() {
         ))}
       </div>
 
-      <div className="p-4 border-t border-border space-y-1">
+      <div className="p-4 border-t border-border space-y-2">
+        <Link
+          href="/settings"
+          className={cn(
+            "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group text-muted-foreground hover:text-foreground hover:bg-secondary",
+            location.startsWith("/settings") && "bg-secondary text-foreground"
+          )}
+        >
+          <Settings className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
+          <span className="font-medium text-sm">Settings</span>
+        </Link>
+
         <Link
           href="/profile"
           className={cn(
@@ -109,19 +124,23 @@ export function Sidebar() {
           <div className="flex items-center gap-3 mb-4">
             <div className="relative">
               <Avatar className="h-10 w-10 border border-border">
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold">SW</AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                  {user?.avatarInitials || "AH"}
+                </AvatarFallback>
               </Avatar>
               <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold leading-none">Dr. Sarah Wilson</span>
-              <span className="text-xs text-muted-foreground mt-1">Clinical Psychologist</span>
+              <span className="text-sm font-semibold leading-none">{user?.name || "Dr. Alex Harrison"}</span>
+              <span className="text-xs text-muted-foreground mt-1">{user?.title || "Clinical Psychologist"}</span>
             </div>
           </div>
-          
 
-
-          <button className="flex items-center gap-3 px-3 py-2 w-full text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors">
+          <button 
+            type="button"
+            onClick={handleSignOut}
+            className="flex items-center gap-3 px-3 py-2 w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer"
+          >
             <LogOut className="w-4 h-4" />
             <span className="text-sm font-medium">Sign out</span>
           </button>

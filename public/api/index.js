@@ -367,7 +367,7 @@ import cors from "cors";
 import path2 from "node:path";
 
 // src/routes/index.ts
-import { Router as Router11 } from "express";
+import { Router as Router12 } from "express";
 
 // src/routes/health.ts
 import { Router } from "express";
@@ -812,8 +812,44 @@ router.get("/healthz", (_req, res) => {
 });
 var health_default = router;
 
-// src/routes/dashboard.ts
+// src/routes/auth.ts
 import { Router as Router2 } from "express";
+var router2 = Router2();
+var DEFAULT_THERAPIST = {
+  id: "therapist-1",
+  name: "Dr. Alex Harrison, PsyD",
+  email: "alex.harrison@hexpertify.com",
+  title: "Licensed Clinical Psychologist & CBT Specialist",
+  licenseNumber: "PSY-98421",
+  role: "therapist",
+  avatarUrl: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80"
+};
+router2.post("/auth/login", (req, res) => {
+  const { email, password, role } = req.body || {};
+  res.json({
+    success: true,
+    token: "hexpertify_demo_jwt_token_2026",
+    user: {
+      ...DEFAULT_THERAPIST,
+      email: email || DEFAULT_THERAPIST.email,
+      role: role || "therapist"
+    },
+    message: "Authentication successful. Welcome to Hexpertify Clinical Suite."
+  });
+});
+router2.post("/auth/logout", (_req, res) => {
+  res.json({
+    success: true,
+    message: "Logged out successfully."
+  });
+});
+router2.get("/auth/me", (_req, res) => {
+  res.json(DEFAULT_THERAPIST);
+});
+var auth_default = router2;
+
+// src/routes/dashboard.ts
+import { Router as Router3 } from "express";
 
 // ../../lib/db/src/index.ts
 import { drizzle } from "drizzle-orm/node-postgres";
@@ -1080,7 +1116,7 @@ var db = drizzle(pool, { schema: schema_exports });
 
 // src/routes/dashboard.ts
 import { desc, eq, and } from "drizzle-orm";
-var router2 = Router2();
+var router3 = Router3();
 var HARDCODED_STATS = {
   sessionsToday: 6,
   sessionsRemaining: 2,
@@ -1236,7 +1272,7 @@ var HARDCODED_CLIENT_IMPROVEMENT = {
     { month: "Jun", score: 74.2 }
   ]
 };
-router2.get("/dashboard/stats", async (_req, res) => {
+router3.get("/dashboard/stats", async (_req, res) => {
   try {
     const clients = await db.select().from(clientsTable);
     const activeClients = clients.filter((c) => c.status === "active" || c.status === "high_priority");
@@ -1264,7 +1300,7 @@ router2.get("/dashboard/stats", async (_req, res) => {
     res.json(HARDCODED_STATS);
   }
 });
-router2.get("/dashboard/upcoming-sessions", async (_req, res) => {
+router3.get("/dashboard/upcoming-sessions", async (_req, res) => {
   try {
     const sessions = await db.select({
       session: sessionsTable,
@@ -1293,7 +1329,7 @@ router2.get("/dashboard/upcoming-sessions", async (_req, res) => {
     res.json(HARDCODED_UPCOMING_SESSIONS);
   }
 });
-router2.get("/dashboard/pending-reports", async (_req, res) => {
+router3.get("/dashboard/pending-reports", async (_req, res) => {
   try {
     const sessions = await db.select({
       session: sessionsTable,
@@ -1318,7 +1354,7 @@ router2.get("/dashboard/pending-reports", async (_req, res) => {
     res.json(HARDCODED_PENDING_REPORTS);
   }
 });
-router2.get("/dashboard/weekly-schedule", async (_req, res) => {
+router3.get("/dashboard/weekly-schedule", async (_req, res) => {
   try {
     res.json(HARDCODED_WEEKLY_SCHEDULE);
   } catch (err) {
@@ -1326,7 +1362,7 @@ router2.get("/dashboard/weekly-schedule", async (_req, res) => {
     res.json(HARDCODED_WEEKLY_SCHEDULE);
   }
 });
-router2.get("/dashboard/recent-activity", async (_req, res) => {
+router3.get("/dashboard/recent-activity", async (_req, res) => {
   try {
     const activities = await db.select({
       activity: activityLogsTable,
@@ -1350,7 +1386,7 @@ router2.get("/dashboard/recent-activity", async (_req, res) => {
     res.json(HARDCODED_RECENT_ACTIVITY);
   }
 });
-router2.get("/dashboard/client-improvement", async (_req, res) => {
+router3.get("/dashboard/client-improvement", async (_req, res) => {
   try {
     res.json(HARDCODED_CLIENT_IMPROVEMENT);
   } catch (err) {
@@ -1358,13 +1394,13 @@ router2.get("/dashboard/client-improvement", async (_req, res) => {
     res.json(HARDCODED_CLIENT_IMPROVEMENT);
   }
 });
-var dashboard_default = router2;
+var dashboard_default = router3;
 
 // src/routes/clients.ts
-import { Router as Router3 } from "express";
+import { Router as Router4 } from "express";
 import { eq as eq2, and as and2 } from "drizzle-orm";
-var router3 = Router3();
-router3.get("/clients", async (req, res) => {
+var router4 = Router4();
+router4.get("/clients", async (req, res) => {
   const { status, search } = req.query;
   let clients = await db.select().from(clientsTable);
   if (status) {
@@ -1376,7 +1412,7 @@ router3.get("/clients", async (req, res) => {
   }
   res.json(clients);
 });
-router3.get("/clients/:id", async (req, res) => {
+router4.get("/clients/:id", async (req, res) => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
   const [client] = await db.select().from(clientsTable).where(eq2(clientsTable.id, id));
@@ -1410,7 +1446,7 @@ router3.get("/clients/:id", async (req, res) => {
     sessionCount: sessions.length
   });
 });
-router3.get("/clients/:id/assessments", async (req, res) => {
+router4.get("/clients/:id/assessments", async (req, res) => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
   const assessments = await db.select().from(assessmentsTable).where(eq2(assessmentsTable.clientId, id));
@@ -1461,7 +1497,7 @@ router3.get("/clients/:id/assessments", async (req, res) => {
   }
   res.json(result);
 });
-router3.get("/clients/:id/mood", async (req, res) => {
+router4.get("/clients/:id/mood", async (req, res) => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
   const logs = await db.select().from(moodLogsTable).where(eq2(moodLogsTable.clientId, id));
@@ -1491,7 +1527,7 @@ router3.get("/clients/:id/mood", async (req, res) => {
     }))
   });
 });
-router3.get("/clients/:id/homework", async (req, res) => {
+router4.get("/clients/:id/homework", async (req, res) => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
   const hw = await db.select().from(homeworkTable).where(eq2(homeworkTable.clientId, id));
@@ -1526,7 +1562,7 @@ router3.get("/clients/:id/homework", async (req, res) => {
   }
   res.json(hw);
 });
-router3.get("/clients/:id/session-history", async (req, res) => {
+router4.get("/clients/:id/session-history", async (req, res) => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
   const sessions = await db.select().from(sessionsTable).where(and2(eq2(sessionsTable.clientId, id), eq2(sessionsTable.status, "completed")));
@@ -1565,13 +1601,13 @@ router3.get("/clients/:id/session-history", async (req, res) => {
     }))
   );
 });
-var clients_default = router3;
+var clients_default = router4;
 
 // src/routes/sessions.ts
-import { Router as Router4 } from "express";
+import { Router as Router5 } from "express";
 import { eq as eq3 } from "drizzle-orm";
-var router4 = Router4();
-router4.post("/sessions/:id/report", async (req, res) => {
+var router5 = Router5();
+router5.post("/sessions/:id/report", async (req, res) => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const sessionId = parseInt(raw, 10);
   const [session] = await db.select().from(sessionsTable).where(eq3(sessionsTable.id, sessionId));
@@ -1607,12 +1643,12 @@ router4.post("/sessions/:id/report", async (req, res) => {
     paymentEligible: report.paymentEligible
   });
 });
-var sessions_default = router4;
+var sessions_default = router5;
 
 // src/routes/calendar.ts
-import { Router as Router5 } from "express";
-var router5 = Router5();
-router5.get("/calendar/events", async (req, res) => {
+import { Router as Router6 } from "express";
+var router6 = Router6();
+router6.get("/calendar/events", async (req, res) => {
   const events = await db.select().from(calendarEventsTable);
   let result = events.map((e) => ({
     id: e.id,
@@ -1633,11 +1669,11 @@ router5.get("/calendar/events", async (req, res) => {
   }
   res.json(result);
 });
-router5.get("/calendar/availability", async (_req, res) => {
+router6.get("/calendar/availability", async (_req, res) => {
   const slots = await db.select().from(availabilitySlotsTable);
   res.json(slots);
 });
-router5.post("/calendar/availability", async (req, res) => {
+router6.post("/calendar/availability", async (req, res) => {
   const { dayOfWeek, startTime, endTime, isRecurring } = req.body;
   if (!dayOfWeek || !startTime || !endTime) {
     res.status(400).json({ error: "Missing required fields" });
@@ -1646,13 +1682,13 @@ router5.post("/calendar/availability", async (req, res) => {
   const [slot] = await db.insert(availabilitySlotsTable).values({ dayOfWeek, startTime, endTime, isRecurring: isRecurring ?? true }).returning();
   res.json(slot);
 });
-var calendar_default = router5;
+var calendar_default = router6;
 
 // src/routes/outcomes.ts
-import { Router as Router6 } from "express";
+import { Router as Router7 } from "express";
 import { eq as eq4 } from "drizzle-orm";
-var router6 = Router6();
-router6.get("/outcomes/individual/:clientId", async (req, res) => {
+var router7 = Router7();
+router7.get("/outcomes/individual/:clientId", async (req, res) => {
   const raw = Array.isArray(req.params.clientId) ? req.params.clientId[0] : req.params.clientId;
   const clientId = parseInt(raw, 10);
   const [client] = await db.select().from(clientsTable).where(eq4(clientsTable.id, clientId));
@@ -1695,7 +1731,7 @@ router6.get("/outcomes/individual/:clientId", async (req, res) => {
     assessmentTrends
   });
 });
-router6.get("/outcomes/caseload", async (req, res) => {
+router7.get("/outcomes/caseload", async (req, res) => {
   const { period } = req.query;
   const clients = await db.select().from(clientsTable);
   const clientBreakdown = clients.slice(0, 8).map((c, i) => ({
@@ -1716,11 +1752,11 @@ router6.get("/outcomes/caseload", async (req, res) => {
     clientBreakdown
   });
 });
-var outcomes_default = router6;
+var outcomes_default = router7;
 
 // src/routes/revenue.ts
-import { Router as Router7 } from "express";
-var router7 = Router7();
+import { Router as Router8 } from "express";
+var router8 = Router8();
 var HARDCODED_SUMMARY = {
   totalRevenue: 14850,
   pendingPayments: 2400,
@@ -1746,7 +1782,7 @@ var HARDCODED_TRANSACTIONS = [
   { id: 6, date: "2026-07-18", clientName: "Amanda Miller", amount: 160, status: "pending", invoiceNumber: "INV-2026-0890" },
   { id: 7, date: "2026-07-15", clientName: "Robert Johnson", amount: 160, status: "paid", invoiceNumber: "INV-2026-0889" }
 ];
-router7.get("/revenue/summary", async (req, res) => {
+router8.get("/revenue/summary", async (req, res) => {
   const { period } = req.query;
   try {
     const transactions = await db.select().from(transactionsTable);
@@ -1771,7 +1807,7 @@ router7.get("/revenue/summary", async (req, res) => {
     res.json({ ...HARDCODED_SUMMARY, period: period ?? "month" });
   }
 });
-router7.get("/revenue/analytics", async (_req, res) => {
+router8.get("/revenue/analytics", async (_req, res) => {
   try {
     res.json(HARDCODED_ANALYTICS);
   } catch (err) {
@@ -1779,7 +1815,7 @@ router7.get("/revenue/analytics", async (_req, res) => {
     res.json(HARDCODED_ANALYTICS);
   }
 });
-router7.get("/revenue/transactions", async (_req, res) => {
+router8.get("/revenue/transactions", async (_req, res) => {
   try {
     const transactions = await db.select().from(transactionsTable);
     if (!transactions || transactions.length === 0) {
@@ -1800,11 +1836,11 @@ router7.get("/revenue/transactions", async (_req, res) => {
     res.json(HARDCODED_TRANSACTIONS);
   }
 });
-var revenue_default = router7;
+var revenue_default = router8;
 
 // src/routes/reviews.ts
-import { Router as Router8 } from "express";
-var router8 = Router8();
+import { Router as Router9 } from "express";
+var router9 = Router9();
 var HARDCODED_SUMMARY2 = {
   averageRating: 4.9,
   totalReviews: 28,
@@ -1872,7 +1908,7 @@ var HARDCODED_REVIEWS = [
     createdAt: /* @__PURE__ */ new Date("2026-05-18T11:20:00Z")
   }
 ];
-router8.get("/reviews/summary", async (_req, res) => {
+router9.get("/reviews/summary", async (_req, res) => {
   try {
     const reviews = await db.select().from(reviewsTable);
     if (!reviews || reviews.length === 0) {
@@ -1933,7 +1969,7 @@ router8.get("/reviews/summary", async (_req, res) => {
     res.json(HARDCODED_SUMMARY2);
   }
 });
-router8.get("/reviews", async (_req, res) => {
+router9.get("/reviews", async (_req, res) => {
   try {
     let reviews = await db.select().from(reviewsTable);
     if (!reviews || reviews.length === 0) {
@@ -1946,12 +1982,12 @@ router8.get("/reviews", async (_req, res) => {
     res.json(HARDCODED_REVIEWS);
   }
 });
-var reviews_default = router8;
+var reviews_default = router9;
 
 // src/routes/blog.ts
-import { Router as Router9 } from "express";
-var router9 = Router9();
-router9.get("/blog/posts", async (_req, res) => {
+import { Router as Router10 } from "express";
+var router10 = Router10();
+router10.get("/blog/posts", async (_req, res) => {
   const posts = await db.select().from(blogPostsTable);
   let result = posts.map((p) => ({
     id: p.id,
@@ -1986,7 +2022,7 @@ router9.get("/blog/posts", async (_req, res) => {
   }
   res.json(result);
 });
-router9.post("/blog/posts", async (req, res) => {
+router10.post("/blog/posts", async (req, res) => {
   const { title, featuredImage, category, tags, content } = req.body;
   if (!title || !category || !content) {
     res.status(400).json({ error: "Missing required fields" });
@@ -2003,7 +2039,7 @@ router9.post("/blog/posts", async (req, res) => {
     createdAt: post.createdAt.toISOString()
   });
 });
-router9.get("/blog/outlines", async (_req, res) => {
+router10.get("/blog/outlines", async (_req, res) => {
   const outlines = await db.select().from(blogOutlinesTable);
   let result = outlines.map((o) => ({
     id: o.id,
@@ -2031,7 +2067,7 @@ router9.get("/blog/outlines", async (_req, res) => {
   }
   res.json(result);
 });
-router9.post("/blog/outlines", async (req, res) => {
+router10.post("/blog/outlines", async (req, res) => {
   const { proposedTitle, keyPoints, targetAudience, keywords, notes } = req.body;
   if (!proposedTitle || !targetAudience) {
     res.status(400).json({ error: "Missing required fields" });
@@ -2056,13 +2092,13 @@ router9.post("/blog/outlines", async (req, res) => {
     createdAt: outline.createdAt.toISOString()
   });
 });
-var blog_default = router9;
+var blog_default = router10;
 
 // src/routes/profile.ts
-import { Router as Router10 } from "express";
+import { Router as Router11 } from "express";
 import { eq as eq5 } from "drizzle-orm";
-var router10 = Router10();
-router10.get("/profile", async (_req, res) => {
+var router11 = Router11();
+router11.get("/profile", async (_req, res) => {
   const [profile] = await db.select().from(therapistProfileTable);
   if (!profile) {
     res.json({
@@ -2111,7 +2147,7 @@ router10.get("/profile", async (_req, res) => {
     photoUrl: profile.photoUrl
   });
 });
-router10.patch("/profile", async (req, res) => {
+router11.patch("/profile", async (req, res) => {
   const [profile] = await db.select().from(therapistProfileTable);
   if (!profile) {
     res.status(404).json({ error: "Profile not found" });
@@ -2154,21 +2190,22 @@ router10.patch("/profile", async (req, res) => {
     photoUrl: updated.photoUrl
   });
 });
-var profile_default = router10;
+var profile_default = router11;
 
 // src/routes/index.ts
-var router11 = Router11();
-router11.use(health_default);
-router11.use(dashboard_default);
-router11.use(clients_default);
-router11.use(sessions_default);
-router11.use(calendar_default);
-router11.use(outcomes_default);
-router11.use(revenue_default);
-router11.use(reviews_default);
-router11.use(blog_default);
-router11.use(profile_default);
-var routes_default = router11;
+var router12 = Router12();
+router12.use(health_default);
+router12.use(auth_default);
+router12.use(dashboard_default);
+router12.use(clients_default);
+router12.use(sessions_default);
+router12.use(calendar_default);
+router12.use(outcomes_default);
+router12.use(revenue_default);
+router12.use(reviews_default);
+router12.use(blog_default);
+router12.use(profile_default);
+var routes_default = router12;
 
 // src/app.ts
 var app = express();
