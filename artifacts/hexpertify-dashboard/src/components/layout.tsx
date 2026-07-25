@@ -134,11 +134,11 @@ export function Sidebar() {
 export function Header() {
   return (
     <header className="h-[64px] bg-white border-b border-border flex items-center justify-between px-6 fixed top-0 w-full z-20">
-      <Link href="/" className="flex items-center gap-2 min-w-[220px] focus:outline-none cursor-pointer">
+      <Link href="/" className="flex items-center gap-2 min-w-[240px] focus:outline-none cursor-pointer">
         <img 
           src="/hexpertify-logo.png" 
           alt="Hexpertify — Anytime, Anywhere" 
-          className="h-10 w-auto object-contain mix-blend-multiply" 
+          className="h-[52px] w-auto object-contain mix-blend-multiply" 
         />
       </Link>
 
