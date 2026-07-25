@@ -19,21 +19,21 @@ export default function Dashboard() {
   const [reportSessionId, setReportSessionId] = useState<number | null>(null);
   const [reportClientName, setReportClientName] = useState<string>("");
 
-  const stats = statsData || {
-    sessionsToday: 6,
-    sessionsRemaining: 2,
-    activeClients: 18,
-    newClientsThisWeek: 3,
-    pendingReports: 2,
-    homeworkToReview: 5,
-    homeworkDueToday: 5,
-    therapyHoursThisWeek: 28,
-    improvementAverage: 74.2,
-    totalClientsCount: 24,
-    therapistName: "Dr. Alex Harrison",
-    therapistTitle: "Licensed Clinical Psychologist",
-    isAvailable: true,
-    therapyHoursToday: "5h 45m",
+  const stats = {
+    sessionsToday: statsData?.sessionsToday ?? 6,
+    sessionsRemaining: statsData?.sessionsRemaining ?? 2,
+    activeClients: statsData?.activeClients ?? 18,
+    newClientsThisWeek: statsData?.newClientsThisWeek ?? 3,
+    pendingReports: statsData?.pendingReports ?? 2,
+    homeworkToReview: statsData?.homeworkToReview ?? 5,
+    homeworkDueToday: statsData?.homeworkDueToday ?? 5,
+    therapyHoursThisWeek: statsData?.therapyHoursThisWeek ?? 28,
+    improvementAverage: statsData?.improvementAverage ?? 74.2,
+    totalClientsCount: statsData?.totalClientsCount ?? 24,
+    therapistName: statsData?.therapistName || "Dr. Alex Harrison",
+    therapistTitle: statsData?.therapistTitle || "Licensed Clinical Psychologist",
+    isAvailable: statsData?.isAvailable ?? true,
+    therapyHoursToday: statsData?.therapyHoursToday || "5h 45m",
   };
 
   const sessionList = (Array.isArray(sessionsData) && sessionsData.length > 0) ? sessionsData : [
@@ -116,21 +116,21 @@ export default function Dashboard() {
 
             <div className="space-y-2">
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                {statsLoading ? <Skeleton className="h-10 w-64 bg-white/20" /> : `Welcome back, ${stats?.therapistName || 'Dr. Sarah Wilson'}`}
+                {statsLoading ? <Skeleton className="h-10 w-64 bg-white/20" /> : `Welcome back, ${stats.therapistName}`}
               </h1>
               <p className="text-primary-foreground/80 text-lg max-w-xl">
-                {statsLoading ? <Skeleton className="h-6 w-96 bg-white/20" /> : `${stats?.therapistTitle || 'Clinical Psychologist'} · You have ${stats?.sessionsToday || 0} sessions today and ${stats?.pendingReports || 0} reports awaiting review.`}
+                {statsLoading ? <Skeleton className="h-6 w-96 bg-white/20" /> : `${stats.therapistTitle} · You have ${stats.sessionsToday} sessions today and ${stats.pendingReports} reports awaiting review.`}
               </p>
             </div>
 
             <div className="flex items-center gap-3">
               <div className="inline-flex items-center gap-2 rounded-full bg-black/20 px-4 py-2 text-sm font-medium backdrop-blur-md">
                 <Calendar className="w-4 h-4 text-primary-foreground/80" />
-                <span>Therapy hours: {stats?.therapyHoursToday || '5h 45m'}</span>
+                <span>Therapy hours: {stats.therapyHoursToday}</span>
               </div>
               <div className="inline-flex items-center gap-2 rounded-full bg-black/20 px-4 py-2 text-sm font-medium backdrop-blur-md">
                 <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]"></div>
-                <span>{stats?.isAvailable ? 'Available now' : 'Not available'}</span>
+                <span>{stats.isAvailable ? 'Available now' : 'Not available'}</span>
               </div>
             </div>
           </div>
@@ -174,8 +174,8 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           title="Sessions today"
-          value={stats?.sessionsToday}
-          description={`${stats?.sessionsRemaining} remaining`}
+          value={stats.sessionsToday}
+          description={`${stats.sessionsRemaining} remaining`}
           icon={<Video className="w-5 h-5 text-blue-500" />}
           trend="+2"
           trendPositive={true}
@@ -183,8 +183,8 @@ export default function Dashboard() {
         />
         <StatCard
           title="Active clients"
-          value={stats?.activeClients}
-          description={`${stats?.newClientsThisWeek} new this week`}
+          value={stats.activeClients}
+          description={`${stats.newClientsThisWeek} new this week`}
           icon={<Users className="w-5 h-5 text-indigo-500" />}
           trend="+3"
           trendPositive={true}
@@ -192,7 +192,7 @@ export default function Dashboard() {
         />
         <StatCard
           title="Pending reports"
-          value={stats?.pendingReports}
+          value={stats.pendingReports}
           description="Payment gated"
           icon={<FileText className="w-5 h-5 text-orange-500" />}
           trend="-1"
@@ -201,7 +201,7 @@ export default function Dashboard() {
         />
         <StatCard
           title="Therapy hours"
-          value={`${stats?.therapyHoursThisWeek}h`}
+          value={`${stats.therapyHoursThisWeek}h`}
           description="This week"
           icon={<Clock className="w-5 h-5 text-emerald-500" />}
           trend="+6h"
