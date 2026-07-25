@@ -11,6 +11,15 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 
+// Also support non-/api endpoint calls if client explicitly requests JSON
+app.use((req, res, next) => {
+  if (req.headers.accept?.includes("application/json") || req.xhr) {
+    router(req, res, next);
+    return;
+  }
+  next();
+});
+
 // Serve static frontend files from root public folder
 const publicPath = path.resolve(globalThis.__dirname || process.cwd(), "public");
 app.use(express.static(publicPath));
