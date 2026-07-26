@@ -55,7 +55,7 @@ export function Sidebar() {
   };
 
   return (
-    <div className="w-[240px] flex-shrink-0 flex flex-col bg-white border-r border-border h-[calc(100vh-64px)] fixed left-0 top-[64px] z-10 overflow-y-auto">
+    <div className="w-[240px] flex-shrink-0 flex flex-col bg-white border-r border-border h-[calc(100vh-72px)] fixed left-0 top-[72px] z-10 overflow-y-auto">
       <div className="flex-1 py-6 px-4 space-y-8">
         {SIDEBAR_ITEMS.map((section, idx) => (
           <div key={idx}>
@@ -152,12 +152,12 @@ export function Sidebar() {
 
 export function Header() {
   return (
-    <header className="h-[64px] bg-white border-b border-border flex items-center justify-between px-6 fixed top-0 w-full z-20">
-      <Link href="/" className="flex items-center gap-2 min-w-[240px] focus:outline-none cursor-pointer">
+    <header className="h-[72px] bg-white border-b border-border flex items-center justify-between px-6 fixed top-0 w-full z-20">
+      <Link href="/" className="flex items-center gap-2 min-w-[260px] focus:outline-none cursor-pointer">
         <img 
           src="/hexpertify-logo.png" 
-          alt="Hexpertify — Anytime, Anywhere" 
-          className="h-[52px] w-auto object-contain mix-blend-multiply" 
+          alt="Hexpertify Logo" 
+          className="h-14 w-auto object-contain max-h-14 py-1" 
         />
       </Link>
 
@@ -213,7 +213,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <div className="flex flex-1 pt-[64px]">
+      <div className="flex flex-1 pt-[72px]">
         <Sidebar />
         <main className="flex-1 ml-[240px] p-8 overflow-y-auto">
           <div className="max-w-7xl mx-auto">

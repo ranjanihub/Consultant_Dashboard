@@ -91,10 +91,10 @@ export function HtmlChunkPreviewModal({
           }`}
         >
           {/* Centrally Managed Global Header Banner */}
-          <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800 sticky top-0 z-30 shadow-sm">
+          <div className="bg-white text-slate-900 px-6 py-4 flex items-center justify-between border-b border-slate-200 sticky top-0 z-30 shadow-sm">
             <div className="flex items-center gap-3">
-              <img src="/hexpertify-logo.png" alt="Hexpertify Logo" className="h-8 bg-white/10 p-1 rounded brightness-200" />
-              <div className="hidden sm:flex items-center gap-4 text-xs text-slate-300 font-medium ml-4">
+              <img alt="Hexpertify Logo" className="h-16 w-auto object-contain" src="/hexpertify-logo.png" />
+              <div className="hidden sm:flex items-center gap-4 text-xs text-slate-600 font-medium ml-4">
                 <span>Services</span>
                 <span>Doctors</span>
                 <span>Resources</span>
@@ -102,7 +102,7 @@ export function HtmlChunkPreviewModal({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 font-mono">
+              <span className="text-[11px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full flex items-center gap-1 font-mono">
                 <Lock className="w-3 h-3" /> Centrally Managed Global Header
               </span>
               <button className="bg-primary text-white text-xs font-semibold px-3 py-1.5 rounded-full">Book Session</button>
