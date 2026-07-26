@@ -600,7 +600,7 @@ const SAMPLE_PAGES = [
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                   </div>
-                  <span class="text-[10px] text-gray-400 font-semibold uppercase">Verified Client</span>
+
                 </div>
                 <p class="text-xs text-gray-700 italic leading-relaxed">
                   "Working with Dr. Sarah Jenkins completely turned around my career transition. Her structured CBT sessions gave me concrete tools to tackle high-pressure burnout."
@@ -623,7 +623,7 @@ const SAMPLE_PAGES = [
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                   </div>
-                  <span class="text-[10px] text-gray-400 font-semibold uppercase">Verified Client</span>
+
                 </div>
                 <p class="text-xs text-gray-700 italic leading-relaxed">
                   "Empathetic, incredibly knowledgeable, and deeply perceptive. Dr. Jenkins helped me navigate severe imposter syndrome with compassionate professionalism."

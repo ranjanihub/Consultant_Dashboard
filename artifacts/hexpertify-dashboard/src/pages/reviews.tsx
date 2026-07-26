@@ -99,9 +99,6 @@ export default function Reviews() {
                   ))}
                 </div>
                 <p className="text-sm font-medium text-muted-foreground">Based on {summary?.totalReviews || 28} reviews</p>
-                <div className="mt-3 flex items-center gap-1.5 text-xs text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 font-medium">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> {summary?.recommendationPercent || 96}% Client Satisfaction
-                </div>
               </>
             )}
           </CardContent>
@@ -172,7 +169,7 @@ export default function Reviews() {
               <div className="p-8 text-center text-muted-foreground">No reviews yet.</div>
             ) : (
               rawReviews.map((review: any, idx: number) => {
-                const name = review.clientName || (idx === 0 ? "Sarah Jenkins" : idx === 1 ? "Michael Chen" : idx === 2 ? "Emily Rodriguez" : idx === 3 ? "David Kim" : "Verified Client");
+                const name = review.clientName || (idx === 0 ? "Sarah Jenkins" : idx === 1 ? "Michael Chen" : idx === 2 ? "Emily Rodriguez" : idx === 3 ? "David Kim" : "Client");
                 const initials = getInitials(name);
 
                 return (
@@ -187,7 +184,6 @@ export default function Reviews() {
                         <div>
                           <div className="font-semibold text-slate-900 flex items-center gap-2">
                             {name}
-                            <span className="text-[11px] bg-slate-100 text-slate-600 font-medium px-2 py-0.5 rounded-full border border-slate-200">Verified Client</span>
                           </div>
                           <div className="flex items-center gap-1 mt-0.5">
                             {[1, 2, 3, 4, 5].map((star) => (
