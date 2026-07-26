@@ -111,7 +111,7 @@ export default function Dashboard() {
         <div className="relative z-10 flex flex-col lg:flex-row gap-8 justify-between items-start lg:items-center">
           <div className="space-y-6 flex-1">
             <div className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-sm font-medium backdrop-blur-sm border border-white/10">
-              Tuesday, July 7 · Week 27
+              Tuesday, July 7
             </div>
 
             <div className="space-y-2">
@@ -124,10 +124,6 @@ export default function Dashboard() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full bg-black/20 px-4 py-2 text-sm font-medium backdrop-blur-md">
-                <Calendar className="w-4 h-4 text-primary-foreground/80" />
-                <span>Therapy hours: {stats.therapyHoursToday}</span>
-              </div>
               <div className="inline-flex items-center gap-2 rounded-full bg-black/20 px-4 py-2 text-sm font-medium backdrop-blur-md">
                 <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]"></div>
                 <span>{stats.isAvailable ? 'Available now' : 'Not available'}</span>
@@ -152,7 +148,7 @@ export default function Dashboard() {
                 </Avatar>
                 <div>
                   <h4 className="font-bold text-lg leading-none mb-1">{nextSession.clientName}</h4>
-                  <p className="text-sm text-primary-foreground/80">{nextSession.sessionType}{nextSession.sessionSubtype ? ` · ${nextSession.sessionSubtype}` : ''} · {nextSession.durationMinutes} min</p>
+                  <p className="text-sm text-primary-foreground/80">{nextSession.durationMinutes} min</p>
                 </div>
               </div>
 
@@ -244,7 +240,7 @@ export default function Dashboard() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-semibold text-[15px]">{session.clientName} <span className="text-muted-foreground font-normal ml-1">· {session.sessionType} · {session.sessionSubtype}</span></div>
+                        <div className="font-semibold text-[15px]">{session.clientName}</div>
                         <div className="flex items-center gap-3 text-sm mt-1">
                           <span className="flex items-center text-muted-foreground">
                             <Clock className="w-3.5 h-3.5 mr-1" />
@@ -299,7 +295,7 @@ export default function Dashboard() {
                       </Avatar>
                       <div className="flex flex-col">
                         <span className="font-semibold text-sm">{report.clientName}</span>
-                        <span className="text-xs text-muted-foreground">{report.sessionType} · {report.sessionDate}</span>
+                        <span className="text-xs text-muted-foreground">{report.sessionDate}</span>
                       </div>
                     </div>
                     <Button

@@ -242,57 +242,114 @@ export default function Login() {
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 space-y-5 xl:space-y-6 max-w-xl my-auto">
-          <h1 className="text-2xl lg:text-3xl xl:text-4xl font-extrabold text-white leading-tight tracking-tight">
-            Empowering Mental Health Professionals <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-indigo-200 to-amber-200">Anytime, Anywhere.</span>
-          </h1>
+        <div className="relative z-10 space-y-5 xl:space-y-6 max-w-xl my-auto transition-all duration-300">
+          {role === "client" ? (
+            <>
+              <h1 className="text-2xl lg:text-3xl xl:text-4xl font-extrabold text-white leading-tight tracking-tight">
+                Empowering Your Wellness Journey <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-indigo-200 to-amber-200">Anytime, Anywhere.</span>
+              </h1>
 
-          <p className="text-purple-100/80 text-sm xl:text-base leading-relaxed font-normal">
-            Streamline client sessions, automated GAD-7/CBT outcome analytics, payment-gated clinical reports, and HIPAA-compliant video consultations in one unified workspace.
-          </p>
+              <p className="text-purple-100/80 text-sm xl:text-base leading-relaxed font-normal">
+                Connect with top licensed mental health experts, track your personal progress, book virtual therapy sessions, and access confidential care in one secure platform.
+              </p>
 
-          {/* Feature Bullets */}
-          <div className="grid grid-cols-2 gap-3 pt-1">
-            <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
-              <div className="p-1.5 bg-emerald-500/20 text-emerald-300 rounded-lg shrink-0">
-                <CheckCircle2 className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-white font-semibold text-xs xl:text-sm">Outcome Analytics</h4>
-                <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">Real-time GAD-7 & PHQ-9 trends</p>
-              </div>
-            </div>
+              {/* Feature Bullets for Client */}
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
+                  <div className="p-1.5 bg-emerald-500/20 text-emerald-300 rounded-lg shrink-0">
+                    <UserCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-semibold text-xs xl:text-sm">Expert Specialists</h4>
+                    <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">Licensed & verified experts</p>
+                  </div>
+                </div>
 
-            <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
-              <div className="p-1.5 bg-blue-500/20 text-blue-300 rounded-lg shrink-0">
-                <Activity className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-white font-semibold text-xs xl:text-sm">Smart Teletherapy</h4>
-                <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">HD encrypted video & notes</p>
-              </div>
-            </div>
+                <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
+                  <div className="p-1.5 bg-blue-500/20 text-blue-300 rounded-lg shrink-0">
+                    <Activity className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-semibold text-xs xl:text-sm">Seamless Booking</h4>
+                    <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">Instant session scheduling</p>
+                  </div>
+                </div>
 
-            <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
-              <div className="p-1.5 bg-amber-500/20 text-amber-300 rounded-lg shrink-0">
-                <FileText className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-white font-semibold text-xs xl:text-sm">Payment Gated Notes</h4>
-                <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">Automated invoice release</p>
-              </div>
-            </div>
+                <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
+                  <div className="p-1.5 bg-amber-500/20 text-amber-300 rounded-lg shrink-0">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-semibold text-xs xl:text-sm">Personalized Care</h4>
+                    <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">Tailored therapy plans</p>
+                  </div>
+                </div>
 
-            <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
-              <div className="p-1.5 bg-purple-500/20 text-purple-300 rounded-lg shrink-0">
-                <UserCheck className="w-4 h-4" />
+                <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
+                  <div className="p-1.5 bg-purple-500/20 text-purple-300 rounded-lg shrink-0">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-semibold text-xs xl:text-sm">Confidential & Secure</h4>
+                    <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">100% HIPAA compliant</p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h4 className="text-white font-semibold text-xs xl:text-sm">Client Portal</h4>
-                <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">Interactive homework & mood logs</p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl lg:text-3xl xl:text-4xl font-extrabold text-white leading-tight tracking-tight">
+                Empowering Mental Health Professionals <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-indigo-200 to-amber-200">Anytime, Anywhere.</span>
+              </h1>
+
+              <p className="text-purple-100/80 text-sm xl:text-base leading-relaxed font-normal">
+                Streamline client sessions, automated GAD-7/CBT outcome analytics, payment-gated clinical reports, and HIPAA-compliant video consultations in one unified workspace.
+              </p>
+
+              {/* Feature Bullets for Practitioner */}
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
+                  <div className="p-1.5 bg-emerald-500/20 text-emerald-300 rounded-lg shrink-0">
+                    <CheckCircle2 className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-semibold text-xs xl:text-sm">Outcome Analytics</h4>
+                    <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">Real-time GAD-7 & PHQ-9 trends</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
+                  <div className="p-1.5 bg-blue-500/20 text-blue-300 rounded-lg shrink-0">
+                    <Activity className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-semibold text-xs xl:text-sm">Smart Teletherapy</h4>
+                    <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">HD encrypted video & notes</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
+                  <div className="p-1.5 bg-amber-500/20 text-amber-300 rounded-lg shrink-0">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-semibold text-xs xl:text-sm">Payment Gated Notes</h4>
+                    <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">Automated invoice release</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
+                  <div className="p-1.5 bg-purple-500/20 text-purple-300 rounded-lg shrink-0">
+                    <UserCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-semibold text-xs xl:text-sm">Client Portal</h4>
+                    <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">Interactive homework & mood logs</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
 
       </div>
