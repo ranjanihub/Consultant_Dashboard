@@ -222,9 +222,9 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-900 grid grid-cols-1 lg:grid-cols-12 overflow-hidden font-sans">
+    <div className="min-h-screen w-full bg-slate-900 grid grid-cols-1 lg:grid-cols-12 font-sans overflow-x-hidden">
       {/* Left Column - Hero Branding & Features (Hidden on mobile) */}
-      <div className="hidden lg:flex lg:col-span-7 relative bg-gradient-to-br from-[#2a137e] via-[#4522c0] to-[#160c49] p-12 flex-col justify-between overflow-hidden">
+      <div className="hidden lg:flex lg:col-span-7 sticky top-0 h-screen relative bg-gradient-to-br from-[#2a137e] via-[#4522c0] to-[#160c49] p-8 xl:p-12 flex-col justify-between overflow-hidden">
         {/* Ambient glow effects */}
         <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none translate-x-1/3 translate-y-1/3"></div>
@@ -234,7 +234,7 @@ export default function Login() {
           <img
             src="/hexpertify-logo.png"
             alt="Hexpertify Logo"
-            className="h-20 w-auto object-contain brightness-0 invert"
+            className="h-16 xl:h-20 w-auto object-contain brightness-0 invert"
           />
           <Badge variant="secondary" className="bg-white/10 text-white border-white/20 px-3 py-1 text-xs backdrop-blur-md font-medium">
             <ShieldCheck className="w-3.5 h-3.5 mr-1.5 text-emerald-400" /> HIPAA & ISO 27001 Certified
@@ -242,54 +242,54 @@ export default function Login() {
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 my-auto py-12 space-y-8 max-w-xl">
-          <h1 className="text-4xl sm:text-5xl font-black text-white leading-tight tracking-tight">
+        <div className="relative z-10 space-y-5 xl:space-y-6 max-w-xl my-auto">
+          <h1 className="text-2xl lg:text-3xl xl:text-4xl font-extrabold text-white leading-tight tracking-tight">
             Empowering Mental Health Professionals <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-indigo-200 to-amber-200">Anytime, Anywhere.</span>
           </h1>
 
-          <p className="text-purple-100/80 text-lg leading-relaxed font-normal">
+          <p className="text-purple-100/80 text-sm xl:text-base leading-relaxed font-normal">
             Streamline client sessions, automated GAD-7/CBT outcome analytics, payment-gated clinical reports, and HIPAA-compliant video consultations in one unified workspace.
           </p>
 
           {/* Feature Bullets */}
-          <div className="grid grid-cols-2 gap-4 pt-2">
-            <div className="flex items-start gap-3 bg-white/5 border border-white/10 p-3.5 rounded-xl backdrop-blur-sm">
-              <div className="p-2 bg-emerald-500/20 text-emerald-300 rounded-lg shrink-0">
+          <div className="grid grid-cols-2 gap-3 pt-1">
+            <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
+              <div className="p-1.5 bg-emerald-500/20 text-emerald-300 rounded-lg shrink-0">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-white font-semibold text-sm">Outcome Analytics</h4>
-                <p className="text-purple-200/60 text-xs mt-0.5">Real-time GAD-7 & PHQ-9 trends</p>
+                <h4 className="text-white font-semibold text-xs xl:text-sm">Outcome Analytics</h4>
+                <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">Real-time GAD-7 & PHQ-9 trends</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 bg-white/5 border border-white/10 p-3.5 rounded-xl backdrop-blur-sm">
-              <div className="p-2 bg-blue-500/20 text-blue-300 rounded-lg shrink-0">
+            <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
+              <div className="p-1.5 bg-blue-500/20 text-blue-300 rounded-lg shrink-0">
                 <Activity className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-white font-semibold text-sm">Smart Teletherapy</h4>
-                <p className="text-purple-200/60 text-xs mt-0.5">HD encrypted video & notes</p>
+                <h4 className="text-white font-semibold text-xs xl:text-sm">Smart Teletherapy</h4>
+                <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">HD encrypted video & notes</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 bg-white/5 border border-white/10 p-3.5 rounded-xl backdrop-blur-sm">
-              <div className="p-2 bg-amber-500/20 text-amber-300 rounded-lg shrink-0">
+            <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
+              <div className="p-1.5 bg-amber-500/20 text-amber-300 rounded-lg shrink-0">
                 <FileText className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-white font-semibold text-sm">Payment Gated Notes</h4>
-                <p className="text-purple-200/60 text-xs mt-0.5">Automated invoice release</p>
+                <h4 className="text-white font-semibold text-xs xl:text-sm">Payment Gated Notes</h4>
+                <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">Automated invoice release</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 bg-white/5 border border-white/10 p-3.5 rounded-xl backdrop-blur-sm">
-              <div className="p-2 bg-purple-500/20 text-purple-300 rounded-lg shrink-0">
+            <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 p-3 rounded-xl backdrop-blur-sm">
+              <div className="p-1.5 bg-purple-500/20 text-purple-300 rounded-lg shrink-0">
                 <UserCheck className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-white font-semibold text-sm">Client Portal</h4>
-                <p className="text-purple-200/60 text-xs mt-0.5">Interactive homework & mood logs</p>
+                <h4 className="text-white font-semibold text-xs xl:text-sm">Client Portal</h4>
+                <p className="text-purple-200/70 text-[11px] xl:text-xs mt-0.5">Interactive homework & mood logs</p>
               </div>
             </div>
           </div>
@@ -298,7 +298,7 @@ export default function Login() {
       </div>
 
       {/* Right Column - Login Form */}
-      <div className="lg:col-span-5 bg-white flex flex-col justify-between p-6 sm:p-12 overflow-y-auto">
+      <div className="lg:col-span-5 bg-white flex flex-col justify-between p-6 sm:p-12 min-h-screen lg:h-screen overflow-y-auto">
         {/* Top Mobile Brand */}
         <div className="lg:hidden flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
           <img
