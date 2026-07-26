@@ -39,7 +39,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [role, setRole] = useState<"client" | "therapist">("client");
-  const [clientMode, setClientMode] = useState<"signup" | "signin">("signup");
+  const [clientMode, setClientMode] = useState<"signup" | "signin">("signin");
   const [fullName, setFullName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
   const [clientPhone, setClientPhone] = useState("");
