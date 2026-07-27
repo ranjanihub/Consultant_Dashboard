@@ -2229,41 +2229,77 @@ var reviews_default = router9;
 
 // src/routes/blog.ts
 import { Router as Router10 } from "express";
+import { eq as eq5 } from "drizzle-orm";
 var router10 = Router10();
-router10.get("/blog/posts", async (_req, res) => {
-  const posts = await db.select().from(blogPostsTable);
-  let result = posts.map((p) => ({
-    id: p.id,
-    title: p.title,
-    category: p.category,
-    tags: p.tags,
-    content: p.content,
-    status: p.status,
-    createdAt: p.createdAt.toISOString()
-  }));
-  if (result.length === 0) {
-    result = [
-      {
-        id: 1,
-        title: "5 Proven CBT Techniques to Overcome Workplace Burnout",
-        category: "CBT Insights",
-        tags: ["Burnout", "CBT", "Stress Management"],
-        content: "Workplace burnout is a state of emotional, physical, and mental exhaustion caused by excessive stress...",
-        status: "published",
-        createdAt: "2026-07-20T10:00:00.000Z"
-      },
-      {
-        id: 2,
-        title: "Understanding Mindfulness in Modern Psychotherapy",
-        category: "Mindfulness",
-        tags: ["Mindfulness", "ACT", "Self-Care"],
-        content: "Mindfulness has transitioned from ancient traditions into a core pillar of modern clinical psychology...",
-        status: "published",
-        createdAt: "2026-07-15T14:30:00.000Z"
-      }
-    ];
+var memoryPosts = [
+  {
+    id: 1,
+    title: "5 Proven CBT Techniques to Overcome Workplace Burnout",
+    category: "Anxiety",
+    tags: ["Burnout", "CBT", "Stress Management"],
+    content: "Workplace burnout is a state of emotional, physical, and mental exhaustion caused by excessive stress in corporate environments.\n\n### Key Interventions\n- **Cognitive Reframing**: Identify all-or-nothing thinking cycles.\n- **Pacing Protocols**: Establish strict calendar boundaries between therapy sessions.",
+    featuredImage: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&auto=format&fit=crop",
+    status: "published",
+    author: "Dr. Alex Harrison",
+    createdAt: "2026-07-20T10:00:00.000Z"
+  },
+  {
+    id: 2,
+    title: "Understanding Mindfulness & Acceptance in Modern Psychotherapy",
+    category: "Mindfulness",
+    tags: ["Mindfulness", "ACT", "Self-Care"],
+    content: "Mindfulness has transitioned from ancient traditions into a core pillar of modern clinical psychology...",
+    featuredImage: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&auto=format&fit=crop",
+    status: "published",
+    author: "Dr. Alex Harrison",
+    createdAt: "2026-07-15T14:30:00.000Z"
+  },
+  {
+    id: 3,
+    title: "Navigating Trauma-Informed Care: Best Practices for Clinical Therapists",
+    category: "Therapy_Guide",
+    tags: ["trauma", "clinical-guide", "patient-care"],
+    content: "Trauma-informed care shifts the clinical focus from 'What is wrong with you?' to 'What happened to you?' This approach incorporates key principles of safety, choice, and empowerment.",
+    featuredImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop",
+    status: "submitted",
+    author: "Dr. Alex Harrison",
+    createdAt: "2026-07-25T09:15:00.000Z"
   }
-  res.json(result);
+];
+var memoryOutlines = [
+  {
+    id: 1,
+    proposedTitle: "Navigating Life Transitions with Acceptance & Commitment Therapy (ACT)",
+    keyPoints: ["Defining ACT Principles", "Values Clarification Matrix", "Cognitive Defusion Exercises"],
+    targetAudience: "Adults dealing with major career or life transitions",
+    keywords: ["ACT", "Life Transitions", "Values"],
+    notes: "Approved outline ready for full draft.",
+    status: "approved",
+    author: "Dr. Alex Harrison",
+    createdAt: "2026-07-18T11:00:00.000Z"
+  }
+];
+router10.get("/blog/posts", async (_req, res) => {
+  try {
+    const posts = await db.select().from(blogPostsTable);
+    if (posts.length > 0) {
+      const result = posts.map((p) => ({
+        id: p.id,
+        title: p.title,
+        category: p.category,
+        tags: p.tags,
+        content: p.content,
+        featuredImage: p.featuredImage,
+        status: p.status,
+        author: "Dr. Alex Harrison",
+        createdAt: p.createdAt instanceof Date ? p.createdAt.toISOString() : p.createdAt
+      }));
+      res.json(result);
+      return;
+    }
+  } catch (_e) {
+  }
+  res.json(memoryPosts);
 });
 router10.post("/blog/posts", async (req, res) => {
   const { title, featuredImage, category, tags, content } = req.body;
@@ -2271,44 +2307,68 @@ router10.post("/blog/posts", async (req, res) => {
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
-  const [post] = await db.insert(blogPostsTable).values({ title, featuredImage: featuredImage ?? null, category, tags: tags ?? [], content, status: "submitted" }).returning();
-  res.status(201).json({
-    id: post.id,
-    title: post.title,
-    category: post.category,
-    tags: post.tags,
-    content: post.content,
-    status: post.status,
-    createdAt: post.createdAt.toISOString()
-  });
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  let createdPost = null;
+  try {
+    const [post] = await db.insert(blogPostsTable).values({ title, featuredImage: featuredImage ?? null, category, tags: tags ?? [], content, status: "submitted" }).returning();
+    createdPost = {
+      id: post.id,
+      title: post.title,
+      category: post.category,
+      tags: post.tags,
+      content: post.content,
+      featuredImage: post.featuredImage,
+      status: post.status,
+      author: "Dr. Alex Harrison",
+      createdAt: post.createdAt instanceof Date ? post.createdAt.toISOString() : now
+    };
+  } catch (_e) {
+    const newId = memoryPosts.length > 0 ? Math.max(...memoryPosts.map((p) => p.id)) + 1 : 1;
+    createdPost = {
+      id: newId,
+      title,
+      category,
+      tags: tags ?? [],
+      content,
+      featuredImage: featuredImage || null,
+      status: "submitted",
+      author: "Dr. Alex Harrison",
+      createdAt: now
+    };
+    memoryPosts.unshift(createdPost);
+  }
+  res.status(201).json(createdPost);
+});
+router10.delete("/blog/posts/:id", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  memoryPosts = memoryPosts.filter((p) => p.id !== id);
+  try {
+    await db.delete(blogPostsTable).where(eq5(blogPostsTable.id, id));
+  } catch (_e) {
+  }
+  res.json({ message: "Post deleted successfully", id });
 });
 router10.get("/blog/outlines", async (_req, res) => {
-  const outlines = await db.select().from(blogOutlinesTable);
-  let result = outlines.map((o) => ({
-    id: o.id,
-    proposedTitle: o.proposedTitle,
-    keyPoints: o.keyPoints,
-    targetAudience: o.targetAudience,
-    keywords: o.keywords,
-    notes: o.notes,
-    status: o.status,
-    createdAt: o.createdAt.toISOString()
-  }));
-  if (result.length === 0) {
-    result = [
-      {
-        id: 1,
-        proposedTitle: "Navigating Life Transitions with Acceptance & Commitment Therapy (ACT)",
-        keyPoints: ["Defining ACT", "Values clarification", "Defusion techniques"],
-        targetAudience: "Adults dealing with major career or life changes",
-        keywords: ["ACT", "Life Transitions", "Values"],
-        notes: "Approved outline ready for draft.",
-        status: "approved",
-        createdAt: "2026-07-18T11:00:00.000Z"
-      }
-    ];
+  try {
+    const outlines = await db.select().from(blogOutlinesTable);
+    if (outlines.length > 0) {
+      const result = outlines.map((o) => ({
+        id: o.id,
+        proposedTitle: o.proposedTitle,
+        keyPoints: o.keyPoints,
+        targetAudience: o.targetAudience,
+        keywords: o.keywords,
+        notes: o.notes,
+        status: o.status,
+        author: "Dr. Alex Harrison",
+        createdAt: o.createdAt instanceof Date ? o.createdAt.toISOString() : o.createdAt
+      }));
+      res.json(result);
+      return;
+    }
+  } catch (_e) {
   }
-  res.json(result);
+  res.json(memoryOutlines);
 });
 router10.post("/blog/outlines", async (req, res) => {
   const { proposedTitle, keyPoints, targetAudience, keywords, notes } = req.body;
@@ -2316,30 +2376,50 @@ router10.post("/blog/outlines", async (req, res) => {
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
-  const [outline] = await db.insert(blogOutlinesTable).values({
-    proposedTitle,
-    keyPoints: keyPoints ?? [],
-    targetAudience,
-    keywords: keywords ?? [],
-    notes: notes ?? null,
-    status: "pending"
-  }).returning();
-  res.status(201).json({
-    id: outline.id,
-    proposedTitle: outline.proposedTitle,
-    keyPoints: outline.keyPoints,
-    targetAudience: outline.targetAudience,
-    keywords: outline.keywords,
-    notes: outline.notes,
-    status: outline.status,
-    createdAt: outline.createdAt.toISOString()
-  });
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  let createdOutline = null;
+  try {
+    const [outline] = await db.insert(blogOutlinesTable).values({
+      proposedTitle,
+      keyPoints: keyPoints ?? [],
+      targetAudience,
+      keywords: keywords ?? [],
+      notes: notes ?? null,
+      status: "pending"
+    }).returning();
+    createdOutline = {
+      id: outline.id,
+      proposedTitle: outline.proposedTitle,
+      keyPoints: outline.keyPoints,
+      targetAudience: outline.targetAudience,
+      keywords: outline.keywords,
+      notes: outline.notes,
+      status: outline.status,
+      author: "Dr. Alex Harrison",
+      createdAt: outline.createdAt instanceof Date ? outline.createdAt.toISOString() : now
+    };
+  } catch (_e) {
+    const newId = memoryOutlines.length > 0 ? Math.max(...memoryOutlines.map((o) => o.id)) + 1 : 1;
+    createdOutline = {
+      id: newId,
+      proposedTitle,
+      keyPoints: keyPoints ?? [],
+      targetAudience,
+      keywords: keywords ?? [],
+      notes: notes || null,
+      status: "pending",
+      author: "Dr. Alex Harrison",
+      createdAt: now
+    };
+    memoryOutlines.unshift(createdOutline);
+  }
+  res.status(201).json(createdOutline);
 });
 var blog_default = router10;
 
 // src/routes/profile.ts
 import { Router as Router11 } from "express";
-import { eq as eq5 } from "drizzle-orm";
+import { eq as eq6 } from "drizzle-orm";
 var router11 = Router11();
 router11.get("/profile", async (_req, res) => {
   const [profile] = await db.select().from(therapistProfileTable);
@@ -2415,7 +2495,7 @@ router11.patch("/profile", async (req, res) => {
       updates[key] = req.body[key];
     }
   }
-  const [updated] = await db.update(therapistProfileTable).set(updates).where(eq5(therapistProfileTable.id, profile.id)).returning();
+  const [updated] = await db.update(therapistProfileTable).set(updates).where(eq6(therapistProfileTable.id, profile.id)).returning();
   res.json({
     id: updated.id,
     name: updated.name,
@@ -2437,7 +2517,7 @@ var profile_default = router11;
 
 // src/routes/htmlChunks.ts
 import { Router as Router12 } from "express";
-import { eq as eq6, desc as desc2 } from "drizzle-orm";
+import { eq as eq7, desc as desc2 } from "drizzle-orm";
 var router12 = Router12();
 function validateIdentifierUrl(slug) {
   if (!slug) {
@@ -3336,7 +3416,7 @@ router12.get(["/html-chunks/pages/:id", "/html-chunk-pages/:id"], async (req, re
     const id = parseInt(paramId, 10);
     let page = null;
     try {
-      const rows = await db.select().from(htmlChunkPagesTable).where(eq6(htmlChunkPagesTable.id, id));
+      const rows = await db.select().from(htmlChunkPagesTable).where(eq7(htmlChunkPagesTable.id, id));
       if (rows.length > 0) {
         const p = rows[0];
         page = {
@@ -3371,7 +3451,7 @@ router12.get(["/html-chunks/public/:slug", "/html-chunk-public/:slug"], async (r
     const slug = Array.isArray(req.params.slug) ? req.params.slug[0] : req.params.slug;
     let page = null;
     try {
-      const rows = await db.select().from(htmlChunkPagesTable).where(eq6(htmlChunkPagesTable.identifierUrl, slug));
+      const rows = await db.select().from(htmlChunkPagesTable).where(eq7(htmlChunkPagesTable.identifierUrl, slug));
       if (rows.length > 0) {
         page = rows[0];
       }
@@ -3403,7 +3483,7 @@ router12.post(["/html-chunks/pages", "/html-chunk-pages"], async (req, res) => {
     }
     let existingSlug = false;
     try {
-      const rows = await db.select().from(htmlChunkPagesTable).where(eq6(htmlChunkPagesTable.identifierUrl, identifierUrl));
+      const rows = await db.select().from(htmlChunkPagesTable).where(eq7(htmlChunkPagesTable.identifierUrl, identifierUrl));
       if (rows.length > 0) existingSlug = true;
     } catch (_e) {
       existingSlug = memoryPages.some((p) => p.identifierUrl === identifierUrl);
@@ -3478,7 +3558,7 @@ router12.put(["/html-chunks/pages/:id", "/html-chunk-pages/:id"], async (req, re
     }
     let duplicateSlug = false;
     try {
-      const rows = await db.select().from(htmlChunkPagesTable).where(eq6(htmlChunkPagesTable.identifierUrl, identifierUrl));
+      const rows = await db.select().from(htmlChunkPagesTable).where(eq7(htmlChunkPagesTable.identifierUrl, identifierUrl));
       if (rows.length > 0 && rows[0].id !== id) {
         duplicateSlug = true;
       }
@@ -3515,7 +3595,7 @@ router12.put(["/html-chunks/pages/:id", "/html-chunk-pages/:id"], async (req, re
         chunks,
         lastModifiedBy: updatedPage.lastModifiedBy,
         updatedAt: /* @__PURE__ */ new Date()
-      }).where(eq6(htmlChunkPagesTable.id, id));
+      }).where(eq7(htmlChunkPagesTable.id, id));
     } catch (_e) {
     }
     const currentRevs = memoryRevisions[id] || [];
@@ -3553,7 +3633,7 @@ router12.delete(["/html-chunks/pages/:id", "/html-chunk-pages/:id"], async (req,
     memoryPages = memoryPages.filter((p) => p.id !== id);
     delete memoryRevisions[id];
     try {
-      await db.delete(htmlChunkPagesTable).where(eq6(htmlChunkPagesTable.id, id));
+      await db.delete(htmlChunkPagesTable).where(eq7(htmlChunkPagesTable.id, id));
     } catch (_e) {
     }
     res.json({ message: "Page deleted successfully", id });
@@ -3567,7 +3647,7 @@ router12.get(["/html-chunks/pages/:id/revisions", "/html-chunk-pages/:id/revisio
     const id = parseInt(paramId, 10);
     let revisionsFromDb = [];
     try {
-      revisionsFromDb = await db.select().from(htmlChunkRevisionsTable).where(eq6(htmlChunkRevisionsTable.pageId, id)).orderBy(desc2(htmlChunkRevisionsTable.versionNumber));
+      revisionsFromDb = await db.select().from(htmlChunkRevisionsTable).where(eq7(htmlChunkRevisionsTable.pageId, id)).orderBy(desc2(htmlChunkRevisionsTable.versionNumber));
     } catch (_e) {
     }
     let list = revisionsFromDb.length > 0 ? revisionsFromDb.map((r) => ({
@@ -3630,7 +3710,7 @@ router12.post(["/html-chunks/pages/:id/restore/:version", "/html-chunk-pages/:id
         chunks: updatedPage.chunks,
         lastModifiedBy: updatedPage.lastModifiedBy,
         updatedAt: /* @__PURE__ */ new Date()
-      }).where(eq6(htmlChunkPagesTable.id, id));
+      }).where(eq7(htmlChunkPagesTable.id, id));
     } catch (_e) {
     }
     res.json({ message: `Successfully restored version v${versionNumber}`, page: updatedPage });
