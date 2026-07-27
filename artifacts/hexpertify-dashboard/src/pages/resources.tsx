@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Bookmark, Star, ArrowRight, BookOpen, FileText, Video, Headphones, Download, Clock, Plus, Image as ImageIcon, CheckCircle2 } from "lucide-react";
+import { Search, Bookmark, Star, ArrowRight, BookOpen, FileText, Video, Headphones, Download, Clock, Plus, Image as ImageIcon, CheckCircle2, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ export interface ResourceItem {
   typeLabel: string;
   category: string;
   isRecommended?: boolean;
+  isPublic?: boolean;
   title: string;
   description: string;
   fullContent?: string;
@@ -145,7 +146,7 @@ Write down the triggering situation, your automatic thought, the cognitive disto
   }
 ];
 
-const CATEGORIES = ["All Resources", "Articles", "Videos", "Worksheets", "Meditations", "PDFs"];
+const CATEGORIES = ["All Resources", "Saved", "Articles", "Videos", "Worksheets", "Meditations", "PDFs"];
 
 export default function Resources() {
   const [resources, setResources] = useState<ResourceItem[]>(INITIAL_RESOURCES);
@@ -162,7 +163,7 @@ export default function Resources() {
   const [newDescription, setNewDescription] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newImageUrl, setNewImageUrl] = useState("");
-  const [newIsRecommended, setNewIsRecommended] = useState(true);
+  const [newIsPublic, setNewIsPublic] = useState(false);
   const [newTags, setNewTags] = useState("");
 
   const toggleBookmark = (id: string, e: React.MouseEvent) => {
@@ -205,7 +206,7 @@ export default function Resources() {
       type: newType,
       typeLabel: typeLabelMap[newType],
       category: categoryMap[newType],
-      isRecommended: newIsRecommended,
+      isPublic: newIsPublic,
       title: newTitle.trim(),
       description: newDescription.trim(),
       fullContent: newContent.trim() || newDescription.trim(),
@@ -225,12 +226,16 @@ export default function Resources() {
     setNewContent("");
     setNewTags("");
     setNewImageUrl("");
-    setNewIsRecommended(true);
+    setNewIsPublic(false);
   };
 
   const filteredResources = resources.filter((res) => {
     const matchesCategory =
-      selectedCategory === "All Resources" || res.category === selectedCategory;
+      selectedCategory === "All Resources"
+        ? true
+        : selectedCategory === "Saved"
+        ? bookmarkedIds.includes(res.id)
+        : res.category === selectedCategory;
     const matchesSearch =
       res.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       res.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -312,11 +317,19 @@ export default function Resources() {
               onClick={() => setSelectedCategory(cat)}
               className={
                 isActive
-                  ? "bg-primary text-white shadow-md shadow-primary/20 rounded-full px-5 py-2 text-sm font-medium transition-all shrink-0 cursor-pointer"
-                  : "bg-white text-muted-foreground hover:text-foreground hover:bg-slate-50 border border-border rounded-full px-5 py-2 text-sm font-medium transition-all shrink-0 cursor-pointer"
+                  ? "bg-primary text-white shadow-md shadow-primary/20 rounded-full px-5 py-2 text-sm font-medium transition-all shrink-0 cursor-pointer flex items-center gap-1.5"
+                  : "bg-white text-muted-foreground hover:text-foreground hover:bg-slate-50 border border-border rounded-full px-5 py-2 text-sm font-medium transition-all shrink-0 cursor-pointer flex items-center gap-1.5"
               }
             >
-              {cat}
+              {cat === "Saved" && (
+                <Bookmark className={`w-3.5 h-3.5 ${isActive ? "fill-white text-white" : "text-muted-foreground"}`} />
+              )}
+              <span>{cat}</span>
+              {cat === "Saved" && (
+                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"}`}>
+                  {bookmarkedIds.length}
+                </span>
+              )}
             </button>
           );
         })}
@@ -627,17 +640,26 @@ export default function Resources() {
               />
             </div>
 
-            <div className="flex items-center gap-2 pt-2">
-              <input
-                type="checkbox"
-                id="recommended-check"
-                checked={newIsRecommended}
-                onChange={(e) => setNewIsRecommended(e.target.checked)}
-                className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
-              />
-              <label htmlFor="recommended-check" className="text-xs font-semibold text-foreground cursor-pointer">
-                Mark as "Recommended by Therapist"
-              </label>
+            <div className="space-y-2 pt-2">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="make-public-check"
+                  checked={newIsPublic}
+                  onChange={(e) => setNewIsPublic(e.target.checked)}
+                  className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 cursor-pointer"
+                />
+                <label htmlFor="make-public-check" className="text-xs font-semibold text-foreground cursor-pointer select-none">
+                  Make As Public
+                </label>
+              </div>
+
+              {newIsPublic && (
+                <div className="flex items-center gap-2 text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200/80 px-3 py-2 rounded-lg transition-all animate-in fade-in duration-200">
+                  <Info className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Note: Submitted resource will go live after admin review.</span>
+                </div>
+              )}
             </div>
 
             <DialogFooter className="pt-4 border-t border-border gap-2">
