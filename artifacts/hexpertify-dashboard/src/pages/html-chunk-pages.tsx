@@ -156,12 +156,6 @@ export default function HtmlChunkPages() {
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-border shadow-sm">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="bg-primary/10 text-primary text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-              CMS Module
-            </span>
-            <span className="text-xs text-muted-foreground">• Centralized Headers & Footers</span>
-          </div>
           <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">HTML Chunk Pages</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Create, publish, and manage custom chunk-based landing pages with identifier URLs & SEO controls.
