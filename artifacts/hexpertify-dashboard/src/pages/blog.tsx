@@ -921,20 +921,9 @@ export default function Blog() {
       {/* Top Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-border shadow-sm">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="bg-primary/10 text-primary text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-              Consultant Portal
-            </span>
-            <span className="text-xs text-muted-foreground">• Dr. Alex Harrison</span>
-          </div>
           <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">
             {view === "list" ? "Submitted Blogs & Articles" : "Submit New Blog Post"}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {view === "list"
-              ? "View and manage all clinical articles & outlines submitted by you to the Hexpertify portal."
-              : "Publish an article or pitch a blog outline to the Hexpertify client portal."}
-          </p>
         </div>
 
         {/* Top Right Action Button */}
