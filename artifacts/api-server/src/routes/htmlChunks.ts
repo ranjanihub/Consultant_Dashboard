@@ -868,8 +868,8 @@ let memoryRevisions: Record<number, any[]> = {
   ],
 };
 
-// GET /api/html-chunks/pages
-router.get("/html-chunks/pages", async (req, res): Promise<void> => {
+// GET /api/html-chunks/pages or /api/html-chunk-pages
+router.get(["/html-chunks/pages", "/html-chunk-pages"], async (req, res): Promise<void> => {
   try {
     const search = (req.query.search as string || "").toLowerCase();
     const status = (req.query.status as string || "").toLowerCase();
@@ -913,10 +913,11 @@ router.get("/html-chunks/pages", async (req, res): Promise<void> => {
   }
 });
 
-// GET /api/html-chunks/pages/:id
-router.get("/html-chunks/pages/:id", async (req, res): Promise<void> => {
+// GET /api/html-chunks/pages/:id or /api/html-chunk-pages/:id
+router.get(["/html-chunks/pages/:id", "/html-chunk-pages/:id"], async (req, res): Promise<void> => {
   try {
-    const id = parseInt(req.params.id, 10);
+    const paramId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(paramId, 10);
     let page: any = null;
 
     try {
@@ -955,10 +956,10 @@ router.get("/html-chunks/pages/:id", async (req, res): Promise<void> => {
   }
 });
 
-// GET /api/html-chunks/public/:slug
-router.get("/html-chunks/public/:slug", async (req, res): Promise<void> => {
+// GET /api/html-chunks/public/:slug or /api/html-chunk-public/:slug
+router.get(["/html-chunks/public/:slug", "/html-chunk-public/:slug"], async (req, res): Promise<void> => {
   try {
-    const slug = req.params.slug;
+    const slug = Array.isArray(req.params.slug) ? req.params.slug[0] : req.params.slug;
     let page: any = null;
 
     try {
@@ -985,8 +986,8 @@ router.get("/html-chunks/public/:slug", async (req, res): Promise<void> => {
   }
 });
 
-// POST /api/html-chunks/pages
-router.post("/html-chunks/pages", async (req, res): Promise<void> => {
+// POST /api/html-chunks/pages or /api/html-chunk-pages
+router.post(["/html-chunks/pages", "/html-chunk-pages"], async (req, res): Promise<void> => {
   try {
     const { title, identifierUrl, status, seoDetails, chunks, createdBy } = req.body;
 
@@ -1078,10 +1079,11 @@ router.post("/html-chunks/pages", async (req, res): Promise<void> => {
   }
 });
 
-// PUT /api/html-chunks/pages/:id
-router.put("/html-chunks/pages/:id", async (req, res): Promise<void> => {
+// PUT /api/html-chunks/pages/:id or /api/html-chunk-pages/:id
+router.put(["/html-chunks/pages/:id", "/html-chunk-pages/:id"], async (req, res): Promise<void> => {
   try {
-    const id = parseInt(req.params.id, 10);
+    const paramId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(paramId, 10);
     const { title, identifierUrl, status, seoDetails, chunks, lastModifiedBy, summaryOfChanges } = req.body;
 
     const validation = validateIdentifierUrl(identifierUrl);
@@ -1173,10 +1175,11 @@ router.put("/html-chunks/pages/:id", async (req, res): Promise<void> => {
   }
 });
 
-// DELETE /api/html-chunks/pages/:id
-router.delete("/html-chunks/pages/:id", async (req, res): Promise<void> => {
+// DELETE /api/html-chunks/pages/:id or /api/html-chunk-pages/:id
+router.delete(["/html-chunks/pages/:id", "/html-chunk-pages/:id"], async (req, res): Promise<void> => {
   try {
-    const id = parseInt(req.params.id, 10);
+    const paramId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(paramId, 10);
     memoryPages = memoryPages.filter((p) => p.id !== id);
     delete memoryRevisions[id];
 
@@ -1190,10 +1193,11 @@ router.delete("/html-chunks/pages/:id", async (req, res): Promise<void> => {
   }
 });
 
-// GET /api/html-chunks/pages/:id/revisions
-router.get("/html-chunks/pages/:id/revisions", async (req, res): Promise<void> => {
+// GET /api/html-chunks/pages/:id/revisions or /api/html-chunk-pages/:id/revisions
+router.get(["/html-chunks/pages/:id/revisions", "/html-chunk-pages/:id/revisions"], async (req, res): Promise<void> => {
   try {
-    const id = parseInt(req.params.id, 10);
+    const paramId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(paramId, 10);
     let revisionsFromDb: any[] = [];
 
     try {
@@ -1220,11 +1224,13 @@ router.get("/html-chunks/pages/:id/revisions", async (req, res): Promise<void> =
   }
 });
 
-// POST /api/html-chunks/pages/:id/restore/:version
-router.post("/html-chunks/pages/:id/restore/:version", async (req, res): Promise<void> => {
+// POST /api/html-chunks/pages/:id/restore/:version or /api/html-chunk-pages/:id/restore/:version
+router.post(["/html-chunks/pages/:id/restore/:version", "/html-chunk-pages/:id/restore/:version"], async (req, res): Promise<void> => {
   try {
-    const id = parseInt(req.params.id, 10);
-    const versionNumber = parseInt(req.params.version, 10);
+    const paramId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const paramVersion = Array.isArray(req.params.version) ? req.params.version[0] : req.params.version;
+    const id = parseInt(paramId, 10);
+    const versionNumber = parseInt(paramVersion, 10);
 
     const revs = memoryRevisions[id] || [];
     const targetRev = revs.find((r) => r.versionNumber === versionNumber);

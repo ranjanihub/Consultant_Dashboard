@@ -45,7 +45,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 // ../../node_modules/.pnpm/dotenv@17.4.2/node_modules/dotenv/lib/main.js
 var require_main = __commonJS({
   "../../node_modules/.pnpm/dotenv@17.4.2/node_modules/dotenv/lib/main.js"(exports, module) {
-    var fs = __require("fs");
+    var fs2 = __require("fs");
     var path3 = __require("path");
     var os = __require("os");
     var crypto = __require("crypto");
@@ -177,7 +177,7 @@ var require_main = __commonJS({
       if (options && options.path && options.path.length > 0) {
         if (Array.isArray(options.path)) {
           for (const filepath of options.path) {
-            if (fs.existsSync(filepath)) {
+            if (fs2.existsSync(filepath)) {
               possibleVaultPath = filepath.endsWith(".vault") ? filepath : `${filepath}.vault`;
             }
           }
@@ -187,7 +187,7 @@ var require_main = __commonJS({
       } else {
         possibleVaultPath = path3.resolve(process.cwd(), ".env.vault");
       }
-      if (fs.existsSync(possibleVaultPath)) {
+      if (fs2.existsSync(possibleVaultPath)) {
         return possibleVaultPath;
       }
       return null;
@@ -240,7 +240,7 @@ var require_main = __commonJS({
       const parsedAll = {};
       for (const path4 of optionPaths) {
         try {
-          const parsed = DotenvModule.parse(fs.readFileSync(path4, { encoding }));
+          const parsed = DotenvModule.parse(fs2.readFileSync(path4, { encoding }));
           DotenvModule.populate(parsedAll, parsed, options);
         } catch (e) {
           if (debug) {
@@ -3031,7 +3031,7 @@ var SAMPLE_PAGES = [
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                   </div>
-                  <span class="text-[10px] text-gray-400 font-semibold uppercase">Verified Client</span>
+
                 </div>
                 <p class="text-xs text-gray-700 italic leading-relaxed">
                   "Working with Dr. Sarah Jenkins completely turned around my career transition. Her structured CBT sessions gave me concrete tools to tackle high-pressure burnout."
@@ -3054,7 +3054,7 @@ var SAMPLE_PAGES = [
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                   </div>
-                  <span class="text-[10px] text-gray-400 font-semibold uppercase">Verified Client</span>
+
                 </div>
                 <p class="text-xs text-gray-700 italic leading-relaxed">
                   "Empathetic, incredibly knowledgeable, and deeply perceptive. Dr. Jenkins helped me navigate severe imposter syndrome with compassionate professionalism."
@@ -3296,7 +3296,7 @@ var memoryRevisions = {
     }
   ]
 };
-router12.get("/html-chunks/pages", async (req, res) => {
+router12.get(["/html-chunks/pages", "/html-chunk-pages"], async (req, res) => {
   try {
     const search = (req.query.search || "").toLowerCase();
     const status = (req.query.status || "").toLowerCase();
@@ -3330,9 +3330,10 @@ router12.get("/html-chunks/pages", async (req, res) => {
     res.status(500).json({ error: error.message || "Failed to fetch HTML Chunk pages" });
   }
 });
-router12.get("/html-chunks/pages/:id", async (req, res) => {
+router12.get(["/html-chunks/pages/:id", "/html-chunk-pages/:id"], async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
+    const paramId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(paramId, 10);
     let page = null;
     try {
       const rows = await db.select().from(htmlChunkPagesTable).where(eq6(htmlChunkPagesTable.id, id));
@@ -3365,9 +3366,9 @@ router12.get("/html-chunks/pages/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-router12.get("/html-chunks/public/:slug", async (req, res) => {
+router12.get(["/html-chunks/public/:slug", "/html-chunk-public/:slug"], async (req, res) => {
   try {
-    const slug = req.params.slug;
+    const slug = Array.isArray(req.params.slug) ? req.params.slug[0] : req.params.slug;
     let page = null;
     try {
       const rows = await db.select().from(htmlChunkPagesTable).where(eq6(htmlChunkPagesTable.identifierUrl, slug));
@@ -3388,7 +3389,7 @@ router12.get("/html-chunks/public/:slug", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-router12.post("/html-chunks/pages", async (req, res) => {
+router12.post(["/html-chunks/pages", "/html-chunk-pages"], async (req, res) => {
   try {
     const { title, identifierUrl, status, seoDetails, chunks, createdBy } = req.body;
     if (!title) {
@@ -3465,9 +3466,10 @@ router12.post("/html-chunks/pages", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-router12.put("/html-chunks/pages/:id", async (req, res) => {
+router12.put(["/html-chunks/pages/:id", "/html-chunk-pages/:id"], async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
+    const paramId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(paramId, 10);
     const { title, identifierUrl, status, seoDetails, chunks, lastModifiedBy, summaryOfChanges } = req.body;
     const validation = validateIdentifierUrl(identifierUrl);
     if (!validation.valid) {
@@ -3544,9 +3546,10 @@ router12.put("/html-chunks/pages/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-router12.delete("/html-chunks/pages/:id", async (req, res) => {
+router12.delete(["/html-chunks/pages/:id", "/html-chunk-pages/:id"], async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
+    const paramId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(paramId, 10);
     memoryPages = memoryPages.filter((p) => p.id !== id);
     delete memoryRevisions[id];
     try {
@@ -3558,9 +3561,10 @@ router12.delete("/html-chunks/pages/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-router12.get("/html-chunks/pages/:id/revisions", async (req, res) => {
+router12.get(["/html-chunks/pages/:id/revisions", "/html-chunk-pages/:id/revisions"], async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
+    const paramId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(paramId, 10);
     let revisionsFromDb = [];
     try {
       revisionsFromDb = await db.select().from(htmlChunkRevisionsTable).where(eq6(htmlChunkRevisionsTable.pageId, id)).orderBy(desc2(htmlChunkRevisionsTable.versionNumber));
@@ -3580,10 +3584,12 @@ router12.get("/html-chunks/pages/:id/revisions", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-router12.post("/html-chunks/pages/:id/restore/:version", async (req, res) => {
+router12.post(["/html-chunks/pages/:id/restore/:version", "/html-chunk-pages/:id/restore/:version"], async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
-    const versionNumber = parseInt(req.params.version, 10);
+    const paramId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const paramVersion = Array.isArray(req.params.version) ? req.params.version[0] : req.params.version;
+    const id = parseInt(paramId, 10);
+    const versionNumber = parseInt(paramVersion, 10);
     const revs = memoryRevisions[id] || [];
     const targetRev = revs.find((r) => r.versionNumber === versionNumber);
     if (!targetRev) {
@@ -3651,22 +3657,22 @@ router13.use(htmlChunks_default);
 var routes_default = router13;
 
 // src/app.ts
+import fs from "node:fs";
 var app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api", routes_default);
-app.use((req, res, next) => {
-  if (req.headers.accept?.includes("application/json") || req.xhr) {
-    routes_default(req, res, next);
-    return;
-  }
-  next();
-});
+app.use(routes_default);
 var publicPath = path2.resolve(globalThis.__dirname || process.cwd(), "public");
 app.use(express.static(publicPath));
 app.get("/{*splat}", (req, res) => {
-  res.sendFile(path2.join(publicPath, "index.html"));
+  const indexPath = path2.join(publicPath, "index.html");
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).json({ error: `Route '${req.path}' not found.` });
+  }
 });
 app.use((err, _req, res, _next) => {
   console.error("Unhandled API Error:", err);
