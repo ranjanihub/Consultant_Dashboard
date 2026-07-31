@@ -19,6 +19,7 @@ import {
   Search,
   Flag,
   Plus,
+  Activity,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ const SIDEBAR_ITEMS = [
     label: "WORKSPACE",
     items: [
       { name: "Dashboard", href: "/", icon: LayoutDashboard },
+      { name: "Activities", href: "/activities", icon: Activity, badge: "4" },
       { name: "Clients", href: "/clients", icon: Users, badge: "24" },
       { name: "Calendar", href: "/calendar", icon: Calendar },
       { name: "Messages", href: "/messages", icon: MessageSquare, badge: "3" },
@@ -46,6 +48,7 @@ const SIDEBAR_ITEMS = [
   },
 
 ];
+
 
 export function Sidebar() {
   const [location, setLocation] = useLocation();

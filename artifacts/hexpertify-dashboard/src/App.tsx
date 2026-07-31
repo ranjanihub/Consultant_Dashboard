@@ -15,7 +15,9 @@ import Outcomes from '@/pages/outcomes';
 import Revenue from '@/pages/revenue';
 import Reviews from '@/pages/reviews';
 import Resources from '@/pages/resources';
+import Activities from '@/pages/activities';
 import Messages from '@/pages/messages';
+
 import Blog from '@/pages/blog';
 import HtmlChunkPages from '@/pages/html-chunk-pages';
 import HtmlChunkEditor from '@/pages/html-chunk-editor';
@@ -51,7 +53,9 @@ function Router() {
               <Route path="/revenue" component={Revenue} />
               <Route path="/reviews" component={Reviews} />
               <Route path="/resources" component={Resources} />
+              <Route path="/activities" component={Activities} />
               <Route path="/blog" component={Blog} />
+
               <Route path="/html-chunk-pages" component={HtmlChunkPages} />
               <Route path="/html-chunk-pages/new" component={HtmlChunkEditor} />
               <Route path="/html-chunk-pages/:id/edit" component={HtmlChunkEditor} />

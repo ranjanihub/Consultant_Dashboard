@@ -11,6 +11,7 @@ import reviewsRouter from "./reviews";
 import blogRouter from "./blog";
 import profileRouter from "./profile";
 import htmlChunksRouter from "./htmlChunks";
+import activitiesRouter from "./activities";
 
 const router: IRouter = Router();
 
@@ -26,6 +27,8 @@ router.use(reviewsRouter);
 router.use(blogRouter);
 router.use(profileRouter);
 router.use(htmlChunksRouter);
+router.use(activitiesRouter);
+
 
 export default router;
 
