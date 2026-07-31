@@ -11,15 +11,25 @@ import {
   Heart, 
   Wind, 
   Smile, 
-  ShieldCheck, 
-  ArrowRight,
-  Filter,
-  Check
+  Check,
+  MoreVertical,
+  UserPlus,
+  Pencil,
+  Copy,
+  Trash2,
+  Users,
+  Eye
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 
 export interface ActivityItem {
@@ -33,9 +43,18 @@ export interface ActivityItem {
   imageUrl: string;
   status: "pending" | "completed" | string;
   instructions?: string;
-  reflection?: string;
   completedAt?: string | null;
+  assignedTo?: string[]; // Multiple assigned client names
 }
+
+const CLIENT_LIST = [
+  "Sarah Jenkins",
+  "Michael Chen",
+  "Emily Rodriguez",
+  "David Kim",
+  "Amanda Miller",
+  "Alex Morgan"
+];
 
 const INITIAL_ACTIVITIES: ActivityItem[] = [
   {
@@ -49,7 +68,7 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80",
     status: "pending",
     instructions: "1. Sit in a comfortable position with your spine upright but relaxed.\n2. Gently close your eyes and bring awareness to your breath.\n3. Observe the sensation of air flowing in through your nose and out through your mouth.\n4. Whenever your mind drifts to thoughts, acknowledge them without judgment and return to the breath.",
-    reflection: ""
+    assignedTo: ["Sarah Jenkins", "Michael Chen"]
   },
   {
     id: 2,
@@ -62,7 +81,7 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80",
     status: "pending",
     instructions: "1. Record the triggering situation (Where were you? Who was there?).\n2. Catch your automatic thought and rate how strongly you believed it (0-100%).\n3. Note down the emotional response and physical sensations.\n4. Challenge the thought by listing objective evidence for and against.\n5. Formulate a balanced, realistic replacement thought.",
-    reflection: ""
+    assignedTo: ["Emily Rodriguez", "David Kim"]
   },
   {
     id: 3,
@@ -75,7 +94,7 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80",
     status: "pending",
     instructions: "1. Take 2 slow abdominal breaths.\n2. Write down 3 specific things from today that brought you warmth, joy, or relief.\n3. For each item, write 1-2 sentences about *why* it was meaningful.\n4. Rest quietly for a moment to absorb the positive emotions.",
-    reflection: ""
+    assignedTo: ["Amanda Miller"]
   },
   {
     id: 4,
@@ -88,7 +107,7 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=800&q=80",
     status: "pending",
     instructions: "1. Place tip of tongue against ridge behind upper front teeth.\n2. Exhale completely through mouth with a gentle whoosh sound.\n3. Inhale silently through nose for 4 seconds.\n4. Hold breath for 7 seconds.\n5. Exhale through mouth for 8 seconds. Repeat 4 cycles.",
-    reflection: ""
+    assignedTo: CLIENT_LIST
   },
   {
     id: 5,
@@ -101,12 +120,12 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1511295742362-92c96b124e52?auto=format&fit=crop&w=800&q=80",
     status: "completed",
     instructions: "Tense each muscle group firmly for 5s, then release completely.",
-    reflection: "Felt a dramatic release in shoulder tension. Heart rate dropped noticeably and mind felt much clearer.",
-    completedAt: "Jul 30, 2026 at 6:45 PM"
+    completedAt: "Jul 30, 2026 at 6:45 PM",
+    assignedTo: ["Sarah Jenkins"]
   }
 ];
 
-const CATEGORIES = ["All", "Pending", "Completed", "MINDFULNESS", "CBT", "GRATITUDE", "BREATHING", "SOMATIC"];
+const CATEGORIES = ["All", "MINDFULNESS", "CBT", "GRATITUDE", "BREATHING", "SOMATIC"];
 
 export default function ActivitiesPage() {
   const { toast } = useToast();
@@ -114,9 +133,8 @@ export default function ActivitiesPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Start / Perform Activity Modal
+  // Preview Activity Modal State
   const [activeActivity, setActiveActivity] = useState<ActivityItem | null>(null);
-  const [reflectionInput, setReflectionInput] = useState<string>("");
 
   // Add Activity Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
@@ -128,6 +146,21 @@ export default function ActivitiesPage() {
   const [newDueDate, setNewDueDate] = useState("Today");
   const [newImageUrl, setNewImageUrl] = useState("");
   const [newInstructions, setNewInstructions] = useState("");
+  const [newAssignedTo, setNewAssignedTo] = useState<string[]>(["Sarah Jenkins"]);
+
+  // Assign Modal State (Multiple Clients)
+  const [assignModalActivity, setAssignModalActivity] = useState<ActivityItem | null>(null);
+  const [selectedClientsToAssign, setSelectedClientsToAssign] = useState<string[]>([]);
+
+  // Edit Modal State
+  const [editModalActivity, setEditModalActivity] = useState<ActivityItem | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editCategory, setEditCategory] = useState("MINDFULNESS");
+  const [editDifficulty, setEditDifficulty] = useState("Easy");
+  const [editDuration, setEditDuration] = useState("");
+  const [editDueDate, setEditDueDate] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editInstructions, setEditInstructions] = useState("");
 
   // Fetch activities from backend API if available
   useEffect(() => {
@@ -135,7 +168,15 @@ export default function ActivitiesPage() {
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
-          setActivities(data);
+          const normalized = data.map((item: any) => ({
+            ...item,
+            assignedTo: Array.isArray(item.assignedTo)
+              ? item.assignedTo
+              : typeof item.assignedTo === "string" && item.assignedTo
+              ? [item.assignedTo]
+              : ["Sarah Jenkins"]
+          }));
+          setActivities(normalized);
         }
       })
       .catch((err) => {
@@ -143,53 +184,119 @@ export default function ActivitiesPage() {
       });
   }, []);
 
-  const handleStartActivity = (act: ActivityItem) => {
+  const handlePreviewActivity = (act: ActivityItem) => {
     setActiveActivity(act);
-    setReflectionInput(act.reflection || "");
   };
 
-  const handleCompleteActivity = async () => {
-    if (!activeActivity) return;
+  const handleDuplicate = (act: ActivityItem) => {
+    const duplicated: ActivityItem = {
+      ...act,
+      id: Date.now(),
+      title: `${act.title} (Copy)`,
+      status: "pending",
+      dueDate: "Today",
+      completedAt: null,
+    };
+    setActivities((prev) => [duplicated, ...prev]);
 
-    const completedTimestamp = new Date().toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit"
+    toast({
+      title: "Activity Duplicated",
+      description: `Created a copy of "${act.title}".`,
     });
+  };
 
+  const handleDelete = async (act: ActivityItem) => {
     try {
-      await fetch(`/api/activities/${activeActivity.id}/complete`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reflection: reflectionInput })
-      });
-    } catch (err) {
-      console.warn("API complete failed, updating client state directly:", err);
+      await fetch(`/api/activities/${act.id}`, { method: "DELETE" });
+    } catch (e) {}
+
+    setActivities((prev) => prev.filter((item) => item.id !== act.id));
+
+    toast({
+      title: "Activity Deleted",
+      description: `"${act.title}" was removed.`,
+      variant: "destructive"
+    });
+  };
+
+  const openAssignModal = (act: ActivityItem) => {
+    setAssignModalActivity(act);
+    setSelectedClientsToAssign(act.assignedTo || ["Sarah Jenkins"]);
+  };
+
+  const toggleClientSelection = (clientName: string) => {
+    setSelectedClientsToAssign((prev) =>
+      prev.includes(clientName)
+        ? prev.filter((c) => c !== clientName)
+        : [...prev, clientName]
+    );
+  };
+
+  const toggleSelectAllClients = () => {
+    if (selectedClientsToAssign.length === CLIENT_LIST.length) {
+      setSelectedClientsToAssign([]);
+    } else {
+      setSelectedClientsToAssign([...CLIENT_LIST]);
     }
+  };
+
+  const handleConfirmAssign = () => {
+    if (!assignModalActivity) return;
 
     setActivities((prev) =>
       prev.map((item) =>
-        item.id === activeActivity.id
+        item.id === assignModalActivity.id
+          ? { ...item, assignedTo: selectedClientsToAssign }
+          : item
+      )
+    );
+
+    toast({
+      title: "Activity Assigned",
+      description: `"${assignModalActivity.title}" assigned to ${selectedClientsToAssign.length} client(s).`,
+    });
+
+    setAssignModalActivity(null);
+  };
+
+  const openEditModal = (act: ActivityItem) => {
+    setEditModalActivity(act);
+    setEditTitle(act.title);
+    setEditCategory(act.category);
+    setEditDifficulty(act.difficulty);
+    setEditDuration(act.duration);
+    setEditDueDate(act.dueDate);
+    setEditDescription(act.description);
+    setEditInstructions(act.instructions || "");
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editModalActivity) return;
+
+    setActivities((prev) =>
+      prev.map((item) =>
+        item.id === editModalActivity.id
           ? {
               ...item,
-              status: "completed",
-              reflection: reflectionInput.trim() || "Completed activity.",
-              completedAt: completedTimestamp,
-              dueDate: "Completed"
+              title: editTitle.trim(),
+              category: editCategory,
+              difficulty: editDifficulty,
+              duration: editDuration.trim(),
+              dueDate: editDueDate.trim(),
+              description: editDescription.trim(),
+              instructions: editInstructions.trim(),
             }
           : item
       )
     );
 
     toast({
-      title: "Activity Completed! 🎉",
-      description: `Great job completing "${activeActivity.title}". Your progress has been logged.`,
+      title: "Activity Updated",
+      description: `"${editTitle}" has been updated successfully.`,
     });
 
-    setActiveActivity(null);
-    setReflectionInput("");
+    setEditModalActivity(null);
   };
 
   const handleCreateActivity = async (e: React.FormEvent) => {
@@ -215,7 +322,7 @@ export default function ActivitiesPage() {
       imageUrl: newImageUrl.trim() || defaultImages[newCategory] || defaultImages.MINDFULNESS,
       status: "pending",
       instructions: newInstructions.trim() || "Complete exercises as prescribed.",
-      reflection: ""
+      assignedTo: newAssignedTo
     };
 
     try {
@@ -236,7 +343,7 @@ export default function ActivitiesPage() {
 
     toast({
       title: "Activity Created",
-      description: `"${newTitle}" has been added to your daily activities list.`,
+      description: `"${newTitle}" has been created and assigned to ${newAssignedTo.length} client(s).`,
     });
 
     setIsAddModalOpen(false);
@@ -250,22 +357,16 @@ export default function ActivitiesPage() {
     const matchesCategory =
       selectedCategory === "All"
         ? true
-        : selectedCategory === "Pending"
-        ? act.status === "pending"
-        : selectedCategory === "Completed"
-        ? act.status === "completed"
         : act.category === selectedCategory;
 
     const matchesSearch =
       act.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       act.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      act.category.toLowerCase().includes(searchQuery.toLowerCase());
+      act.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (act.assignedTo && act.assignedTo.some((c) => c.toLowerCase().includes(searchQuery.toLowerCase())));
 
     return matchesCategory && matchesSearch;
   });
-
-  const pendingActivities = filteredActivities.filter((a) => a.status === "pending");
-  const completedActivities = filteredActivities.filter((a) => a.status === "completed");
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -284,6 +385,36 @@ export default function ActivitiesPage() {
     }
   };
 
+  const renderAssignedBadges = (assignedTo?: string[]) => {
+    if (!assignedTo || assignedTo.length === 0) {
+      return (
+        <span className="text-xs text-slate-400 font-medium">Unassigned</span>
+      );
+    }
+    if (assignedTo.length === CLIENT_LIST.length) {
+      return (
+        <div className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5b32e4] px-3 py-1 rounded-full text-xs font-semibold border border-purple-100">
+          <Users className="w-3.5 h-3.5 text-[#5b32e4]" />
+          <span>Assigned to All Clients</span>
+        </div>
+      );
+    }
+    if (assignedTo.length === 1) {
+      return (
+        <div className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5b32e4] px-3 py-1 rounded-full text-xs font-semibold border border-purple-100">
+          <Users className="w-3.5 h-3.5 text-[#5b32e4]" />
+          <span>Assigned to {assignedTo[0]}</span>
+        </div>
+      );
+    }
+    return (
+      <div className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5b32e4] px-3 py-1 rounded-full text-xs font-semibold border border-purple-100">
+        <Users className="w-3.5 h-3.5 text-[#5b32e4]" />
+        <span>Assigned to {assignedTo.length} Clients ({assignedTo[0]}, +{assignedTo.length - 1})</span>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-8 pb-16">
       {/* Top Title & Header Section */}
@@ -293,7 +424,7 @@ export default function ActivitiesPage() {
             Activities
           </h1>
           <p className="text-slate-500 text-base mt-1.5 font-medium">
-            Daily exercises tailored to your wellness goals.
+            Prescribe and manage clinical exercises tailored to your clients' goals.
           </p>
         </div>
 
@@ -303,7 +434,7 @@ export default function ActivitiesPage() {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
               type="text"
-              placeholder="Search activities..."
+              placeholder="Search activities or clients..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 rounded-full border-slate-200 bg-white shadow-sm focus-visible:ring-[#5b32e4] h-10 text-sm"
@@ -316,7 +447,7 @@ export default function ActivitiesPage() {
             className="w-full sm:w-auto rounded-full bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-10 px-5 shadow-md shadow-purple-500/20 shrink-0 gap-2 cursor-pointer transition-all"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Add Activity</span>
+            <span>Create & Assign Activity</span>
           </Button>
         </div>
       </div>
@@ -341,153 +472,153 @@ export default function ActivitiesPage() {
         })}
       </div>
 
-      {/* Pending Activities Section */}
-      {(selectedCategory === "All" || selectedCategory === "Pending" || !["Completed"].includes(selectedCategory)) && (
-        <div className="space-y-5">
-          <div className="flex items-center gap-2.5">
-            <Activity className="w-5 h-5 text-[#5b32e4] stroke-[2.5]" />
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              Pending Activities
-            </h2>
-            <span className="bg-purple-100 text-[#5b32e4] text-xs font-bold px-2.5 py-0.5 rounded-full">
-              {pendingActivities.length}
-            </span>
-          </div>
+      {/* Activities Cards Grid */}
+      {filteredActivities.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredActivities.map((act) => {
+            return (
+              <div
+                key={act.id}
+                className="group bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+              >
+                {/* Top Image Container */}
+                <div className="relative h-52 w-full overflow-hidden bg-slate-100">
+                  <img
+                    src={act.imageUrl}
+                    alt={act.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
 
-          {pendingActivities.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pendingActivities.map((act) => (
-                <div
-                  key={act.id}
-                  className="group bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
-                >
-                  {/* Top Image Container */}
-                  <div className="relative h-52 w-full overflow-hidden bg-slate-100">
-                    <img
-                      src={act.imageUrl}
-                      alt={act.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                  {/* Category Tag (Top Left) */}
+                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-full text-[11px] font-bold tracking-wider text-slate-900 flex items-center gap-1.5 shadow-sm border border-white/40">
+                    {getCategoryIcon(act.category)}
+                    <span>{act.category}</span>
+                  </div>
 
-                    {/* Category Tag (Top Left) */}
-                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-full text-[11px] font-bold tracking-wider text-slate-900 flex items-center gap-1.5 shadow-sm border border-white/40">
-                      {getCategoryIcon(act.category)}
-                      <span>{act.category}</span>
-                    </div>
-
-                    {/* Difficulty Tag (Top Right) */}
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3.5 py-1 rounded-full text-[11px] font-semibold text-slate-800 shadow-sm border border-white/40">
+                  {/* Top Right Controls: Difficulty + 3-Dot Menu */}
+                  <div className="absolute top-4 right-4 flex items-center gap-2">
+                    <span className="bg-white/90 backdrop-blur-md px-3.5 py-1 rounded-full text-[11px] font-semibold text-slate-800 shadow-sm border border-white/40">
                       {act.difficulty}
+                    </span>
+
+                    {/* 3-Dot Options Dropdown */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label="Activity Options"
+                          className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-md hover:bg-white text-slate-700 flex items-center justify-center shadow-md border border-white/40 transition-all hover:scale-110 active:scale-95 cursor-pointer"
+                        >
+                          <MoreVertical className="w-4 h-4 stroke-[2.2]" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-xl border-slate-200">
+                        <DropdownMenuItem
+                          onClick={() => openAssignModal(act)}
+                          className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold rounded-xl cursor-pointer text-[#5b32e4]"
+                        >
+                          <UserPlus className="w-4 h-4 text-[#5b32e4]" />
+                          <span>Assign to Clients...</span>
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() => handlePreviewActivity(act)}
+                          className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold rounded-xl cursor-pointer"
+                        >
+                          <Eye className="w-4 h-4 text-slate-600" />
+                          <span>Preview Exercise</span>
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() => openEditModal(act)}
+                          className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold rounded-xl cursor-pointer"
+                        >
+                          <Pencil className="w-4 h-4 text-slate-600" />
+                          <span>Edit Activity</span>
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() => handleDuplicate(act)}
+                          className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold rounded-xl cursor-pointer"
+                        >
+                          <Copy className="w-4 h-4 text-slate-600" />
+                          <span>Duplicate</span>
+                        </DropdownMenuItem>
+
+                        <DropdownMenuSeparator className="my-1" />
+
+                        <DropdownMenuItem
+                          onClick={() => handleDelete(act)}
+                          className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                          <span>Delete</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+
+                {/* Body Content */}
+                <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 group-hover:text-[#5b32e4] transition-colors leading-snug mb-2">
+                      {act.title}
+                    </h3>
+                    <p className="text-slate-600 text-sm leading-relaxed line-clamp-3 mb-3">
+                      {act.description}
+                    </p>
+
+                    {/* Assigned Clients Badge */}
+                    <div>
+                      {renderAssignedBadges(act.assignedTo)}
                     </div>
                   </div>
 
-                  {/* Body Content */}
-                  <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900 group-hover:text-[#5b32e4] transition-colors leading-snug mb-2">
-                        {act.title}
-                      </h3>
-                      <p className="text-slate-600 text-sm leading-relaxed line-clamp-3">
-                        {act.description}
-                      </p>
+                  {/* Meta info & Action */}
+                  <div className="space-y-4 pt-2">
+                    <div className="flex items-center justify-between text-xs text-slate-500 font-medium border-t border-slate-100 pt-3">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-4 h-4 text-slate-400" />
+                        <span>{act.duration}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <CalendarIcon className="w-4 h-4 text-slate-400" />
+                        <span>{act.dueDate}</span>
+                      </div>
                     </div>
 
-                    {/* Meta info & Action */}
-                    <div className="space-y-4 pt-2">
-                      <div className="flex items-center justify-between text-xs text-slate-500 font-medium border-t border-slate-100 pt-3">
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="w-4 h-4 text-slate-400" />
-                          <span>{act.duration}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <CalendarIcon className="w-4 h-4 text-slate-400" />
-                          <span>{act.dueDate}</span>
-                        </div>
-                      </div>
-
+                    <div className="flex items-center gap-2">
                       <Button
-                        onClick={() => handleStartActivity(act)}
-                        className="w-full h-11 rounded-2xl border-2 border-[#5b32e4]/20 hover:border-[#5b32e4] bg-purple-50/50 hover:bg-[#5b32e4] text-[#5b32e4] hover:text-white font-bold text-sm transition-all duration-200 cursor-pointer shadow-sm"
+                        onClick={() => openAssignModal(act)}
+                        className="flex-1 h-11 rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold text-sm transition-all duration-200 cursor-pointer shadow-md shadow-purple-500/20 gap-2"
                       >
-                        Start Activity
+                        <UserPlus className="w-4 h-4 stroke-[2.2]" />
+                        <span>Assign Activity</span>
+                      </Button>
+                      <Button
+                        onClick={() => handlePreviewActivity(act)}
+                        variant="outline"
+                        className="h-11 px-3.5 rounded-2xl border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm cursor-pointer"
+                        title="Preview Exercise Details"
+                      >
+                        <Eye className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-slate-50 border border-dashed border-slate-200 rounded-3xl p-8 text-center">
-              <p className="text-slate-500 font-medium text-sm">No pending activities found in this category.</p>
-            </div>
-          )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="bg-slate-50 border border-dashed border-slate-200 rounded-3xl p-12 text-center">
+          <p className="text-slate-500 font-medium text-sm">No activities found matching your criteria.</p>
         </div>
       )}
 
-      {/* Completed Activities Section */}
-      {(selectedCategory === "All" || selectedCategory === "Completed" || completedActivities.length > 0) && (
-        <div className="space-y-5 pt-6 border-t border-slate-200">
-          <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 stroke-[2.5]" />
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              Completed Activities
-            </h2>
-            <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
-              {completedActivities.length}
-            </span>
-          </div>
-
-          {completedActivities.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {completedActivities.map((act) => (
-                <div
-                  key={act.id}
-                  className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm flex flex-col justify-between space-y-4 hover:border-emerald-200 transition-colors"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/60">
-                        {act.category}
-                      </span>
-                      <div className="flex items-center gap-1 text-xs text-emerald-600 font-semibold">
-                        <Check className="w-4 h-4 stroke-[3]" />
-                        <span>Done</span>
-                      </div>
-                    </div>
-
-                    <h3 className="text-base font-bold text-slate-900 leading-snug">
-                      {act.title}
-                    </h3>
-                    
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      {act.description}
-                    </p>
-
-                    {act.reflection && (
-                      <div className="bg-slate-50 border border-slate-100 rounded-2xl p-3.5 text-xs text-slate-700 space-y-1">
-                        <span className="font-bold text-slate-900 block">Your Reflection:</span>
-                        <p className="italic">"{act.reflection}"</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                    <span>Duration: {act.duration}</span>
-                    <span>{act.completedAt || "Recently completed"}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-slate-50 border border-dashed border-slate-200 rounded-3xl p-8 text-center">
-              <p className="text-slate-500 font-medium text-sm">No completed activities yet. Complete your first exercise above!</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Start / Perform Activity Modal */}
+      {/* Preview Activity Modal */}
       <Dialog open={!!activeActivity} onOpenChange={() => setActiveActivity(null)}>
         {activeActivity && (
           <DialogContent className="max-w-xl p-0 rounded-3xl overflow-hidden border-none shadow-2xl">
@@ -513,47 +644,249 @@ export default function ActivitiesPage() {
               {/* Instructions */}
               <div className="space-y-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Exercise Instructions & Steps
+                  Exercise Guidelines & Instructions
                 </h3>
                 <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-sm text-slate-700 leading-relaxed whitespace-pre-line font-medium">
                   {activeActivity.instructions || activeActivity.description}
                 </div>
               </div>
 
-              {/* Reflection Input */}
-              <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Quick Reflection (Optional)
-                </label>
-                <textarea
-                  rows={3}
-                  placeholder="How did this activity make you feel? Any insights or changes in mood?"
-                  value={reflectionInput}
-                  onChange={(e) => setReflectionInput(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#5b32e4] focus:border-transparent transition-all"
-                />
-              </div>
-
               {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-2">
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setActiveActivity(null)}
                   className="rounded-2xl border-slate-200 font-semibold text-slate-700 h-11 px-5"
                 >
-                  Cancel
+                  Close Preview
                 </Button>
                 <Button
                   type="button"
-                  onClick={handleCompleteActivity}
+                  onClick={() => {
+                    const actToAssign = activeActivity;
+                    setActiveActivity(null);
+                    openAssignModal(actToAssign);
+                  }}
                   className="rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 gap-2 cursor-pointer"
                 >
-                  <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
-                  <span>Complete Activity</span>
+                  <UserPlus className="w-4 h-4 stroke-[2.5]" />
+                  <span>Assign to Clients</span>
                 </Button>
               </div>
             </div>
+          </DialogContent>
+        )}
+      </Dialog>
+
+      {/* Assign Activity to Multiple Clients Modal */}
+      <Dialog open={!!assignModalActivity} onOpenChange={() => setAssignModalActivity(null)}>
+        {assignModalActivity && (
+          <DialogContent className="max-w-lg p-6 sm:p-7 rounded-3xl bg-white border-none shadow-2xl">
+            <DialogHeader className="pb-2">
+              <DialogTitle className="text-2xl font-bold text-slate-900 tracking-tight">
+                Assign Activity to Clients
+              </DialogTitle>
+              <DialogDescription className="text-slate-500 text-sm font-medium">
+                Select one or multiple clients to assign "{assignModalActivity.title}".
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 my-3">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Clients List ({selectedClientsToAssign.length} selected)
+                </span>
+                <button
+                  type="button"
+                  onClick={toggleSelectAllClients}
+                  className="text-xs font-bold text-[#5b32e4] hover:underline cursor-pointer"
+                >
+                  {selectedClientsToAssign.length === CLIENT_LIST.length ? "Deselect All" : "Select All"}
+                </button>
+              </div>
+
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                {CLIENT_LIST.map((client) => {
+                  const isChecked = selectedClientsToAssign.includes(client);
+                  return (
+                    <label
+                      key={client}
+                      onClick={() => toggleClientSelection(client)}
+                      className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer select-none ${
+                        isChecked
+                          ? "bg-purple-50/80 border-[#5b32e4]/40 text-[#5b32e4] font-semibold"
+                          : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${
+                            isChecked
+                              ? "bg-[#5b32e4] border-[#5b32e4] text-white"
+                              : "border-slate-300 bg-white"
+                          }`}
+                        >
+                          {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                        </div>
+                        <span className="text-sm">{client}</span>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            <DialogFooter className="pt-3 border-t border-slate-100 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setAssignModalActivity(null)}
+                className="rounded-2xl border-slate-200 font-semibold h-11"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleConfirmAssign}
+                disabled={selectedClientsToAssign.length === 0}
+                className="rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 cursor-pointer disabled:opacity-50"
+              >
+                Assign to {selectedClientsToAssign.length} Client(s)
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
+
+      {/* Edit Activity Modal */}
+      <Dialog open={!!editModalActivity} onOpenChange={() => setEditModalActivity(null)}>
+        {editModalActivity && (
+          <DialogContent className="max-w-lg p-6 sm:p-7 rounded-3xl bg-white border-none shadow-2xl">
+            <DialogHeader className="pb-2">
+              <DialogTitle className="text-2xl font-bold text-slate-900 tracking-tight">
+                Edit Activity
+              </DialogTitle>
+              <DialogDescription className="text-slate-500 text-sm font-medium">
+                Update activity title, category, difficulty, duration or instructions.
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4 mt-2">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  Title *
+                </label>
+                <Input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  required
+                  className="rounded-2xl border-slate-200 h-11"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                    Category
+                  </label>
+                  <select
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                    className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
+                  >
+                    <option value="MINDFULNESS">MINDFULNESS</option>
+                    <option value="CBT">CBT</option>
+                    <option value="GRATITUDE">GRATITUDE</option>
+                    <option value="BREATHING">BREATHING</option>
+                    <option value="SOMATIC">SOMATIC</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                    Difficulty
+                  </label>
+                  <select
+                    value={editDifficulty}
+                    onChange={(e) => setEditDifficulty(e.target.value)}
+                    className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
+                  >
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                    Duration
+                  </label>
+                  <Input
+                    type="text"
+                    value={editDuration}
+                    onChange={(e) => setEditDuration(e.target.value)}
+                    className="rounded-2xl border-slate-200 h-11"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                    Due Date
+                  </label>
+                  <Input
+                    type="text"
+                    value={editDueDate}
+                    onChange={(e) => setEditDueDate(e.target.value)}
+                    className="rounded-2xl border-slate-200 h-11"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  Description
+                </label>
+                <textarea
+                  rows={2}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  Instructions
+                </label>
+                <textarea
+                  rows={3}
+                  value={editInstructions}
+                  onChange={(e) => setEditInstructions(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
+                />
+              </div>
+
+              <DialogFooter className="pt-3 border-t border-slate-100 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditModalActivity(null)}
+                  className="rounded-2xl border-slate-200 font-semibold h-11"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 cursor-pointer"
+                >
+                  Save Changes
+                </Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         )}
       </Dialog>
@@ -563,10 +896,10 @@ export default function ActivitiesPage() {
         <DialogContent className="max-w-lg p-6 sm:p-7 rounded-3xl bg-white border-none shadow-2xl">
           <DialogHeader className="pb-2">
             <DialogTitle className="text-2xl font-bold text-slate-900 tracking-tight">
-              Create New Activity
+              Create & Assign New Activity
             </DialogTitle>
             <DialogDescription className="text-slate-500 text-sm font-medium">
-              Add a custom therapeutic activity or exercise to your daily wellness schedule.
+              Create a custom activity and assign it to your selected clients.
             </DialogDescription>
           </DialogHeader>
 
@@ -616,6 +949,37 @@ export default function ActivitiesPage() {
                   <option value="Medium">Medium</option>
                   <option value="Hard">Hard</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Select Clients */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                Assign to Clients ({newAssignedTo.length} selected)
+              </label>
+              <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto border border-slate-200 rounded-2xl p-2 bg-slate-50/50">
+                {CLIENT_LIST.map((client) => {
+                  const checked = newAssignedTo.includes(client);
+                  return (
+                    <label
+                      key={client}
+                      onClick={() => {
+                        setNewAssignedTo((prev) =>
+                          prev.includes(client) ? prev.filter((c) => c !== client) : [...prev, client]
+                        );
+                      }}
+                      className="flex items-center gap-2 p-2 rounded-xl text-xs font-semibold cursor-pointer select-none bg-white border border-slate-200/80 hover:bg-slate-100"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => {}}
+                        className="rounded border-slate-300 text-[#5b32e4] focus:ring-[#5b32e4]"
+                      />
+                      <span className="truncate">{client}</span>
+                    </label>
+                  );
+                })}
               </div>
             </div>
 
@@ -687,7 +1051,7 @@ export default function ActivitiesPage() {
                 type="submit"
                 className="rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 cursor-pointer"
               >
-                Create Activity
+                Create & Assign Activity
               </Button>
             </DialogFooter>
           </form>
