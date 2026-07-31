@@ -3,7 +3,6 @@ import {
   Activity, 
   Clock, 
   Calendar as CalendarIcon, 
-  CheckCircle2, 
   Plus, 
   Sparkles, 
   Search, 
@@ -18,7 +17,10 @@ import {
   Copy,
   Trash2,
   Users,
-  Eye
+  Eye,
+  Repeat,
+  ChevronRight,
+  ArrowLeft
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -45,6 +47,8 @@ export interface ActivityItem {
   instructions?: string;
   completedAt?: string | null;
   assignedTo?: string[]; // Multiple assigned client names
+  frequency?: string; // Frequency of exercise (e.g., Daily, 3x/week, Weekly, PRN)
+  timeOfDay?: string; // e.g. Morning, Evening
 }
 
 const CLIENT_LIST = [
@@ -55,6 +59,18 @@ const CLIENT_LIST = [
   "Amanda Miller",
   "Alex Morgan"
 ];
+
+const FREQUENCY_OPTIONS = [
+  { id: "Daily", label: "Daily", description: "Once every day (Recommended)", icon: "⚡" },
+  { id: "2-3 Times / Week", label: "2-3 Times / Week", description: "Flexible practice 2 to 3 days a week", icon: "📅" },
+  { id: "Weekly", label: "Weekly", description: "Once a week on a set day", icon: "🗓️" },
+  { id: "Bi-Weekly", label: "Bi-Weekly", description: "Every 2 weeks", icon: "🔄" },
+  { id: "As Needed (PRN)", label: "As Needed (PRN)", description: "During acute anxiety or stress triggers", icon: "🆘" },
+  { id: "Custom Schedule", label: "Custom Days", description: "Select specific days (e.g. Mon, Wed, Fri)", icon: "⚙️" },
+];
+
+const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const TIME_SLOTS = ["Morning (8:00 AM)", "Afternoon (1:00 PM)", "Evening (7:00 PM)", "Before Bed (10:00 PM)", "Any Time"];
 
 const INITIAL_ACTIVITIES: ActivityItem[] = [
   {
@@ -68,7 +84,9 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80",
     status: "pending",
     instructions: "1. Sit in a comfortable position with your spine upright but relaxed.\n2. Gently close your eyes and bring awareness to your breath.\n3. Observe the sensation of air flowing in through your nose and out through your mouth.\n4. Whenever your mind drifts to thoughts, acknowledge them without judgment and return to the breath.",
-    assignedTo: ["Sarah Jenkins", "Michael Chen"]
+    assignedTo: ["Sarah Jenkins", "Michael Chen"],
+    frequency: "Daily",
+    timeOfDay: "Morning (8:00 AM)"
   },
   {
     id: 2,
@@ -81,7 +99,9 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80",
     status: "pending",
     instructions: "1. Record the triggering situation (Where were you? Who was there?).\n2. Catch your automatic thought and rate how strongly you believed it (0-100%).\n3. Note down the emotional response and physical sensations.\n4. Challenge the thought by listing objective evidence for and against.\n5. Formulate a balanced, realistic replacement thought.",
-    assignedTo: ["Emily Rodriguez", "David Kim"]
+    assignedTo: ["Emily Rodriguez"],
+    frequency: "2-3 Times / Week",
+    timeOfDay: "Evening (7:00 PM)"
   },
   {
     id: 3,
@@ -94,7 +114,9 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80",
     status: "pending",
     instructions: "1. Take 2 slow abdominal breaths.\n2. Write down 3 specific things from today that brought you warmth, joy, or relief.\n3. For each item, write 1-2 sentences about *why* it was meaningful.\n4. Rest quietly for a moment to absorb the positive emotions.",
-    assignedTo: ["Amanda Miller"]
+    assignedTo: ["Amanda Miller"],
+    frequency: "Daily",
+    timeOfDay: "Before Bed (10:00 PM)"
   },
   {
     id: 4,
@@ -107,7 +129,9 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=800&q=80",
     status: "pending",
     instructions: "1. Place tip of tongue against ridge behind upper front teeth.\n2. Exhale completely through mouth with a gentle whoosh sound.\n3. Inhale silently through nose for 4 seconds.\n4. Hold breath for 7 seconds.\n5. Exhale through mouth for 8 seconds. Repeat 4 cycles.",
-    assignedTo: CLIENT_LIST
+    assignedTo: CLIENT_LIST,
+    frequency: "As Needed (PRN)",
+    timeOfDay: "Any Time"
   },
   {
     id: 5,
@@ -121,7 +145,9 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     status: "completed",
     instructions: "Tense each muscle group firmly for 5s, then release completely.",
     completedAt: "Jul 30, 2026 at 6:45 PM",
-    assignedTo: ["Sarah Jenkins"]
+    assignedTo: ["Sarah Jenkins"],
+    frequency: "Weekly",
+    timeOfDay: "Evening (7:00 PM)"
   }
 ];
 
@@ -147,10 +173,16 @@ export default function ActivitiesPage() {
   const [newImageUrl, setNewImageUrl] = useState("");
   const [newInstructions, setNewInstructions] = useState("");
   const [newAssignedTo, setNewAssignedTo] = useState<string[]>(["Sarah Jenkins"]);
+  const [newFrequency, setNewFrequency] = useState("Daily");
+  const [newTimeOfDay, setNewTimeOfDay] = useState("Morning (8:00 AM)");
 
-  // Assign Modal State (Multiple Clients)
+  // Assign Modal Multi-Step State
   const [assignModalActivity, setAssignModalActivity] = useState<ActivityItem | null>(null);
+  const [assignStep, setAssignStep] = useState<1 | 2>(1);
   const [selectedClientsToAssign, setSelectedClientsToAssign] = useState<string[]>([]);
+  const [selectedFrequency, setSelectedFrequency] = useState<string>("Daily");
+  const [selectedCustomDays, setSelectedCustomDays] = useState<string[]>(["Mon", "Wed", "Fri"]);
+  const [selectedTimeOfDay, setSelectedTimeOfDay] = useState<string>("Morning (8:00 AM)");
 
   // Edit Modal State
   const [editModalActivity, setEditModalActivity] = useState<ActivityItem | null>(null);
@@ -174,7 +206,9 @@ export default function ActivitiesPage() {
               ? item.assignedTo
               : typeof item.assignedTo === "string" && item.assignedTo
               ? [item.assignedTo]
-              : ["Sarah Jenkins"]
+              : ["Sarah Jenkins"],
+            frequency: item.frequency || "Daily",
+            timeOfDay: item.timeOfDay || "Morning (8:00 AM)"
           }));
           setActivities(normalized);
         }
@@ -219,9 +253,12 @@ export default function ActivitiesPage() {
     });
   };
 
-  const openAssignModal = (act: ActivityItem) => {
+  const openAssignModal = (act: ActivityItem, targetClient?: string) => {
     setAssignModalActivity(act);
-    setSelectedClientsToAssign(act.assignedTo || ["Sarah Jenkins"]);
+    setAssignStep(targetClient ? 2 : 1);
+    setSelectedClientsToAssign(targetClient ? [targetClient] : (act.assignedTo || ["Sarah Jenkins"]));
+    setSelectedFrequency(act.frequency || "Daily");
+    setSelectedTimeOfDay(act.timeOfDay || "Morning (8:00 AM)");
   };
 
   const toggleClientSelection = (clientName: string) => {
@@ -240,23 +277,39 @@ export default function ActivitiesPage() {
     }
   };
 
+  const toggleCustomDay = (day: string) => {
+    setSelectedCustomDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+    );
+  };
+
   const handleConfirmAssign = () => {
     if (!assignModalActivity) return;
+
+    const finalFrequency = selectedFrequency === "Custom Schedule"
+      ? `Custom (${selectedCustomDays.join(", ")})`
+      : selectedFrequency;
 
     setActivities((prev) =>
       prev.map((item) =>
         item.id === assignModalActivity.id
-          ? { ...item, assignedTo: selectedClientsToAssign }
+          ? { 
+              ...item, 
+              assignedTo: selectedClientsToAssign,
+              frequency: finalFrequency,
+              timeOfDay: selectedTimeOfDay
+            }
           : item
       )
     );
 
     toast({
-      title: "Activity Assigned",
-      description: `"${assignModalActivity.title}" assigned to ${selectedClientsToAssign.length} client(s).`,
+      title: "Activity Assigned Successfully!",
+      description: `"${assignModalActivity.title}" assigned to ${selectedClientsToAssign.length} client(s) with ${finalFrequency} schedule (${selectedTimeOfDay}).`,
     });
 
     setAssignModalActivity(null);
+    setAssignStep(1);
   };
 
   const openEditModal = (act: ActivityItem) => {
@@ -322,7 +375,9 @@ export default function ActivitiesPage() {
       imageUrl: newImageUrl.trim() || defaultImages[newCategory] || defaultImages.MINDFULNESS,
       status: "pending",
       instructions: newInstructions.trim() || "Complete exercises as prescribed.",
-      assignedTo: newAssignedTo
+      assignedTo: newAssignedTo,
+      frequency: newFrequency,
+      timeOfDay: newTimeOfDay
     };
 
     try {
@@ -343,7 +398,7 @@ export default function ActivitiesPage() {
 
     toast({
       title: "Activity Created",
-      description: `"${newTitle}" has been created and assigned to ${newAssignedTo.length} client(s).`,
+      description: `"${newTitle}" created & assigned (${newFrequency}).`,
     });
 
     setIsAddModalOpen(false);
@@ -385,7 +440,9 @@ export default function ActivitiesPage() {
     }
   };
 
-  const renderAssignedBadges = (assignedTo?: string[]) => {
+  const renderAssignedBadges = (act: ActivityItem) => {
+    const assignedTo = act.assignedTo;
+    const freq = act.frequency || "Daily";
     if (!assignedTo || assignedTo.length === 0) {
       return (
         <span className="text-xs text-slate-400 font-medium">Unassigned</span>
@@ -395,7 +452,7 @@ export default function ActivitiesPage() {
       return (
         <div className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5b32e4] px-3 py-1 rounded-full text-xs font-semibold border border-purple-100">
           <Users className="w-3.5 h-3.5 text-[#5b32e4]" />
-          <span>Assigned to All Clients</span>
+          <span>All Clients • {freq}</span>
         </div>
       );
     }
@@ -403,14 +460,14 @@ export default function ActivitiesPage() {
       return (
         <div className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5b32e4] px-3 py-1 rounded-full text-xs font-semibold border border-purple-100">
           <Users className="w-3.5 h-3.5 text-[#5b32e4]" />
-          <span>Assigned to {assignedTo[0]}</span>
+          <span>{assignedTo[0]} • {freq}</span>
         </div>
       );
     }
     return (
       <div className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5b32e4] px-3 py-1 rounded-full text-xs font-semibold border border-purple-100">
         <Users className="w-3.5 h-3.5 text-[#5b32e4]" />
-        <span>Assigned to {assignedTo.length} Clients ({assignedTo[0]}, +{assignedTo.length - 1})</span>
+        <span>{assignedTo.length} Clients ({assignedTo[0]}, +{assignedTo.length - 1}) • {freq}</span>
       </div>
     );
   };
@@ -424,7 +481,7 @@ export default function ActivitiesPage() {
             Activities
           </h1>
           <p className="text-slate-500 text-base mt-1.5 font-medium">
-            Prescribe and manage clinical exercises tailored to your clients' goals.
+            Prescribe and manage clinical exercises with frequency schedules for your clients.
           </p>
         </div>
 
@@ -513,14 +570,34 @@ export default function ActivitiesPage() {
                           <MoreVertical className="w-4 h-4 stroke-[2.2]" />
                         </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-xl border-slate-200">
+                      <DropdownMenuContent align="end" className="w-60 rounded-2xl p-2 shadow-xl border-slate-200">
+                        {/* Direct Option to Assign Activity to Client */}
                         <DropdownMenuItem
                           onClick={() => openAssignModal(act)}
-                          className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold rounded-xl cursor-pointer text-[#5b32e4]"
+                          className="flex items-center gap-2.5 px-3 py-2 text-sm font-bold rounded-xl cursor-pointer text-[#5b32e4] bg-purple-50/50 hover:bg-purple-100/70 mb-1"
                         >
                           <UserPlus className="w-4 h-4 text-[#5b32e4]" />
-                          <span>Assign to Clients...</span>
+                          <span>Assign to Clients & Set Frequency</span>
                         </DropdownMenuItem>
+
+                        <DropdownMenuSeparator className="my-1" />
+
+                        {/* List of direct client options for quick frequency assign */}
+                        <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          Quick Assign to Client:
+                        </div>
+                        {CLIENT_LIST.slice(0, 4).map((clientName) => (
+                          <DropdownMenuItem
+                            key={clientName}
+                            onClick={() => openAssignModal(act, clientName)}
+                            className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold rounded-lg cursor-pointer text-slate-700 hover:bg-slate-50"
+                          >
+                            <span>{clientName}</span>
+                            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                          </DropdownMenuItem>
+                        ))}
+
+                        <DropdownMenuSeparator className="my-1" />
 
                         <DropdownMenuItem
                           onClick={() => handlePreviewActivity(act)}
@@ -570,9 +647,9 @@ export default function ActivitiesPage() {
                       {act.description}
                     </p>
 
-                    {/* Assigned Clients Badge */}
+                    {/* Assigned Clients & Frequency Badge */}
                     <div>
-                      {renderAssignedBadges(act.assignedTo)}
+                      {renderAssignedBadges(act)}
                     </div>
                   </div>
 
@@ -584,8 +661,8 @@ export default function ActivitiesPage() {
                         <span>{act.duration}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <CalendarIcon className="w-4 h-4 text-slate-400" />
-                        <span>{act.dueDate}</span>
+                        <Repeat className="w-4 h-4 text-slate-400" />
+                        <span>{act.frequency || "Daily"}</span>
                       </div>
                     </div>
 
@@ -595,7 +672,7 @@ export default function ActivitiesPage() {
                         className="flex-1 h-11 rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold text-sm transition-all duration-200 cursor-pointer shadow-md shadow-purple-500/20 gap-2"
                       >
                         <UserPlus className="w-4 h-4 stroke-[2.2]" />
-                        <span>Assign Activity</span>
+                        <span>Assign to Client</span>
                       </Button>
                       <Button
                         onClick={() => handlePreviewActivity(act)}
@@ -671,7 +748,7 @@ export default function ActivitiesPage() {
                   className="rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 gap-2 cursor-pointer"
                 >
                   <UserPlus className="w-4 h-4 stroke-[2.5]" />
-                  <span>Assign to Clients</span>
+                  <span>Assign to Client & Set Frequency</span>
                 </Button>
               </div>
             </div>
@@ -679,81 +756,207 @@ export default function ActivitiesPage() {
         )}
       </Dialog>
 
-      {/* Assign Activity to Multiple Clients Modal */}
-      <Dialog open={!!assignModalActivity} onOpenChange={() => setAssignModalActivity(null)}>
+      {/* Assign Activity & Select Frequency Multi-Step Modal */}
+      <Dialog open={!!assignModalActivity} onOpenChange={() => { setAssignModalActivity(null); setAssignStep(1); }}>
         {assignModalActivity && (
           <DialogContent className="max-w-lg p-6 sm:p-7 rounded-3xl bg-white border-none shadow-2xl">
+            {/* Header with Step indicator */}
             <DialogHeader className="pb-2">
-              <DialogTitle className="text-2xl font-bold text-slate-900 tracking-tight">
-                Assign Activity to Clients
-              </DialogTitle>
+              <div className="flex items-center justify-between">
+                <DialogTitle className="text-2xl font-bold text-slate-900 tracking-tight">
+                  {assignStep === 1 ? "1. Select Client(s)" : "2. Select Activity Frequency"}
+                </DialogTitle>
+                <span className="text-xs font-bold text-[#5b32e4] bg-purple-50 px-3 py-1 rounded-full border border-purple-100">
+                  Step {assignStep} of 2
+                </span>
+              </div>
               <DialogDescription className="text-slate-500 text-sm font-medium">
-                Select one or multiple clients to assign "{assignModalActivity.title}".
+                {assignStep === 1
+                  ? `Choose which client(s) will receive "${assignModalActivity.title}".`
+                  : `Set the recurrence schedule for ${selectedClientsToAssign.join(", ")}.`}
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 my-3">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Clients List ({selectedClientsToAssign.length} selected)
-                </span>
-                <button
-                  type="button"
-                  onClick={toggleSelectAllClients}
-                  className="text-xs font-bold text-[#5b32e4] hover:underline cursor-pointer"
-                >
-                  {selectedClientsToAssign.length === CLIENT_LIST.length ? "Deselect All" : "Select All"}
-                </button>
-              </div>
+            {/* STEP 1: Select Client(s) */}
+            {assignStep === 1 && (
+              <div className="space-y-4 my-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Clients ({selectedClientsToAssign.length} selected)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={toggleSelectAllClients}
+                    className="text-xs font-bold text-[#5b32e4] hover:underline cursor-pointer"
+                  >
+                    {selectedClientsToAssign.length === CLIENT_LIST.length ? "Deselect All" : "Select All"}
+                  </button>
+                </div>
 
-              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                {CLIENT_LIST.map((client) => {
-                  const isChecked = selectedClientsToAssign.includes(client);
-                  return (
-                    <label
-                      key={client}
-                      onClick={() => toggleClientSelection(client)}
-                      className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer select-none ${
-                        isChecked
-                          ? "bg-purple-50/80 border-[#5b32e4]/40 text-[#5b32e4] font-semibold"
-                          : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                  {CLIENT_LIST.map((client) => {
+                    const isChecked = selectedClientsToAssign.includes(client);
+                    return (
+                      <div
+                        key={client}
+                        onClick={() => toggleClientSelection(client)}
+                        className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer select-none ${
+                          isChecked
+                            ? "bg-purple-50/80 border-[#5b32e4]/40 text-[#5b32e4] font-semibold"
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${
+                              isChecked
+                                ? "bg-[#5b32e4] border-[#5b32e4] text-white"
+                                : "border-slate-300 bg-white"
+                            }`}
+                          >
+                            {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                          </div>
+                          <span className="text-sm font-semibold">{client}</span>
+                        </div>
+
+                        <span className="text-xs font-bold text-[#5b32e4] opacity-80 flex items-center gap-0.5">
+                          Set Frequency <ChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* STEP 2: Select Frequency & Time of Day */}
+            {assignStep === 2 && (
+              <div className="space-y-5 my-3">
+                {/* Frequency Options Radio Cards */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Recurrence Frequency *
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {FREQUENCY_OPTIONS.map((opt) => {
+                      const isSelected = selectedFrequency === opt.id;
+                      return (
                         <div
-                          className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${
-                            isChecked
-                              ? "bg-[#5b32e4] border-[#5b32e4] text-white"
-                              : "border-slate-300 bg-white"
+                          key={opt.id}
+                          onClick={() => setSelectedFrequency(opt.id)}
+                          className={`p-3.5 rounded-2xl border transition-all cursor-pointer select-none flex items-start gap-3 ${
+                            isSelected
+                              ? "bg-purple-50/90 border-[#5b32e4] text-slate-900 ring-2 ring-[#5b32e4]/20 shadow-sm"
+                              : "bg-white border-slate-200 hover:bg-slate-50 text-slate-700"
                           }`}
                         >
-                          {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                          <span className="text-xl">{opt.icon}</span>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-bold">{opt.label}</span>
+                              {isSelected && <Check className="w-4 h-4 text-[#5b32e4] stroke-[3]" />}
+                            </div>
+                            <p className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                              {opt.description}
+                            </p>
+                          </div>
                         </div>
-                        <span className="text-sm">{client}</span>
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
+                      );
+                    })}
+                  </div>
+                </div>
 
-            <DialogFooter className="pt-3 border-t border-slate-100 gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setAssignModalActivity(null)}
-                className="rounded-2xl border-slate-200 font-semibold h-11"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                onClick={handleConfirmAssign}
-                disabled={selectedClientsToAssign.length === 0}
-                className="rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 cursor-pointer disabled:opacity-50"
-              >
-                Assign to {selectedClientsToAssign.length} Client(s)
-              </Button>
+                {/* Custom Days selector if Custom Schedule chosen */}
+                {selectedFrequency === "Custom Schedule" && (
+                  <div className="space-y-2 bg-slate-50 border border-slate-200/80 p-3.5 rounded-2xl">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
+                      Select Days of Week
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      {WEEK_DAYS.map((day) => {
+                        const isDaySelected = selectedCustomDays.includes(day);
+                        return (
+                          <button
+                            key={day}
+                            type="button"
+                            onClick={() => toggleCustomDay(day)}
+                            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                              isDaySelected
+                                ? "bg-[#5b32e4] text-white shadow-sm"
+                                : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                            }`}
+                          >
+                            {day}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Time of Day dropdown */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                    Preferred Time of Day
+                  </label>
+                  <select
+                    value={selectedTimeOfDay}
+                    onChange={(e) => setSelectedTimeOfDay(e.target.value)}
+                    className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
+                  >
+                    {TIME_SLOTS.map((slot) => (
+                      <option key={slot} value={slot}>
+                        {slot}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* Modal Footer Navigation */}
+            <DialogFooter className="pt-3 border-t border-slate-100 gap-2 flex flex-row items-center justify-between">
+              {assignStep === 2 ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setAssignStep(1)}
+                  className="rounded-2xl border-slate-200 font-semibold h-11 gap-1.5"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Back to Clients</span>
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setAssignModalActivity(null)}
+                  className="rounded-2xl border-slate-200 font-semibold h-11"
+                >
+                  Cancel
+                </Button>
+              )}
+
+              {assignStep === 1 ? (
+                <Button
+                  type="button"
+                  onClick={() => setAssignStep(2)}
+                  disabled={selectedClientsToAssign.length === 0}
+                  className="rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 cursor-pointer disabled:opacity-50 gap-1.5"
+                >
+                  <span>Select Frequency</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={handleConfirmAssign}
+                  className="rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 cursor-pointer gap-2"
+                >
+                  <Check className="w-4 h-4 stroke-[3]" />
+                  <span>Confirm Assignment</span>
+                </Button>
+              )}
             </DialogFooter>
           </DialogContent>
         )}
@@ -899,7 +1102,7 @@ export default function ActivitiesPage() {
               Create & Assign New Activity
             </DialogTitle>
             <DialogDescription className="text-slate-500 text-sm font-medium">
-              Create a custom activity and assign it to your selected clients.
+              Create a custom activity and assign it to your selected clients with recurrence frequency.
             </DialogDescription>
           </DialogHeader>
 
@@ -938,16 +1141,18 @@ export default function ActivitiesPage() {
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                  Difficulty
+                  Recurrence Frequency
                 </label>
                 <select
-                  value={newDifficulty}
-                  onChange={(e) => setNewDifficulty(e.target.value)}
+                  value={newFrequency}
+                  onChange={(e) => setNewFrequency(e.target.value)}
                   className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
                 >
-                  <option value="Easy">Easy</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Hard">Hard</option>
+                  <option value="Daily">Daily</option>
+                  <option value="2-3 Times / Week">2-3 Times / Week</option>
+                  <option value="Weekly">Weekly</option>
+                  <option value="Bi-Weekly">Bi-Weekly</option>
+                  <option value="As Needed (PRN)">As Needed (PRN)</option>
                 </select>
               </div>
             </div>
@@ -999,15 +1204,19 @@ export default function ActivitiesPage() {
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                  Due Date
+                  Time of Day
                 </label>
-                <Input
-                  type="text"
-                  placeholder="e.g. Today or Tomorrow"
-                  value={newDueDate}
-                  onChange={(e) => setNewDueDate(e.target.value)}
-                  className="rounded-2xl border-slate-200 h-11"
-                />
+                <select
+                  value={newTimeOfDay}
+                  onChange={(e) => setNewTimeOfDay(e.target.value)}
+                  className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
+                >
+                  {TIME_SLOTS.map((slot) => (
+                    <option key={slot} value={slot}>
+                      {slot}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
