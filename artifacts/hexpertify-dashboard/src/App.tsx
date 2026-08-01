@@ -15,6 +15,7 @@ import Outcomes from '@/pages/outcomes';
 import Revenue from '@/pages/revenue';
 import Reviews from '@/pages/reviews';
 import Resources from '@/pages/resources';
+import Assessments from '@/pages/assessments';
 import Activities from '@/pages/activities';
 import Messages from '@/pages/messages';
 
@@ -53,6 +54,7 @@ function Router() {
               <Route path="/revenue" component={Revenue} />
               <Route path="/reviews" component={Reviews} />
               <Route path="/resources" component={Resources} />
+              <Route path="/assessments" component={Assessments} />
               <Route path="/activities" component={Activities} />
               <Route path="/blog" component={Blog} />
 

@@ -10,6 +10,7 @@ import {
   IndianRupee,
   Star,
   FolderOpen,
+  ClipboardCheck,
   MessageSquare,
   PenTool,
   User,
@@ -38,6 +39,7 @@ const SIDEBAR_ITEMS = [
       { name: "Revenue", href: "/revenue", icon: IndianRupee },
       { name: "Reviews", href: "/reviews", icon: Star },
       { name: "Resources", href: "/resources", icon: FolderOpen },
+      { name: "Assessments", href: "/assessments", icon: ClipboardCheck },
     ],
   },
   {
@@ -128,20 +130,13 @@ export function Sidebar() {
             <span className="font-medium text-sm">My Profile</span>
           </Link>
 
-          <div className="mt-4 pt-4 border-t border-border">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="relative">
-                <Avatar className="h-10 w-10 border border-border">
-                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                    {user?.avatarInitials || "AH"}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold leading-none">{user?.name || "Dr. Alex Harrison"}</span>
-                <span className="text-xs text-muted-foreground mt-1">{user?.title || "Clinical Psychologist"}</span>
-              </div>
+          <div className="mt-4 pt-4 border-t border-border flex flex-col items-start gap-3 px-1">
+            <div className="flex items-center justify-start py-1">
+              <img 
+                src="/hexpertify-logo.png" 
+                alt="Hexpertify Logo" 
+                className="h-16 w-auto object-contain max-h-16" 
+              />
             </div>
 
             <button 
@@ -193,6 +188,61 @@ export function Sidebar() {
 }
 
 export function Header() {
+  const [, setLocation] = useLocation();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([
+    {
+      id: "1",
+      title: "High Risk Assessment Alert",
+      message: "James Chen scored 17/21 (Severe) on GAD-7",
+      time: "25m ago",
+      read: false,
+      href: "/assessments",
+      type: "alert",
+    },
+    {
+      id: "2",
+      title: "New Assessment Completed",
+      message: "Emma Martinez submitted PHQ-9 (8/27 - Mild)",
+      time: "1h ago",
+      read: false,
+      href: "/assessments",
+      type: "assessment",
+    },
+    {
+      id: "3",
+      title: "Session Booked",
+      message: "Priya Kapoor scheduled session for tomorrow at 2:15 PM",
+      time: "3h ago",
+      read: false,
+      href: "/calendar",
+      type: "calendar",
+    },
+    {
+      id: "4",
+      title: "New Client Message",
+      message: "David Kim: 'Can we review the CBT worksheet?'",
+      time: "Yesterday",
+      read: true,
+      href: "/messages",
+      type: "message",
+    },
+  ]);
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const markAllAsRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
+
+  const handleNotificationClick = (href: string, id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+    setShowNotifications(false);
+    setLocation(href);
+  };
+
   return (
     <header className="h-[72px] bg-white border-b border-border flex items-center justify-between px-6 fixed top-0 w-full z-20">
       <Link href="/" className="flex items-center gap-2 min-w-[260px] focus:outline-none cursor-pointer">
@@ -227,11 +277,103 @@ export function Header() {
           </button>
         </Link>
 
-        {/* Bell Icon with Purple Badge */}
-        <button type="button" className="relative text-slate-600 hover:text-slate-900 transition-colors p-1.5 rounded-full hover:bg-slate-100 cursor-pointer">
-          <Bell className="w-5 h-5 stroke-[2]" />
-          <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#6d28d9] rounded-full border-2 border-white"></span>
-        </button>
+        {/* Bell Icon with Interactive Notifications Popover */}
+        <div className="relative">
+          <button 
+            type="button" 
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="relative text-slate-600 hover:text-slate-900 transition-colors p-1.5 rounded-full hover:bg-slate-100 cursor-pointer focus:outline-none"
+          >
+            <Bell className="w-5 h-5 stroke-[2]" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#6d28d9] rounded-full border-2 border-white"></span>
+            )}
+          </button>
+
+          {showNotifications && (
+            <>
+              {/* Backdrop */}
+              <div 
+                className="fixed inset-0 z-30" 
+                onClick={() => setShowNotifications(false)} 
+              />
+              
+              {/* Notifications Popover Dropdown */}
+              <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-40 overflow-hidden animate-in fade-in-0 zoom-in-95">
+                <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-slate-900 text-sm">Notifications</h3>
+                    {unreadCount > 0 && (
+                      <span className="bg-primary/10 text-primary text-[11px] font-bold px-2 py-0.5 rounded-full">
+                        {unreadCount} new
+                      </span>
+                    )}
+                  </div>
+                  {unreadCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={markAllAsRead}
+                      className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+                    >
+                      Mark all as read
+                    </button>
+                  )}
+                </div>
+
+                <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                  {notifications.length === 0 ? (
+                    <div className="p-6 text-center text-slate-400 text-xs font-medium">
+                      No notifications
+                    </div>
+                  ) : (
+                    notifications.map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => handleNotificationClick(item.href, item.id)}
+                        className={cn(
+                          "p-3.5 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3 items-start",
+                          !item.read && "bg-purple-50/40"
+                        )}
+                      >
+                        <div className={cn(
+                          "w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold mt-0.5",
+                          item.type === "alert" && "bg-red-100 text-red-600",
+                          item.type === "assessment" && "bg-purple-100 text-purple-600",
+                          item.type === "calendar" && "bg-blue-100 text-blue-600",
+                          item.type === "message" && "bg-emerald-100 text-emerald-600"
+                        )}>
+                          {item.type === "alert" ? "!" : item.type === "assessment" ? "ASM" : item.type === "calendar" ? "CAL" : "MSG"}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className={cn("text-xs font-semibold truncate", !item.read ? "text-slate-900 font-bold" : "text-slate-700")}>
+                              {item.title}
+                            </p>
+                            <span className="text-[10px] text-slate-400 shrink-0">{item.time}</span>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-2 leading-relaxed">
+                            {item.message}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="p-3 border-t border-slate-100 bg-slate-50/50 text-center">
+                  <Link 
+                    href="/activities"
+                    onClick={() => setShowNotifications(false)}
+                    className="text-xs font-semibold text-primary hover:underline cursor-pointer block"
+                  >
+                    View Activity Log
+                  </Link>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
 
         {/* Messages Pill Button */}
         <Link href="/messages">

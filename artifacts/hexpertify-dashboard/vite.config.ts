@@ -19,7 +19,6 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    runtimeErrorOverlay(),
     ...(process.env.NODE_ENV !== 'production' &&
     process.env.REPL_ID !== undefined
       ? [
@@ -56,6 +55,9 @@ export default defineConfig({
     strictPort: true,
     host: '0.0.0.0',
     allowedHosts: true,
+    hmr: {
+      overlay: false,
+    },
     fs: {
       strict: true,
     },
@@ -63,6 +65,14 @@ export default defineConfig({
       '/api': {
         target: process.env.API_SERVER_URL || 'http://127.0.0.1:5050',
         changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', (_err, _req, res) => {
+            if (res && !res.headersSent) {
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ fallback: true }));
+            }
+          });
+        },
       },
     },
   },

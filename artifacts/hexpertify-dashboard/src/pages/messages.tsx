@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Send, Search, Phone, Video, Info, Circle, MoreVertical, MessageSquare } from "lucide-react";
+import { Send, Search, Circle, MessageSquare } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -148,7 +148,6 @@ export default function Messages() {
                   <Avatar className="h-10 w-10 border border-border">
                     <AvatarFallback className="bg-primary/5 text-primary font-semibold text-sm">{initials}</AvatarFallback>
                   </Avatar>
-                  <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${chat.status === 'online' ? 'bg-green-500' : 'bg-slate-300'}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline mb-1">
@@ -168,6 +167,15 @@ export default function Messages() {
             );
           })}
         </div>
+
+        {/* Left Sidebar Footer with Hexpertify Logo */}
+        <div className="p-3.5 border-t border-border bg-slate-50/70 flex items-center justify-start shrink-0 px-4">
+          <img 
+            src="/hexpertify-logo.png" 
+            alt="Hexpertify Logo" 
+            className="h-12 w-auto object-contain max-h-12" 
+          />
+        </div>
       </div>
 
       {/* Right Chat Window */}
@@ -175,37 +183,12 @@ export default function Messages() {
         {/* Chat header */}
         <div className="px-6 py-4 bg-white border-b border-border flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <Avatar className="h-10 w-10 border border-border">
-                <AvatarFallback className="bg-primary/5 text-primary font-semibold text-sm">{getInitials(activeChat.name)}</AvatarFallback>
-              </Avatar>
-              <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${activeChat.status === 'online' ? 'bg-green-500' : 'bg-slate-300'}`} />
-            </div>
+            <Avatar className="h-10 w-10 border border-border">
+              <AvatarFallback className="bg-primary/5 text-primary font-semibold text-sm">{getInitials(activeChat.name)}</AvatarFallback>
+            </Avatar>
             <div>
               <h4 className="font-bold text-[15px] text-foreground leading-snug">{activeChat.name}</h4>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                {activeChat.status === 'online' ? (
-                  <>
-                    <Circle className="w-1.5 h-1.5 fill-green-500 stroke-none" /> Active Now
-                  </>
-                ) : "Offline"}
-              </p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground">
-              <Phone className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground">
-              <Video className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground">
-              <Info className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground">
-              <MoreVertical className="w-4 h-4" />
-            </Button>
           </div>
         </div>
 
@@ -241,9 +224,9 @@ export default function Messages() {
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSend();
             }}
-            className="flex-1"
+            className="flex-1 rounded-xl"
           />
-          <Button onClick={handleSend} className="bg-primary text-white gap-2 h-10 px-4 shrink-0">
+          <Button onClick={handleSend} className="bg-primary hover:bg-primary/90 text-white gap-2 h-10 px-5 shrink-0 rounded-xl font-bold">
             <Send className="w-4 h-4" />
             Send
           </Button>

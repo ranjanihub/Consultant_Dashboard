@@ -34,6 +34,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 
+export interface ClientAssignment {
+  clientName: string;
+  frequency: string; // Frequency per client (e.g. Daily, 2-3 Times / Week, Weekly, As Needed)
+  timeOfDay?: string; // Preferred time of day per client
+}
+
 export interface ActivityItem {
   id: number | string;
   title: string;
@@ -47,8 +53,9 @@ export interface ActivityItem {
   instructions?: string;
   completedAt?: string | null;
   assignedTo?: string[]; // Multiple assigned client names
-  frequency?: string; // Frequency of exercise (e.g., Daily, 3x/week, Weekly, PRN)
-  timeOfDay?: string; // e.g. Morning, Evening
+  clientAssignments?: ClientAssignment[]; // Per-client frequency schedule!
+  frequency?: string; // Default fallback frequency
+  timeOfDay?: string; // Default time of day
 }
 
 const CLIENT_LIST = [
@@ -66,7 +73,6 @@ const FREQUENCY_OPTIONS = [
   { id: "Weekly", label: "Weekly", description: "Once a week on a set day", icon: "🗓️" },
   { id: "Bi-Weekly", label: "Bi-Weekly", description: "Every 2 weeks", icon: "🔄" },
   { id: "As Needed (PRN)", label: "As Needed (PRN)", description: "During acute anxiety or stress triggers", icon: "🆘" },
-  { id: "Custom Schedule", label: "Custom Days", description: "Select specific days (e.g. Mon, Wed, Fri)", icon: "⚙️" },
 ];
 
 const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -85,6 +91,10 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     status: "pending",
     instructions: "1. Sit in a comfortable position with your spine upright but relaxed.\n2. Gently close your eyes and bring awareness to your breath.\n3. Observe the sensation of air flowing in through your nose and out through your mouth.\n4. Whenever your mind drifts to thoughts, acknowledge them without judgment and return to the breath.",
     assignedTo: ["Sarah Jenkins", "Michael Chen"],
+    clientAssignments: [
+      { clientName: "Sarah Jenkins", frequency: "Daily", timeOfDay: "Morning (8:00 AM)" },
+      { clientName: "Michael Chen", frequency: "2-3 Times / Week", timeOfDay: "Evening (7:00 PM)" }
+    ],
     frequency: "Daily",
     timeOfDay: "Morning (8:00 AM)"
   },
@@ -99,7 +109,11 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80",
     status: "pending",
     instructions: "1. Record the triggering situation (Where were you? Who was there?).\n2. Catch your automatic thought and rate how strongly you believed it (0-100%).\n3. Note down the emotional response and physical sensations.\n4. Challenge the thought by listing objective evidence for and against.\n5. Formulate a balanced, realistic replacement thought.",
-    assignedTo: ["Emily Rodriguez"],
+    assignedTo: ["Emily Rodriguez", "David Kim"],
+    clientAssignments: [
+      { clientName: "Emily Rodriguez", frequency: "Daily", timeOfDay: "Evening (7:00 PM)" },
+      { clientName: "David Kim", frequency: "As Needed (PRN)", timeOfDay: "Any Time" }
+    ],
     frequency: "2-3 Times / Week",
     timeOfDay: "Evening (7:00 PM)"
   },
@@ -114,7 +128,11 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80",
     status: "pending",
     instructions: "1. Take 2 slow abdominal breaths.\n2. Write down 3 specific things from today that brought you warmth, joy, or relief.\n3. For each item, write 1-2 sentences about *why* it was meaningful.\n4. Rest quietly for a moment to absorb the positive emotions.",
-    assignedTo: ["Amanda Miller"],
+    assignedTo: ["Amanda Miller", "Alex Morgan"],
+    clientAssignments: [
+      { clientName: "Amanda Miller", frequency: "Daily", timeOfDay: "Before Bed (10:00 PM)" },
+      { clientName: "Alex Morgan", frequency: "Weekly", timeOfDay: "Evening (7:00 PM)" }
+    ],
     frequency: "Daily",
     timeOfDay: "Before Bed (10:00 PM)"
   },
@@ -129,7 +147,11 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=800&q=80",
     status: "pending",
     instructions: "1. Place tip of tongue against ridge behind upper front teeth.\n2. Exhale completely through mouth with a gentle whoosh sound.\n3. Inhale silently through nose for 4 seconds.\n4. Hold breath for 7 seconds.\n5. Exhale through mouth for 8 seconds. Repeat 4 cycles.",
-    assignedTo: CLIENT_LIST,
+    assignedTo: ["Sarah Jenkins", "Emily Rodriguez"],
+    clientAssignments: [
+      { clientName: "Sarah Jenkins", frequency: "As Needed (PRN)", timeOfDay: "Any Time" },
+      { clientName: "Emily Rodriguez", frequency: "Daily", timeOfDay: "Morning (8:00 AM)" }
+    ],
     frequency: "As Needed (PRN)",
     timeOfDay: "Any Time"
   },
@@ -146,6 +168,9 @@ const INITIAL_ACTIVITIES: ActivityItem[] = [
     instructions: "Tense each muscle group firmly for 5s, then release completely.",
     completedAt: "Jul 30, 2026 at 6:45 PM",
     assignedTo: ["Sarah Jenkins"],
+    clientAssignments: [
+      { clientName: "Sarah Jenkins", frequency: "Weekly", timeOfDay: "Evening (7:00 PM)" }
+    ],
     frequency: "Weekly",
     timeOfDay: "Evening (7:00 PM)"
   }
@@ -180,9 +205,7 @@ export default function ActivitiesPage() {
   const [assignModalActivity, setAssignModalActivity] = useState<ActivityItem | null>(null);
   const [assignStep, setAssignStep] = useState<1 | 2>(1);
   const [selectedClientsToAssign, setSelectedClientsToAssign] = useState<string[]>([]);
-  const [selectedFrequency, setSelectedFrequency] = useState<string>("Daily");
-  const [selectedCustomDays, setSelectedCustomDays] = useState<string[]>(["Mon", "Wed", "Fri"]);
-  const [selectedTimeOfDay, setSelectedTimeOfDay] = useState<string>("Morning (8:00 AM)");
+  const [clientFrequencies, setClientFrequencies] = useState<Record<string, { frequency: string; timeOfDay: string }>>({});
 
   // Edit Modal State
   const [editModalActivity, setEditModalActivity] = useState<ActivityItem | null>(null);
@@ -196,9 +219,11 @@ export default function ActivitiesPage() {
 
   // Fetch activities from backend API if available
   useEffect(() => {
-    fetch("/api/activities")
-      .then((res) => res.json())
-      .then((data) => {
+    const loadActivities = async () => {
+      try {
+        const res = await fetch("/api/activities");
+        if (!res.ok) return;
+        const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
           const normalized = data.map((item: any) => ({
             ...item,
@@ -212,10 +237,11 @@ export default function ActivitiesPage() {
           }));
           setActivities(normalized);
         }
-      })
-      .catch((err) => {
-        console.warn("Could not fetch activities from backend API, using client fallback:", err);
-      });
+      } catch (err) {
+        // Silently use local fallback state
+      }
+    };
+    loadActivities();
   }, []);
 
   const handlePreviewActivity = (act: ActivityItem) => {
@@ -256,9 +282,18 @@ export default function ActivitiesPage() {
   const openAssignModal = (act: ActivityItem, targetClient?: string) => {
     setAssignModalActivity(act);
     setAssignStep(targetClient ? 2 : 1);
-    setSelectedClientsToAssign(targetClient ? [targetClient] : (act.assignedTo || ["Sarah Jenkins"]));
-    setSelectedFrequency(act.frequency || "Daily");
-    setSelectedTimeOfDay(act.timeOfDay || "Morning (8:00 AM)");
+    const clients = targetClient ? [targetClient] : (act.assignedTo || ["Sarah Jenkins"]);
+    setSelectedClientsToAssign(clients);
+
+    const initialFreqs: Record<string, { frequency: string; timeOfDay: string }> = {};
+    CLIENT_LIST.forEach((cName) => {
+      const existing = act.clientAssignments?.find((ca) => ca.clientName === cName);
+      initialFreqs[cName] = {
+        frequency: existing?.frequency || act.frequency || "Daily",
+        timeOfDay: existing?.timeOfDay || act.timeOfDay || "Morning (8:00 AM)",
+      };
+    });
+    setClientFrequencies(initialFreqs);
   };
 
   const toggleClientSelection = (clientName: string) => {
@@ -277,35 +312,64 @@ export default function ActivitiesPage() {
     }
   };
 
-  const toggleCustomDay = (day: string) => {
-    setSelectedCustomDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
-    );
+  const updateClientFrequency = (clientName: string, frequency: string) => {
+    setClientFrequencies((prev) => ({
+      ...prev,
+      [clientName]: {
+        ...(prev[clientName] || { timeOfDay: "Morning (8:00 AM)" }),
+        frequency,
+      },
+    }));
+  };
+
+  const updateClientTimeOfDay = (clientName: string, timeOfDay: string) => {
+    setClientFrequencies((prev) => ({
+      ...prev,
+      [clientName]: {
+        ...(prev[clientName] || { frequency: "Daily" }),
+        timeOfDay,
+      },
+    }));
+  };
+
+  const applyFrequencyToAll = (frequency: string) => {
+    setClientFrequencies((prev) => {
+      const next = { ...prev };
+      selectedClientsToAssign.forEach((cName) => {
+        next[cName] = {
+          ...(next[cName] || { timeOfDay: "Morning (8:00 AM)" }),
+          frequency,
+        };
+      });
+      return next;
+    });
   };
 
   const handleConfirmAssign = () => {
     if (!assignModalActivity) return;
 
-    const finalFrequency = selectedFrequency === "Custom Schedule"
-      ? `Custom (${selectedCustomDays.join(", ")})`
-      : selectedFrequency;
+    const updatedAssignments: ClientAssignment[] = selectedClientsToAssign.map((cName) => ({
+      clientName: cName,
+      frequency: clientFrequencies[cName]?.frequency || "Daily",
+      timeOfDay: clientFrequencies[cName]?.timeOfDay || "Morning (8:00 AM)",
+    }));
 
     setActivities((prev) =>
       prev.map((item) =>
         item.id === assignModalActivity.id
-          ? { 
-              ...item, 
+          ? {
+              ...item,
               assignedTo: selectedClientsToAssign,
-              frequency: finalFrequency,
-              timeOfDay: selectedTimeOfDay
+              clientAssignments: updatedAssignments,
+              frequency: updatedAssignments[0]?.frequency || "Daily",
             }
           : item
       )
     );
 
     toast({
-      title: "Activity Assigned Successfully!",
-      description: `"${assignModalActivity.title}" assigned to ${selectedClientsToAssign.length} client(s) with ${finalFrequency} schedule (${selectedTimeOfDay}).`,
+      title: "Per-Client Frequencies Saved!",
+      description: `"${assignModalActivity.title}" assigned to ${selectedClientsToAssign.length} client(s) with custom frequency schedules.`,
     });
 
     setAssignModalActivity(null);
@@ -387,7 +451,7 @@ export default function ActivitiesPage() {
         body: JSON.stringify(newAct)
       });
       const saved = await res.json();
-      if (saved && saved.id) {
+      if (saved && saved.id && !saved.fallback) {
         setActivities((prev) => [saved, ...prev]);
       } else {
         setActivities((prev) => [newAct, ...prev]);
@@ -441,33 +505,41 @@ export default function ActivitiesPage() {
   };
 
   const renderAssignedBadges = (act: ActivityItem) => {
-    const assignedTo = act.assignedTo;
+    const clientAssignments = act.clientAssignments;
+    if (clientAssignments && clientAssignments.length > 0) {
+      return (
+        <div className="space-y-1.5 mt-2">
+          <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <Users className="w-3.5 h-3.5 text-[#5b32e4]" />
+            <span>Assigned Clients ({clientAssignments.length})</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {clientAssignments.map((ca, idx) => (
+              <span
+                key={idx}
+                className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5b32e4] px-2.5 py-1 rounded-xl text-xs font-bold border border-purple-100/80"
+              >
+                <span>{ca.clientName}</span>
+                <span className="text-[10px] bg-[#5b32e4]/10 text-[#5b32e4] px-1.5 py-0.5 rounded-md font-extrabold">
+                  {ca.frequency}
+                </span>
+              </span>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    const assignedTo = act.assignedTo || [];
     const freq = act.frequency || "Daily";
-    if (!assignedTo || assignedTo.length === 0) {
+    if (assignedTo.length === 0) {
       return (
         <span className="text-xs text-slate-400 font-medium">Unassigned</span>
-      );
-    }
-    if (assignedTo.length === CLIENT_LIST.length) {
-      return (
-        <div className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5b32e4] px-3 py-1 rounded-full text-xs font-semibold border border-purple-100">
-          <Users className="w-3.5 h-3.5 text-[#5b32e4]" />
-          <span>All Clients • {freq}</span>
-        </div>
-      );
-    }
-    if (assignedTo.length === 1) {
-      return (
-        <div className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5b32e4] px-3 py-1 rounded-full text-xs font-semibold border border-purple-100">
-          <Users className="w-3.5 h-3.5 text-[#5b32e4]" />
-          <span>{assignedTo[0]} • {freq}</span>
-        </div>
       );
     }
     return (
       <div className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5b32e4] px-3 py-1 rounded-full text-xs font-semibold border border-purple-100">
         <Users className="w-3.5 h-3.5 text-[#5b32e4]" />
-        <span>{assignedTo.length} Clients ({assignedTo[0]}, +{assignedTo.length - 1}) • {freq}</span>
+        <span>{assignedTo.join(", ")} • {freq}</span>
       </div>
     );
   };
@@ -504,7 +576,7 @@ export default function ActivitiesPage() {
             className="w-full sm:w-auto rounded-full bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-10 px-5 shadow-md shadow-purple-500/20 shrink-0 gap-2 cursor-pointer transition-all"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Create & Assign Activity</span>
+            <span>Create Activity</span>
           </Button>
         </div>
       </div>
@@ -773,7 +845,7 @@ export default function ActivitiesPage() {
               <DialogDescription className="text-slate-500 text-sm font-medium">
                 {assignStep === 1
                   ? `Choose which client(s) will receive "${assignModalActivity.title}".`
-                  : `Set the recurrence schedule for ${selectedClientsToAssign.join(", ")}.`}
+                  : `Configure individual practice frequencies for each assigned client.`}
               </DialogDescription>
             </DialogHeader>
 
@@ -829,87 +901,98 @@ export default function ActivitiesPage() {
               </div>
             )}
 
-            {/* STEP 2: Select Frequency & Time of Day */}
+            {/* STEP 2: Configure Per-Client Frequency & Schedule */}
             {assignStep === 2 && (
-              <div className="space-y-5 my-3">
-                {/* Frequency Options Radio Cards */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
-                    Recurrence Frequency *
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {FREQUENCY_OPTIONS.map((opt) => {
-                      const isSelected = selectedFrequency === opt.id;
-                      return (
-                        <div
-                          key={opt.id}
-                          onClick={() => setSelectedFrequency(opt.id)}
-                          className={`p-3.5 rounded-2xl border transition-all cursor-pointer select-none flex items-start gap-3 ${
-                            isSelected
-                              ? "bg-purple-50/90 border-[#5b32e4] text-slate-900 ring-2 ring-[#5b32e4]/20 shadow-sm"
-                              : "bg-white border-slate-200 hover:bg-slate-50 text-slate-700"
-                          }`}
-                        >
-                          <span className="text-xl">{opt.icon}</span>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-bold">{opt.label}</span>
-                              {isSelected && <Check className="w-4 h-4 text-[#5b32e4] stroke-[3]" />}
-                            </div>
-                            <p className="text-[11px] text-slate-500 leading-tight mt-0.5">
-                              {opt.description}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
+              <div className="space-y-4 my-2">
+                {/* Bulk Shortcut Bar */}
+                <div className="bg-slate-50 border border-slate-200/80 p-3 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                    Quick Bulk Apply:
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {["Daily", "2-3 Times / Week", "Weekly", "As Needed (PRN)"].map((f) => (
+                      <button
+                        key={f}
+                        type="button"
+                        onClick={() => applyFrequencyToAll(f)}
+                        className="px-2.5 py-1 rounded-xl text-xs font-bold bg-white hover:bg-purple-50 text-slate-700 hover:text-[#5b32e4] border border-slate-200 hover:border-[#5b32e4]/30 transition-colors cursor-pointer"
+                      >
+                        {f}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                {/* Custom Days selector if Custom Schedule chosen */}
-                {selectedFrequency === "Custom Schedule" && (
-                  <div className="space-y-2 bg-slate-50 border border-slate-200/80 p-3.5 rounded-2xl">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
-                      Select Days of Week
-                    </label>
-                    <div className="flex items-center gap-1.5">
-                      {WEEK_DAYS.map((day) => {
-                        const isDaySelected = selectedCustomDays.includes(day);
-                        return (
-                          <button
-                            key={day}
-                            type="button"
-                            onClick={() => toggleCustomDay(day)}
-                            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                              isDaySelected
-                                ? "bg-[#5b32e4] text-white shadow-sm"
-                                : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
-                            }`}
-                          >
-                            {day}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                {/* Per-Client Frequency Configuration List */}
+                <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+                  {selectedClientsToAssign.map((clientName) => {
+                    const currentConfig = clientFrequencies[clientName] || {
+                      frequency: "Daily",
+                      timeOfDay: "Morning (8:00 AM)",
+                    };
+                    const initials = clientName
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("");
 
-                {/* Time of Day dropdown */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                    Preferred Time of Day
-                  </label>
-                  <select
-                    value={selectedTimeOfDay}
-                    onChange={(e) => setSelectedTimeOfDay(e.target.value)}
-                    className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
-                  >
-                    {TIME_SLOTS.map((slot) => (
-                      <option key={slot} value={slot}>
-                        {slot}
-                      </option>
-                    ))}
-                  </select>
+                    return (
+                      <div
+                        key={clientName}
+                        className="p-3.5 rounded-2xl border border-slate-200/90 bg-white shadow-sm hover:border-purple-200 transition-all space-y-2.5"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-purple-100 text-[#5b32e4] font-bold flex items-center justify-center text-xs shrink-0">
+                              {initials}
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-slate-900 leading-tight">{clientName}</p>
+                              <p className="text-[11px] text-slate-500 font-medium mt-0.5">Individual Schedule</p>
+                            </div>
+                          </div>
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-[#5b32e4] border border-purple-100">
+                            {currentConfig.frequency}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-slate-100">
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                              Frequency
+                            </label>
+                            <select
+                              value={currentConfig.frequency}
+                              onChange={(e) => updateClientFrequency(clientName, e.target.value)}
+                              className="w-full h-9 rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-xs font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#5b32e4] focus:outline-none"
+                            >
+                              {FREQUENCY_OPTIONS.map((opt) => (
+                                <option key={opt.id} value={opt.id}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                              Preferred Time
+                            </label>
+                            <select
+                              value={currentConfig.timeOfDay}
+                              onChange={(e) => updateClientTimeOfDay(clientName, e.target.value)}
+                              className="w-full h-9 rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-xs font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#5b32e4] focus:outline-none"
+                            >
+                              {TIME_SLOTS.map((slot) => (
+                                <option key={slot} value={slot}>
+                                  {slot}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

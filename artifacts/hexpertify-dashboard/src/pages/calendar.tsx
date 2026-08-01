@@ -157,7 +157,7 @@ export default function Calendar() {
             </div>
             <div className="flex items-center gap-2.5">
               <Globe className="w-4 h-4 shrink-0 text-primary" />
-              <span>Eastern Time – US &amp; Canada</span>
+              <span>Indian Standard Time (IST)</span>
             </div>
             <div className="flex items-center gap-2.5">
               <Users className="w-4 h-4 shrink-0 text-primary" />
@@ -250,21 +250,7 @@ export default function Calendar() {
             })}
           </div>
 
-          {/* Legend */}
-          <div className="flex items-center gap-4 mt-6 pt-5 border-t border-border text-xs text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-primary" />
-              High load
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-primary/40" />
-              Moderate
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-primary/20" />
-              Light
-            </div>
-          </div>
+
         </div>
 
         {/* ── Panel 3: Time slots for selected day ─────────── */}
