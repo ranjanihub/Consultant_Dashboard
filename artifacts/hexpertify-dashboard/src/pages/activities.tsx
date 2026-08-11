@@ -33,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { PageHeader } from "@/components/page-header";
 
 export interface ClientAssignment {
   clientName: string;
@@ -546,40 +547,35 @@ export default function ActivitiesPage() {
 
   return (
     <div className="space-y-8 pb-16">
-      {/* Top Title & Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">
-            Activities
-          </h1>
-          <p className="text-slate-500 text-base mt-1.5 font-medium">
-            Prescribe and manage clinical exercises with frequency schedules for your clients.
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+      <PageHeader
+        title="Therapy Activities Library"
+        description="Browse, assign, create, and manage therapeutic exercises and worksheets with custom frequency schedules for your clients."
+        badge="ACTIVITY MANAGEMENT"
+        icon={<Activity className="w-4 h-4 text-purple-200" />}
+      >
+        <div className="flex items-center gap-3 w-full md:w-auto">
           {/* Search bar */}
-          <div className="relative w-full sm:w-72">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
               type="text"
-              placeholder="Search activities or clients..."
+              placeholder="Search activities..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 rounded-full border-slate-200 bg-white shadow-sm focus-visible:ring-[#5e2be2] h-10 text-sm"
+              className="pl-10 rounded-full border-slate-200 bg-white text-slate-900 shadow-sm focus-visible:ring-[#5e2be2] h-9 text-xs"
             />
           </div>
 
-          {/* Add Activity Button */}
-          <Button
+          <button
+            type="button"
             onClick={() => setIsAddModalOpen(true)}
-            className="w-full sm:w-auto rounded-full bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold h-10 px-5 shadow-md shadow-purple-500/20 shrink-0 gap-2 cursor-pointer transition-all"
+            className="inline-flex items-center justify-center gap-2 bg-white text-[#5e2be2] hover:bg-white/90 font-extrabold text-xs px-4 py-2.5 rounded-full shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Create Activity</span>
-          </Button>
+          </button>
         </div>
-      </div>
+      </PageHeader>
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">

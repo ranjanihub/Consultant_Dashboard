@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { IndianRupee, Download, ArrowUpRight, Clock, Video, FileText } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -52,28 +53,32 @@ export default function Revenue() {
 
   return (
     <div className="space-y-6 pb-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Revenue</h1>
-          <p className="text-muted-foreground mt-1">Track earnings, pending invoices, and financial growth.</p>
-        </div>
+      <PageHeader
+        title="Revenue & Earnings"
+        description="Track consultation income, manage invoices, payout history, and financial growth analytics."
+        badge="FINANCIAL OVERVIEW"
+        icon={<IndianRupee className="w-4 h-4 text-purple-200" />}
+      >
         <div className="flex items-center gap-3">
           <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger className="w-[150px] bg-white">
+            <SelectTrigger className="w-[140px] bg-white text-slate-900 border-none shadow-md h-9 text-xs font-semibold">
               <SelectValue placeholder="Time period" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="week">Past Week</SelectItem>
-              <SelectItem value="month">Past Month</SelectItem>
-              <SelectItem value="year">Past Year</SelectItem>
+              <SelectItem value="month">This Month</SelectItem>
+              <SelectItem value="quarter">This Quarter</SelectItem>
+              <SelectItem value="year">This Year</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" className="bg-white">
-            <Download className="w-4 h-4 mr-2" />
-            Export CSV
-          </Button>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center gap-2 bg-white text-[#5e2be2] hover:bg-white/90 font-extrabold text-xs px-4 py-2.5 rounded-full shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export</span>
+          </button>
         </div>
-      </div>
+      </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="shadow-sm border-border bg-gradient-to-br from-primary/5 to-white border-primary/10">

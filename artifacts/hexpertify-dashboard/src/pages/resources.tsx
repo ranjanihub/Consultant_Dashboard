@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Search, Bookmark, Star, ArrowRight, BookOpen, FileText, Video, Headphones, Download, Clock, Plus, Image as ImageIcon, CheckCircle2, Info } from "lucide-react";
+import { FolderOpen, Search, Plus, ExternalLink, Download, FileText, Headphones, Video, BookOpen, Clock, Tag, Globe, Lock, Bookmark, Star, ArrowRight, Info } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -263,49 +264,35 @@ export default function Resources() {
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-            Resource Library
-          </h1>
-          <p className="text-muted-foreground text-base mt-1">
-            Tools, exercises, and reading material to support your journey.
-          </p>
-        </div>
-
-        {/* Right Action Bar: Search + Add Resource Button */}
+      <PageHeader
+        title="Resource Library"
+        description="Clinical guides, worksheets, psychoeducation materials, and client toolkits."
+        badge="THERAPY RESOURCES"
+        icon={<FolderOpen className="w-4 h-4 text-purple-200" />}
+      >
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
           {/* Search Bar */}
-          <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
               type="text"
               placeholder="Search resources..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 rounded-full border-border bg-white shadow-sm focus-visible:ring-primary h-10 text-sm"
+              className="pl-10 rounded-full border-slate-200 bg-white text-slate-900 shadow-sm focus-visible:ring-[#5e2be2] h-9 text-xs"
             />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground bg-secondary rounded-full px-1.5 py-0.5"
-              >
-                Clear
-              </button>
-            )}
           </div>
 
-          {/* Add Resource Button */}
-          <Button
+          <button
+            type="button"
             onClick={() => setIsAddModalOpen(true)}
-            className="w-full sm:w-auto rounded-full bg-primary hover:bg-primary/90 text-white font-bold h-10 px-5 shadow-md shadow-primary/20 shrink-0 gap-2"
+            className="inline-flex items-center justify-center gap-2 bg-white text-[#5e2be2] hover:bg-white/90 font-extrabold text-xs px-4 py-2.5 rounded-full shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Add Resource</span>
-          </Button>
+          </button>
         </div>
-      </div>
+      </PageHeader>
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">

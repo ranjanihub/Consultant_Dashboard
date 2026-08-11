@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Star, MessageSquare, CheckCircle2 } from "lucide-react";
 import { formatDate, getInitials } from "@/lib/format";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { PageHeader } from "@/components/page-header";
 
 const FALLBACK_SUMMARY = {
   averageRating: 4.9,
@@ -80,10 +81,12 @@ export default function Reviews() {
 
   return (
     <div className="space-y-6 pb-10">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Client Reviews</h1>
-        <p className="text-muted-foreground mt-1">Monitor your client feedback and clinical reputation.</p>
-      </div>
+      <PageHeader
+        title="Client Reviews & Ratings"
+        description="Monitor client feedback, satisfaction ratings, and overall clinical reputation."
+        badge="CLIENT FEEDBACK"
+        icon={<Star className="w-4 h-4 text-purple-200" />}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="shadow-sm border-border bg-gradient-to-b from-amber-50/50 to-white">

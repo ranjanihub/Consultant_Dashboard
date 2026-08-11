@@ -16,6 +16,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/page-header";
 
 /* ─── helpers ─────────────────────────────────────────────── */
 const DAYS_SHORT  = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -114,22 +115,30 @@ export default function Calendar() {
 
   return (
     <div className="space-y-6 pb-10">
-      {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
-          <p className="text-muted-foreground mt-1">Manage your availability and scheduled sessions.</p>
-        </div>
+      <PageHeader
+        title="Schedule & Availability"
+        description="Manage consultation hours, view scheduled sessions, and organize appointment slots."
+        badge="CALENDAR & BOOKINGS"
+        icon={<CalendarDays className="w-4 h-4 text-purple-200" />}
+      >
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="bg-white" onClick={() => setAvailabilityOpen(true)}>
-            Set Availability
-          </Button>
-          <Button className="shrink-0 bg-primary text-white" onClick={() => setAddEventOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Event
-          </Button>
+          <button
+            type="button"
+            onClick={() => setAvailabilityOpen(true)}
+            className="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-semibold text-xs px-4 py-2.5 rounded-full border border-white/20 transition-all active:scale-95 cursor-pointer"
+          >
+            <span>Set Availability</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setAddEventOpen(true)}
+            className="inline-flex items-center justify-center gap-2 bg-white text-[#5e2be2] hover:bg-white/90 font-extrabold text-xs px-4 py-2.5 rounded-full shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
+          >
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>Add Event</span>
+          </button>
         </div>
-      </div>
+      </PageHeader>
 
       {/* Calendly-style 3-panel card */}
       <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden flex flex-col lg:flex-row min-h-[580px]">

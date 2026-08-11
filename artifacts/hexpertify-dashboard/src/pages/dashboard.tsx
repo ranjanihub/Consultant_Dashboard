@@ -103,62 +103,62 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Hero Banner */}
-      <div className="rounded-[28px] bg-gradient-to-r from-[#4f28d9] via-[#5e2be2] to-[#3b1799] p-8 text-white shadow-xl overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-        <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-black/10 rounded-full blur-3xl translate-y-1/2"></div>
+      {/* Hero Banner (Compact & Streamlined) */}
+      <div className="rounded-2xl bg-gradient-to-r from-[#4f28d9] via-[#5e2be2] to-[#3b1799] p-5 md:p-6 text-white shadow-lg overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute bottom-0 left-1/4 w-48 h-48 bg-black/10 rounded-full blur-3xl translate-y-1/2"></div>
 
-        <div className="relative z-10 flex flex-col lg:flex-row gap-8 justify-between items-start lg:items-center">
-          <div className="space-y-6 flex-1">
-            <div className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-sm font-medium backdrop-blur-sm border border-white/10">
+        <div className="relative z-10 flex flex-col lg:flex-row gap-5 justify-between items-start lg:items-center">
+          <div className="space-y-3 flex-1">
+            <div className="inline-flex items-center rounded-full bg-white/10 px-3 py-0.5 text-xs font-medium backdrop-blur-sm border border-white/10">
               Tuesday, July 7
             </div>
 
-            <div className="space-y-2">
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                {statsLoading ? <Skeleton className="h-10 w-64 bg-white/20" /> : `Welcome back, ${stats.therapistName}`}
+            <div className="space-y-1">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                {statsLoading ? <Skeleton className="h-8 w-56 bg-white/20" /> : `Welcome back, ${stats.therapistName}`}
               </h1>
-              <p className="text-primary-foreground/80 text-lg max-w-xl">
-                {statsLoading ? <Skeleton className="h-6 w-96 bg-white/20" /> : `${stats.therapistTitle} · You have ${stats.sessionsToday} sessions today and ${stats.pendingReports} reports awaiting review.`}
+              <p className="text-primary-foreground/80 text-xs sm:text-sm max-w-lg">
+                {statsLoading ? <Skeleton className="h-5 w-80 bg-white/20" /> : `${stats.therapistTitle} · ${stats.sessionsToday} sessions today and ${stats.pendingReports} reports awaiting review.`}
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full bg-black/20 px-4 py-2 text-sm font-medium backdrop-blur-md">
+            <div className="flex items-center gap-3 pt-1">
+              <div className="inline-flex items-center gap-2 rounded-full bg-black/20 px-3 py-1 text-xs font-medium backdrop-blur-md">
                 <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]"></div>
                 <span>{stats.isAvailable ? 'Available now' : 'Not available'}</span>
               </div>
             </div>
           </div>
 
-          {/* Next Session Card */}
+          {/* Next Session Card (Compact) */}
           {nextSession && (
-            <div className="w-full lg:w-[380px] shrink-0 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-5 shadow-2xl">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-bold tracking-wider text-primary-foreground/70 uppercase">NEXT SESSION</h3>
-                <Badge variant="secondary" className="bg-green-500/20 text-green-300 hover:bg-green-500/20 border-green-500/30">
+            <div className="w-full lg:w-[320px] shrink-0 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-3.5 shadow-xl">
+              <div className="flex items-center justify-between mb-2.5">
+                <h3 className="text-[11px] font-bold tracking-wider text-primary-foreground/70 uppercase">NEXT SESSION</h3>
+                <Badge variant="secondary" className="bg-green-500/20 text-green-300 hover:bg-green-500/20 border-green-500/30 text-[10px] px-2 py-0.5">
                   <Clock className="w-3 h-3 mr-1" />
                   {nextSession.countdownLabel}
                 </Badge>
               </div>
 
-              <div className="flex items-center gap-4 mb-5">
-                <Avatar className="h-12 w-12 border-2 border-white/20">
-                  <AvatarFallback className="bg-white/10 text-white">{nextSession.clientInitials}</AvatarFallback>
+              <div className="flex items-center gap-3 mb-3">
+                <Avatar className="h-9 w-9 border border-white/20">
+                  <AvatarFallback className="bg-white/10 text-white text-xs font-bold">{nextSession.clientInitials}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h4 className="font-bold text-lg leading-none mb-1">{nextSession.clientName}</h4>
-                  <p className="text-sm text-primary-foreground/80">{nextSession.durationMinutes} min</p>
+                  <h4 className="font-bold text-sm leading-none mb-1">{nextSession.clientName}</h4>
+                  <p className="text-xs text-primary-foreground/80">{nextSession.durationMinutes} min</p>
                 </div>
               </div>
 
-              <div className="bg-black/20 rounded-lg p-3 mb-5 flex items-center justify-between text-sm">
+              <div className="bg-black/20 rounded-lg px-3 py-2 mb-3 flex items-center justify-between text-xs">
                 <div className="font-medium">{nextSession.startTime} — {nextSession.endTime}</div>
                 <div className="text-primary-foreground/70">Session #{nextSession.sessionNumber}</div>
               </div>
 
-              <Button className="w-full rounded-full bg-white text-primary hover:bg-white/90 font-bold h-11">
-                <Video className="w-4 h-4 mr-2" />
+              <Button className="w-full rounded-full bg-white text-primary hover:bg-white/90 font-bold h-9 text-xs">
+                <Video className="w-3.5 h-3.5 mr-1.5" />
                 Join session
               </Button>
             </div>

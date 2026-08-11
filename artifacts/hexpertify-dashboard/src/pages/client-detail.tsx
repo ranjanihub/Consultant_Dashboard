@@ -13,7 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Clock, Calendar, Video, FileText, CheckCircle2, TrendingUp, TrendingDown, Activity, AlertCircle, FilePlus, Plus } from "lucide-react";
+import { ArrowLeft, Clock, Calendar, Video, FileText, CheckCircle2, TrendingUp, TrendingDown, Activity, AlertCircle, FilePlus, Plus, HelpCircle, User, MessageSquare } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 import { formatDate } from "@/lib/format";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { cn } from "@/lib/utils";
@@ -255,39 +256,37 @@ export default function ClientDetail() {
   return (
     <div className="space-y-6 pb-10">
       <div className="flex items-center gap-2 mb-2">
-        <Link href="/clients" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+        <Link href="/clients" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-[#5e2be2] transition-colors">
           <ArrowLeft className="w-4 h-4 mr-1" />
           Back to Clients
         </Link>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-6 rounded-2xl border border-border shadow-sm">
-        <div className="flex items-center gap-5">
-          <Avatar className="h-20 w-20 border-2 border-primary/20 shadow-sm">
-            <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">{client.initials}</AvatarFallback>
-          </Avatar>
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">{client.name}</h1>
-              <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200 uppercase text-[10px] tracking-wider font-bold">
-                {client.status}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5"><Activity className="w-4 h-4" /> {client.age} yrs, {client.gender}</span>
-              <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" /> Started {formatDate(client.startDate)}</span>
-              <span className="flex items-center gap-1.5"><Video className="w-4 h-4" /> {client.sessionCount} sessions</span>
-            </div>
-          </div>
+      <PageHeader
+        title={client.name}
+        description={`${client.age} yrs · ${client.gender} · ${client.primaryGoal}`}
+        badge={`CLIENT PROFILE · ${client.status.toUpperCase()}`}
+        icon={<User className="w-4 h-4 text-purple-200" />}
+      >
+        <div className="flex items-center gap-3">
+          <Link href="/messages">
+            <button
+              type="button"
+              className="inline-flex items-center justify-center gap-2 bg-white text-[#5e2be2] hover:bg-white/90 font-extrabold text-xs px-4 py-2.5 rounded-full shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Message</span>
+            </button>
+          </Link>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs px-4 py-2.5 rounded-full border border-white/20 transition-all active:scale-95 cursor-pointer shrink-0"
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Book Session</span>
+          </button>
         </div>
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <Button variant="outline" className="flex-1 md:flex-none">Message</Button>
-          <Button className="flex-1 md:flex-none bg-primary hover:bg-primary/90">
-            <Video className="w-4 h-4 mr-2" />
-            Join Next Session
-          </Button>
-        </div>
-      </div>
+      </PageHeader>
 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="bg-white border border-border w-full justify-start p-1 h-14 rounded-xl overflow-x-auto flex-nowrap shrink-0 hide-scrollbar">

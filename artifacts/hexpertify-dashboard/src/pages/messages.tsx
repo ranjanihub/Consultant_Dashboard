@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { getInitials } from "@/lib/format";
 
+import { PageHeader } from "@/components/page-header";
+
 interface Message {
   id: number;
   sender: "therapist" | "client";
@@ -115,7 +117,7 @@ export default function Messages() {
   );
 
   return (
-    <div className="h-[calc(100vh-140px)] flex border border-border rounded-xl bg-card overflow-hidden shadow-sm">
+    <div className="h-[calc(100vh-140px)] min-h-[500px] flex border border-border rounded-xl bg-card overflow-hidden shadow-sm">
       {/* Left Conversations Sidebar */}
       <div className="w-[320px] border-r border-border flex flex-col bg-white shrink-0">
         <div className="p-4 border-b border-border">

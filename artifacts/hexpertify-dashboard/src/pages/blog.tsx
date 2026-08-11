@@ -35,6 +35,7 @@ import {
   Filter,
   Info,
 } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 
 /* ── schemas ──────────────────────────────────────────────── */
 const postSchema = z.object({
@@ -934,38 +935,34 @@ export default function Blog() {
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Top Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-border shadow-sm">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">
-            {view === "list" ? "Submitted Blogs & Articles" : "Submit New Blog Post"}
-          </h1>
-          <div className="mt-2.5 flex items-center gap-2 text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200/80 px-3 py-1.5 rounded-lg w-fit">
-            <Info className="w-4 h-4 text-amber-600 shrink-0" />
-            <span>Note: Submitted blogs will go live after admin review.</span>
-          </div>
-        </div>
-
-        {/* Top Right Action Button */}
+      <PageHeader
+        title={view === "list" ? "Submitted Blogs & Articles" : "Submit New Blog Post"}
+        description="Publish psychoeducational content, mental health articles, and practice updates (live after admin review)."
+        badge="CONTENT MANAGEMENT"
+        icon={<PenTool className="w-4 h-4 text-purple-200" />}
+      >
         <div className="flex items-center gap-3">
           {view === "list" ? (
-            <Button
+            <button
+              type="button"
               onClick={() => setView("submit")}
-              className="rounded-xl shadow-md gap-2 font-bold bg-primary hover:bg-primary/90 text-white cursor-pointer px-5 py-2.5"
+              className="inline-flex items-center justify-center gap-2 bg-white text-[#5e2be2] hover:bg-white/90 font-extrabold text-xs px-4 py-2.5 rounded-full shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
             >
-              <Plus className="w-5 h-5 stroke-[2.5]" /> Submit Blog
-            </Button>
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>Submit Blog</span>
+            </button>
           ) : (
-            <Button
-              variant="outline"
+            <button
+              type="button"
               onClick={() => setView("list")}
-              className="rounded-xl gap-2 font-semibold border-border hover:bg-secondary cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs px-4 py-2.5 rounded-full border border-white/20 transition-all active:scale-95 cursor-pointer"
             >
-              <ArrowLeft className="w-4 h-4" /> Back to Submitted Blogs
-            </Button>
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Submitted Blogs</span>
+            </button>
           )}
         </div>
-      </div>
+      </PageHeader>
 
       {/* VIEW 1: LANDING VIEW - SUBMITTED BLOGS LIST */}
       {view === "list" && (

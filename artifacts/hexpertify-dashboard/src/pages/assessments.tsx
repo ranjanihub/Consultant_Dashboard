@@ -33,7 +33,10 @@ import {
   Sparkles,
   ChevronRight,
   Minus,
+  Plus,
+  Download,
 } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 import { cn } from "@/lib/utils";
 
 interface AssessmentRecord {
@@ -326,53 +329,41 @@ export default function Assessments() {
 
   return (
     <div className="space-y-6 pb-16 max-w-[1400px] mx-auto">
-      {/* Top Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Client Outcome Assessments
-            </h1>
-            <span className="px-3 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary">
-              Clinical Management
-            </span>
-          </div>
-          <p className="text-slate-500 text-sm">
-            Monitor standardized scale responses (PHQ-9, GAD-7, PCL-5), track symptom progression, and catch clinical risk early.
-          </p>
-        </div>
-
+      <PageHeader
+        title="Client Outcome Assessments"
+        description="Monitor standardized scale responses (PHQ-9, GAD-7, PCL-5), track symptom progression, and identify clinical risk early."
+        badge="EVALUATION & INTAKE"
+        icon={<ClipboardCheck className="w-4 h-4 text-purple-200" />}
+      >
         <div className="flex items-center gap-3 shrink-0">
-          <Button
-            variant="outline"
-            className="bg-white border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold"
+          <button
+            type="button"
+            className="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 text-white font-semibold text-xs px-4 py-2.5 rounded-full border border-white/20 transition-all active:scale-95 cursor-pointer"
             onClick={() => {
               const csvData = assessments
-                .map((a) => `${a.id},${a.clientName},${a.instrumentCode},${a.score},${a.status}`)
+                .map((a) => `${a.id},${a.clientName},${a.instrumentCode},${a.score},${a.severity},${a.status}`)
                 .join("\n");
-              const blob = new Blob([`ID,Client,Instrument,Score,Status\n${csvData}`], {
-                type: "text/csv",
-              });
-              const url = window.URL.createObjectURL(blob);
+              const blob = new Blob([`ID,Client,Instrument,Score,Severity,Status\n${csvData}`], { type: "text/csv" });
+              const url = URL.createObjectURL(blob);
               const a = document.createElement("a");
               a.href = url;
-              a.download = "client-assessments-export.csv";
+              a.download = "assessments_report.csv";
               a.click();
             }}
           >
-            <FileSpreadsheet className="w-4 h-4 mr-2 text-slate-500" />
-            Export CSV
-          </Button>
-
-          <Button
-            className="bg-primary hover:bg-primary/90 text-white font-semibold shadow-sm"
+            <Download className="w-3.5 h-3.5 mr-1.5" />
+            <span>Export CSV</span>
+          </button>
+          <button
+            type="button"
             onClick={() => setIsSendDialogOpen(true)}
+            className="inline-flex items-center justify-center gap-2 bg-white text-[#5e2be2] hover:bg-white/90 font-extrabold text-xs px-4 py-2.5 rounded-full shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
           >
-            <Send className="w-4 h-4 mr-2" />
-            Send Assessment
-          </Button>
+            <Send className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Send Assessment</span>
+          </button>
         </div>
-      </div>
+      </PageHeader>
 
       {/* KPI Stats Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
