@@ -65,11 +65,11 @@ export function Sidebar() {
 
   return (
     <>
-      <div className="w-[240px] flex-shrink-0 flex flex-col bg-white border-r border-border h-[calc(100vh-72px)] fixed left-0 top-[72px] z-10 overflow-y-auto">
+      <div className="w-[240px] flex-shrink-0 flex flex-col bg-white border-r border-border h-[calc(100vh-88px)] fixed left-0 top-[88px] z-10 overflow-y-auto">
         <div className="flex-1 py-6 px-4 space-y-8">
           {SIDEBAR_ITEMS.map((section, idx) => (
             <div key={idx}>
-              <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">
+              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-3">
                 {section.label}
               </h3>
               <div className="space-y-1">
@@ -81,20 +81,20 @@ export function Sidebar() {
                       key={item.href}
                       href={item.href}
                       className={cn(
-                        "flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors group",
+                        "flex items-center justify-between px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-150 group",
                         isActive
-                          ? "bg-primary text-primary-foreground font-semibold"
-                          : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                          ? "bg-[#5e2be2] text-white shadow-md shadow-[#5e2be2]/25"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
                       )}
                     >
                       <div className="flex items-center gap-3">
-                        <Icon className={cn("w-4 h-4", isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
+                        <Icon className={cn("w-4 h-4", isActive ? "text-white" : "text-slate-400 group-hover:text-slate-600")} />
                         <span className="text-sm">{item.name}</span>
                       </div>
                       {item.badge && (
                         <span className={cn(
-                          "text-[10px] px-1.5 py-0.5 rounded-full font-bold",
-                          isActive ? "bg-white/20 text-white" : "bg-secondary text-muted-foreground"
+                          "text-xs px-2 py-0.5 rounded-full font-bold",
+                          isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
                         )}>
                           {item.badge}
                         </span>
@@ -135,7 +135,7 @@ export function Sidebar() {
               <img 
                 src="/hexpertify-logo.png" 
                 alt="Hexpertify Logo" 
-                className="h-16 w-auto object-contain max-h-16" 
+                className="h-20 w-auto object-contain max-h-20" 
               />
             </div>
 
@@ -244,12 +244,12 @@ export function Header() {
   };
 
   return (
-    <header className="h-[72px] bg-white border-b border-border flex items-center justify-between px-6 fixed top-0 w-full z-20">
-      <Link href="/" className="flex items-center gap-2 min-w-[260px] focus:outline-none cursor-pointer">
+    <header className="h-[88px] bg-white border-b border-border flex items-center justify-between px-6 fixed top-0 w-full z-20">
+      <Link href="/" className="flex items-center gap-2 min-w-[280px] focus:outline-none cursor-pointer">
         <img 
           src="/hexpertify-logo.png" 
           alt="Hexpertify Logo" 
-          className="h-14 w-auto object-contain max-h-14 py-1" 
+          className="h-[76px] w-auto object-contain max-h-[76px]" 
         />
       </Link>
 
@@ -286,7 +286,7 @@ export function Header() {
           >
             <Bell className="w-5 h-5 stroke-[2]" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#6d28d9] rounded-full border-2 border-white"></span>
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#5e2be2] rounded-full border-2 border-white animate-pulse"></span>
             )}
           </button>
 
@@ -377,8 +377,8 @@ export function Header() {
 
         {/* Messages Pill Button */}
         <Link href="/messages">
-          <button type="button" className="inline-flex items-center gap-2.5 rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-10 px-5 text-base shadow-sm transition-all cursor-pointer">
-            <MessageSquare className="w-5 h-5 stroke-[2.2]" />
+          <button type="button" className="inline-flex items-center gap-2 rounded-xl bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-extrabold h-10 px-4 text-xs sm:text-sm shadow-md shadow-[#5e2be2]/25 transition-all active:scale-95 cursor-pointer">
+            <MessageSquare className="w-4 h-4" />
             <span>Messages</span>
           </button>
         </Link>
@@ -402,7 +402,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <div className="flex flex-1 pt-[72px]">
+      <div className="flex flex-1 pt-[88px]">
         <Sidebar />
         <main className="flex-1 ml-[240px] p-8 overflow-y-auto">
           <div className="max-w-7xl mx-auto">

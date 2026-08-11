@@ -104,7 +104,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Hero Banner */}
-      <div className="rounded-2xl bg-gradient-to-r from-primary to-[#4323a6] p-8 text-white shadow-lg overflow-hidden relative">
+      <div className="rounded-[28px] bg-gradient-to-r from-[#4f28d9] via-[#5e2be2] to-[#3b1799] p-8 text-white shadow-xl overflow-hidden relative">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-black/10 rounded-full blur-3xl translate-y-1/2"></div>
 

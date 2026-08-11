@@ -510,17 +510,17 @@ export default function ActivitiesPage() {
       return (
         <div className="space-y-1.5 mt-2">
           <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-            <Users className="w-3.5 h-3.5 text-[#5b32e4]" />
+            <Users className="w-3.5 h-3.5 text-[#5e2be2]" />
             <span>Assigned Clients ({clientAssignments.length})</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {clientAssignments.map((ca, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5b32e4] px-2.5 py-1 rounded-xl text-xs font-bold border border-purple-100/80"
+                className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5e2be2] px-2.5 py-1 rounded-xl text-xs font-bold border border-purple-100/80"
               >
                 <span>{ca.clientName}</span>
-                <span className="text-[10px] bg-[#5b32e4]/10 text-[#5b32e4] px-1.5 py-0.5 rounded-md font-extrabold">
+                <span className="text-[10px] bg-[#5e2be2]/10 text-[#5e2be2] px-1.5 py-0.5 rounded-md font-extrabold">
                   {ca.frequency}
                 </span>
               </span>
@@ -537,8 +537,8 @@ export default function ActivitiesPage() {
       );
     }
     return (
-      <div className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5b32e4] px-3 py-1 rounded-full text-xs font-semibold border border-purple-100">
-        <Users className="w-3.5 h-3.5 text-[#5b32e4]" />
+      <div className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5e2be2] px-3 py-1 rounded-full text-xs font-semibold border border-purple-100">
+        <Users className="w-3.5 h-3.5 text-[#5e2be2]" />
         <span>{assignedTo.join(", ")} • {freq}</span>
       </div>
     );
@@ -566,14 +566,14 @@ export default function ActivitiesPage() {
               placeholder="Search activities or clients..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 rounded-full border-slate-200 bg-white shadow-sm focus-visible:ring-[#5b32e4] h-10 text-sm"
+              className="pl-10 rounded-full border-slate-200 bg-white shadow-sm focus-visible:ring-[#5e2be2] h-10 text-sm"
             />
           </div>
 
           {/* Add Activity Button */}
           <Button
             onClick={() => setIsAddModalOpen(true)}
-            className="w-full sm:w-auto rounded-full bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-10 px-5 shadow-md shadow-purple-500/20 shrink-0 gap-2 cursor-pointer transition-all"
+            className="w-full sm:w-auto rounded-full bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold h-10 px-5 shadow-md shadow-purple-500/20 shrink-0 gap-2 cursor-pointer transition-all"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Create Activity</span>
@@ -591,7 +591,7 @@ export default function ActivitiesPage() {
               onClick={() => setSelectedCategory(cat)}
               className={
                 isActive
-                  ? "bg-[#5b32e4] text-white shadow-md shadow-purple-500/20 rounded-full px-5 py-2 text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5"
+                  ? "bg-[#5e2be2] text-white shadow-md shadow-purple-500/20 rounded-full px-5 py-2 text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5"
                   : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200 rounded-full px-5 py-2 text-xs sm:text-sm font-semibold transition-all shrink-0 cursor-pointer flex items-center gap-1.5"
               }
             >
@@ -646,9 +646,9 @@ export default function ActivitiesPage() {
                         {/* Direct Option to Assign Activity to Client */}
                         <DropdownMenuItem
                           onClick={() => openAssignModal(act)}
-                          className="flex items-center gap-2.5 px-3 py-2 text-sm font-bold rounded-xl cursor-pointer text-[#5b32e4] bg-purple-50/50 hover:bg-purple-100/70 mb-1"
+                          className="flex items-center gap-2.5 px-3 py-2 text-sm font-bold rounded-xl cursor-pointer text-[#5e2be2] bg-purple-50/50 hover:bg-purple-100/70 mb-1"
                         >
-                          <UserPlus className="w-4 h-4 text-[#5b32e4]" />
+                          <UserPlus className="w-4 h-4 text-[#5e2be2]" />
                           <span>Assign to Clients & Set Frequency</span>
                         </DropdownMenuItem>
 
@@ -712,7 +712,7 @@ export default function ActivitiesPage() {
                 {/* Body Content */}
                 <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 group-hover:text-[#5b32e4] transition-colors leading-snug mb-2">
+                    <h3 className="text-lg font-bold text-slate-900 group-hover:text-[#5e2be2] transition-colors leading-snug mb-2">
                       {act.title}
                     </h3>
                     <p className="text-slate-600 text-sm leading-relaxed line-clamp-3 mb-3">
@@ -741,7 +741,7 @@ export default function ActivitiesPage() {
                     <div className="flex items-center gap-2">
                       <Button
                         onClick={() => openAssignModal(act)}
-                        className="flex-1 h-11 rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold text-sm transition-all duration-200 cursor-pointer shadow-md shadow-purple-500/20 gap-2"
+                        className="flex-1 h-11 rounded-2xl bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold text-sm transition-all duration-200 cursor-pointer shadow-md shadow-purple-500/20 gap-2"
                       >
                         <UserPlus className="w-4 h-4 stroke-[2.2]" />
                         <span>Assign to Client</span>
@@ -817,7 +817,7 @@ export default function ActivitiesPage() {
                     setActiveActivity(null);
                     openAssignModal(actToAssign);
                   }}
-                  className="rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 gap-2 cursor-pointer"
+                  className="rounded-2xl bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 gap-2 cursor-pointer"
                 >
                   <UserPlus className="w-4 h-4 stroke-[2.5]" />
                   <span>Assign to Client & Set Frequency</span>
@@ -838,7 +838,7 @@ export default function ActivitiesPage() {
                 <DialogTitle className="text-2xl font-bold text-slate-900 tracking-tight">
                   {assignStep === 1 ? "1. Select Client(s)" : "2. Select Activity Frequency"}
                 </DialogTitle>
-                <span className="text-xs font-bold text-[#5b32e4] bg-purple-50 px-3 py-1 rounded-full border border-purple-100">
+                <span className="text-xs font-bold text-[#5e2be2] bg-purple-50 px-3 py-1 rounded-full border border-purple-100">
                   Step {assignStep} of 2
                 </span>
               </div>
@@ -859,7 +859,7 @@ export default function ActivitiesPage() {
                   <button
                     type="button"
                     onClick={toggleSelectAllClients}
-                    className="text-xs font-bold text-[#5b32e4] hover:underline cursor-pointer"
+                    className="text-xs font-bold text-[#5e2be2] hover:underline cursor-pointer"
                   >
                     {selectedClientsToAssign.length === CLIENT_LIST.length ? "Deselect All" : "Select All"}
                   </button>
@@ -874,7 +874,7 @@ export default function ActivitiesPage() {
                         onClick={() => toggleClientSelection(client)}
                         className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer select-none ${
                           isChecked
-                            ? "bg-purple-50/80 border-[#5b32e4]/40 text-[#5b32e4] font-semibold"
+                            ? "bg-purple-50/80 border-[#5e2be2]/40 text-[#5e2be2] font-semibold"
                             : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
                         }`}
                       >
@@ -882,7 +882,7 @@ export default function ActivitiesPage() {
                           <div
                             className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${
                               isChecked
-                                ? "bg-[#5b32e4] border-[#5b32e4] text-white"
+                                ? "bg-[#5e2be2] border-[#5e2be2] text-white"
                                 : "border-slate-300 bg-white"
                             }`}
                           >
@@ -891,7 +891,7 @@ export default function ActivitiesPage() {
                           <span className="text-sm font-semibold">{client}</span>
                         </div>
 
-                        <span className="text-xs font-bold text-[#5b32e4] opacity-80 flex items-center gap-0.5">
+                        <span className="text-xs font-bold text-[#5e2be2] opacity-80 flex items-center gap-0.5">
                           Set Frequency <ChevronRight className="w-3.5 h-3.5" />
                         </span>
                       </div>
@@ -915,7 +915,7 @@ export default function ActivitiesPage() {
                         key={f}
                         type="button"
                         onClick={() => applyFrequencyToAll(f)}
-                        className="px-2.5 py-1 rounded-xl text-xs font-bold bg-white hover:bg-purple-50 text-slate-700 hover:text-[#5b32e4] border border-slate-200 hover:border-[#5b32e4]/30 transition-colors cursor-pointer"
+                        className="px-2.5 py-1 rounded-xl text-xs font-bold bg-white hover:bg-purple-50 text-slate-700 hover:text-[#5e2be2] border border-slate-200 hover:border-[#5e2be2]/30 transition-colors cursor-pointer"
                       >
                         {f}
                       </button>
@@ -942,7 +942,7 @@ export default function ActivitiesPage() {
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-purple-100 text-[#5b32e4] font-bold flex items-center justify-center text-xs shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-purple-100 text-[#5e2be2] font-bold flex items-center justify-center text-xs shrink-0">
                               {initials}
                             </div>
                             <div>
@@ -950,7 +950,7 @@ export default function ActivitiesPage() {
                               <p className="text-[11px] text-slate-500 font-medium mt-0.5">Individual Schedule</p>
                             </div>
                           </div>
-                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-[#5b32e4] border border-purple-100">
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-[#5e2be2] border border-purple-100">
                             {currentConfig.frequency}
                           </span>
                         </div>
@@ -963,7 +963,7 @@ export default function ActivitiesPage() {
                             <select
                               value={currentConfig.frequency}
                               onChange={(e) => updateClientFrequency(clientName, e.target.value)}
-                              className="w-full h-9 rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-xs font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#5b32e4] focus:outline-none"
+                              className="w-full h-9 rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-xs font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#5e2be2] focus:outline-none"
                             >
                               {FREQUENCY_OPTIONS.map((opt) => (
                                 <option key={opt.id} value={opt.id}>
@@ -980,7 +980,7 @@ export default function ActivitiesPage() {
                             <select
                               value={currentConfig.timeOfDay}
                               onChange={(e) => updateClientTimeOfDay(clientName, e.target.value)}
-                              className="w-full h-9 rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-xs font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#5b32e4] focus:outline-none"
+                              className="w-full h-9 rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-xs font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#5e2be2] focus:outline-none"
                             >
                               {TIME_SLOTS.map((slot) => (
                                 <option key={slot} value={slot}>
@@ -1025,7 +1025,7 @@ export default function ActivitiesPage() {
                   type="button"
                   onClick={() => setAssignStep(2)}
                   disabled={selectedClientsToAssign.length === 0}
-                  className="rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 cursor-pointer disabled:opacity-50 gap-1.5"
+                  className="rounded-2xl bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 cursor-pointer disabled:opacity-50 gap-1.5"
                 >
                   <span>Select Frequency</span>
                   <ChevronRight className="w-4 h-4" />
@@ -1034,7 +1034,7 @@ export default function ActivitiesPage() {
                 <Button
                   type="button"
                   onClick={handleConfirmAssign}
-                  className="rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 cursor-pointer gap-2"
+                  className="rounded-2xl bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 cursor-pointer gap-2"
                 >
                   <Check className="w-4 h-4 stroke-[3]" />
                   <span>Confirm Assignment</span>
@@ -1080,7 +1080,7 @@ export default function ActivitiesPage() {
                   <select
                     value={editCategory}
                     onChange={(e) => setEditCategory(e.target.value)}
-                    className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
+                    className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5e2be2]"
                   >
                     <option value="MINDFULNESS">MINDFULNESS</option>
                     <option value="CBT">CBT</option>
@@ -1097,7 +1097,7 @@ export default function ActivitiesPage() {
                   <select
                     value={editDifficulty}
                     onChange={(e) => setEditDifficulty(e.target.value)}
-                    className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
+                    className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5e2be2]"
                   >
                     <option value="Easy">Easy</option>
                     <option value="Medium">Medium</option>
@@ -1140,7 +1140,7 @@ export default function ActivitiesPage() {
                   rows={2}
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
+                  className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#5e2be2]"
                 />
               </div>
 
@@ -1152,7 +1152,7 @@ export default function ActivitiesPage() {
                   rows={3}
                   value={editInstructions}
                   onChange={(e) => setEditInstructions(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
+                  className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#5e2be2]"
                 />
               </div>
 
@@ -1167,7 +1167,7 @@ export default function ActivitiesPage() {
                 </Button>
                 <Button
                   type="submit"
-                  className="rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 cursor-pointer"
+                  className="rounded-2xl bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 cursor-pointer"
                 >
                   Save Changes
                 </Button>
@@ -1212,7 +1212,7 @@ export default function ActivitiesPage() {
                 <select
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
-                  className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
+                  className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5e2be2]"
                 >
                   <option value="MINDFULNESS">MINDFULNESS</option>
                   <option value="CBT">CBT</option>
@@ -1229,7 +1229,7 @@ export default function ActivitiesPage() {
                 <select
                   value={newFrequency}
                   onChange={(e) => setNewFrequency(e.target.value)}
-                  className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
+                  className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5e2be2]"
                 >
                   <option value="Daily">Daily</option>
                   <option value="2-3 Times / Week">2-3 Times / Week</option>
@@ -1262,7 +1262,7 @@ export default function ActivitiesPage() {
                         type="checkbox"
                         checked={checked}
                         onChange={() => {}}
-                        className="rounded border-slate-300 text-[#5b32e4] focus:ring-[#5b32e4]"
+                        className="rounded border-slate-300 text-[#5e2be2] focus:ring-[#5e2be2]"
                       />
                       <span className="truncate">{client}</span>
                     </label>
@@ -1292,7 +1292,7 @@ export default function ActivitiesPage() {
                 <select
                   value={newTimeOfDay}
                   onChange={(e) => setNewTimeOfDay(e.target.value)}
-                  className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
+                  className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5e2be2]"
                 >
                   {TIME_SLOTS.map((slot) => (
                     <option key={slot} value={slot}>
@@ -1313,7 +1313,7 @@ export default function ActivitiesPage() {
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
                 required
-                className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
+                className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#5e2be2]"
               />
             </div>
 
@@ -1326,7 +1326,7 @@ export default function ActivitiesPage() {
                 placeholder="1. Sit comfortably...\n2. Inhale deeply..."
                 value={newInstructions}
                 onChange={(e) => setNewInstructions(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#5b32e4]"
+                className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#5e2be2]"
               />
             </div>
 
@@ -1341,7 +1341,7 @@ export default function ActivitiesPage() {
               </Button>
               <Button
                 type="submit"
-                className="rounded-2xl bg-[#5b32e4] hover:bg-[#4c28c8] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 cursor-pointer"
+                className="rounded-2xl bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 cursor-pointer"
               >
                 Create & Assign Activity
               </Button>

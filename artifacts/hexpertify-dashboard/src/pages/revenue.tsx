@@ -144,8 +144,8 @@ export default function Revenue() {
                 <AreaChart data={analytics} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#532bce" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#532bce" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#5e2be2" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#5e2be2" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
@@ -155,7 +155,7 @@ export default function Revenue() {
                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                     formatter={(value: number) => [`₹${value}`, 'Revenue']}
                   />
-                  <Area type="monotone" dataKey="revenue" stroke="#532bce" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
+                  <Area type="monotone" dataKey="revenue" stroke="#5e2be2" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
                 </AreaChart>
               </ResponsiveContainer>
             )}

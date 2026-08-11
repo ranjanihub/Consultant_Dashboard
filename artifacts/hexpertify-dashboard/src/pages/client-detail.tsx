@@ -453,7 +453,7 @@ export default function ClientDetail() {
                             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                             labelFormatter={(label) => formatDate(label as string)}
                           />
-                          <Line type="monotone" dataKey="score" stroke="#532bce" strokeWidth={3} dot={{ r: 4, fill: "#532bce", strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 6 }} />
+                          <Line type="monotone" dataKey="score" stroke="#5e2be2" strokeWidth={3} dot={{ r: 4, fill: "#5e2be2", strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 6 }} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>

@@ -224,7 +224,7 @@ export default function Login() {
   return (
     <div className="min-h-screen w-full bg-slate-900 grid grid-cols-1 lg:grid-cols-12 font-sans overflow-x-hidden">
       {/* Left Column - Hero Branding & Features (Hidden on mobile) */}
-      <div className="hidden lg:flex lg:col-span-7 sticky top-0 h-screen relative bg-gradient-to-br from-[#2a137e] via-[#4522c0] to-[#160c49] p-8 xl:p-12 flex-col justify-between overflow-hidden">
+      <div className="hidden lg:flex lg:col-span-7 sticky top-0 h-screen relative bg-gradient-to-br from-[#290e6e] via-[#3b1799] to-[#5e2be2] p-8 xl:p-12 flex-col justify-between overflow-hidden">
         {/* Ambient glow effects */}
         <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none translate-x-1/3 translate-y-1/3"></div>
@@ -511,7 +511,7 @@ export default function Login() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-12 bg-primary hover:bg-[#4320b5] text-white font-bold rounded-xl shadow-lg shadow-primary/20 text-base transition-all flex items-center justify-center gap-2 mt-2"
+                  className="w-full h-12 bg-primary hover:bg-[#4f28d9] text-white font-bold rounded-xl shadow-lg shadow-primary/20 text-base transition-all flex items-center justify-center gap-2 mt-2"
                 >
                   {isLoading ? (
                     <>
@@ -670,7 +670,7 @@ export default function Login() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-12 bg-primary hover:bg-[#4320b5] text-white font-bold rounded-xl shadow-lg shadow-primary/20 text-base transition-all flex items-center justify-center gap-2 mt-2"
+                  className="w-full h-12 bg-primary hover:bg-[#4f28d9] text-white font-bold rounded-xl shadow-lg shadow-primary/20 text-base transition-all flex items-center justify-center gap-2 mt-2"
                 >
                   {isLoading ? (
                     <>
@@ -850,7 +850,7 @@ export default function Login() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-12 bg-primary hover:bg-[#4320b5] text-white font-bold rounded-xl shadow-lg shadow-primary/20 text-base transition-all flex items-center justify-center gap-2"
+                  className="w-full h-12 bg-primary hover:bg-[#4f28d9] text-white font-bold rounded-xl shadow-lg shadow-primary/20 text-base transition-all flex items-center justify-center gap-2"
                 >
                   {isLoading ? (
                     <>
