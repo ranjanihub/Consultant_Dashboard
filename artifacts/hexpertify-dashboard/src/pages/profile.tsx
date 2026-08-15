@@ -56,8 +56,8 @@ export default function Profile() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name:            profile?.name || "Dr. Alex Harrison",
-      title:           profile?.title || "Clinical Director & Senior Psychologist",
+      name:            profile?.name || "Dr. Alex Harrison, PsyD",
+      title:           profile?.title || "Licensed Clinical Psychologist",
       bio:             profile?.bio || "Board-certified Senior Clinical Psychologist with over 12 years of experience specializing in Cognitive Behavioral Therapy (CBT), Acceptance and Commitment Therapy (ACT), and evidence-based clinical interventions for anxiety, panic, mood disorders, and high-performance workplace burnout.",
       experience:      profile?.experience || 12,
       consultationFee: profile?.consultationFee || 2500,
@@ -67,8 +67,8 @@ export default function Profile() {
   useEffect(() => {
     if (profile) {
       form.reset({
-        name:            profile.name || "Dr. Alex Harrison",
-        title:           profile.title || "Clinical Director & Senior Psychologist",
+        name:            profile.name || "Dr. Alex Harrison, PsyD",
+        title:           profile.title || "Licensed Clinical Psychologist",
         bio:             profile.bio || "Board-certified Senior Clinical Psychologist with over 12 years of experience specializing in Cognitive Behavioral Therapy (CBT), Acceptance and Commitment Therapy (ACT), and evidence-based clinical interventions for anxiety, panic, mood disorders, and high-performance workplace burnout.",
         experience:      profile.experience || 12,
         consultationFee: profile.consultationFee || 2500,
@@ -95,13 +95,13 @@ export default function Profile() {
     );
   }
 
-  const nameVal = form.watch("name") || profile?.name || "Dr. Alex Harrison";
-  const titleVal = form.watch("title") || profile?.title || "Clinical Director & Senior Psychologist";
+  const nameVal = form.watch("name") || profile?.name || "Dr. Alex Harrison, PsyD";
+  const titleVal = form.watch("title") || profile?.title || "Licensed Clinical Psychologist";
   const feeVal = form.watch("consultationFee") || profile?.consultationFee || 2500;
   const expVal = form.watch("experience") || profile?.experience || 12;
 
   const initials = nameVal.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
-  const photoUrl = profile?.photoUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300";
+  const photoUrl = profile?.photoUrl || "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80";
 
   return (
     <div className="max-w-5xl mx-auto pb-12 space-y-6">

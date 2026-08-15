@@ -231,7 +231,7 @@ export function Sidebar() {
               {/* Options Popover Menu */}
               <div className="absolute bottom-full left-3 right-3 mb-2 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-40 animate-in fade-in-0 slide-in-from-bottom-2">
                 <div className="p-3 border-b border-slate-100 mb-1">
-                  <p className="text-xs font-bold text-slate-900">{user?.name || "Dr. Alex Harrison"}</p>
+                  <p className="text-xs font-bold text-slate-900">{user?.name || "Dr. Alex Harrison, PsyD"}</p>
                   <p className="text-[11px] text-slate-500 font-medium truncate">{user?.email || "alex.harrison@hexpertify.com"}</p>
                 </div>
 
@@ -285,15 +285,15 @@ export function Sidebar() {
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <img
-                    src={user?.photoUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"}
+                    src={user?.photoUrl || "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80"}
                     alt="Admin Avatar"
                     className="w-9 h-9 rounded-full object-cover ring-2 ring-[#5e2be2]/20"
                   />
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white" />
                 </div>
                 <div className="leading-tight">
-                  <p className="text-xs font-bold text-slate-900">{user?.name || "Dr. Alex Harrison"}</p>
-                  <p className="text-[11px] text-slate-500 font-medium">{user?.title || "Platform Admin"}</p>
+                  <p className="text-xs font-bold text-slate-900">{user?.name || "Dr. Alex Harrison, PsyD"}</p>
+                  <p className="text-[11px] text-slate-500 font-medium">{user?.title || "Licensed Clinical Psychologist"}</p>
                 </div>
               </div>
             </div>
@@ -338,6 +338,7 @@ export function Sidebar() {
 }
 
 export function Header() {
+  const user = getAuthUser();
   const [, setLocation] = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedOutcome, setSelectedOutcome] = useState<OutcomeRecord | null>(null);
@@ -775,7 +776,7 @@ export function Header() {
         <Link href="/profile" className="flex items-center gap-3 pl-2 border-l border-slate-200">
           <div className="relative cursor-pointer">
             <img 
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" 
+              src={user?.photoUrl || "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80"} 
               alt="User Avatar" 
               className="w-10 h-10 rounded-full object-cover ring-2 ring-[#5e2be2]/30"
             />

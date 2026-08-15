@@ -24,7 +24,21 @@ export function getAuthUser(): AuthUser | null {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     if (!data) return DEFAULT_USER;
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    
+    // Auto-migrate legacy user profiles to synced therapist profile details
+    if (
+      !parsed.photoUrl ||
+      parsed.photoUrl.includes("photo-1534528741775") ||
+      parsed.title === "Platform Admin" ||
+      parsed.name === "Dr. Alex Harrison"
+    ) {
+      parsed.photoUrl = DEFAULT_USER.photoUrl;
+      parsed.title = DEFAULT_USER.title;
+      parsed.name = DEFAULT_USER.name;
+      setAuthUser(parsed);
+    }
+    return parsed;
   } catch (e) {
     return DEFAULT_USER;
   }
