@@ -40,7 +40,7 @@ const HARDCODED_CLIENTS_MAP: Record<number, any> = {
     initials: "MC",
     age: 36,
     gender: "Male",
-    status: "high_priority",
+    status: "active",
     primaryGoal: "Overcome depressive episodes and build daily routine",
     presentingProblems: ["Major Depressive Disorder (Mild)", "Social Isolation", "Low Energy"],
     identifiedConcerns: ["Lack of motivation for exercise", "Negative self-talk", "Withdrawal from friendships"],

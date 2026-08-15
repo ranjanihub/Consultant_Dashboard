@@ -276,7 +276,7 @@ export default function Dashboard() {
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between mb-1">
               <CardTitle className="text-xl">Pending reports</CardTitle>
-              <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-200">High priority</Badge>
+              <Badge variant="outline" className="bg-purple-50 text-[#5e2be2] border-purple-200">Action Required</Badge>
             </div>
             <CardDescription>{stats?.pendingReports || 0} reports awaiting your review</CardDescription>
           </CardHeader>

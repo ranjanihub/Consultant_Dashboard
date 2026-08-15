@@ -38,6 +38,49 @@ export default function ClientDetail() {
   const { outcomes, calculateOutcome: triggerOutcomeCalc } = useOutcomeStore();
 
   const [activeTab, setActiveTab] = useState("overview");
+  const [showFullIntakeSummary, setShowFullIntakeSummary] = useState(false);
+
+  const FULL_INTAKE_SUMMARIES: Record<number, {
+    background: string;
+    symptoms: string[];
+    riskAssessment: string;
+    treatmentPlan: string;
+    clinicalObservations: string;
+  }> = {
+    1: {
+      background: "Client (Sarah Jenkins, 34) presented for intake following a workplace promotion to Director. Reports a 6-month history of escalating Generalized Anxiety Disorder (GAD), characterized by persistent catastrophizing, sleep onset insomnia (sleeping 4-5 hours/night), and somatic tension in neck and shoulders.",
+      symptoms: [
+        "Escalating panic spikes prior to weekly executive leadership presentations.",
+        "Perfectionistic thought patterns & fear of exposure/imposter syndrome.",
+        "Restlessness, fatigue, and difficulty concentrating during sustained focus blocks."
+      ],
+      riskAssessment: "Low risk for self-harm or suicide. Safety protocol established and reviewed. Client has strong social support through spouse and family.",
+      treatmentPlan: "Weekly Cognitive Behavioral Therapy (CBT). Protocol includes 10-step gradual exposure hierarchy for public speaking, daily 4-7-8 box breathing protocols, and thought record logs to challenge all-or-nothing cognitive distortions.",
+      clinicalObservations: "Client exhibits exceptionally high clinical motivation, insightful self-reflection, and 95%+ compliance with assigned homework logs. Baseline GAD-7 of 18 has dropped to 6 (Mild/Remission)."
+    },
+    2: {
+      background: "Client (Michael Chen, 36) presented with low mood, lethargy, and social withdrawal following a recent corporate restructuring. Meets diagnostic criteria for Mild Major Depressive Disorder.",
+      symptoms: [
+        "Persistent low mood and anhedonia (loss of interest in cycling and social events).",
+        "Negative self-talk regarding career trajectory and financial security.",
+        "Early morning awakenings with fatigue throughout the day."
+      ],
+      riskAssessment: "Low risk. Denies passive or active suicidal ideation. Contracted for safety.",
+      treatmentPlan: "Acceptance and Commitment Therapy (ACT) combined with Behavioral Activation. Target: schedule 5 weekly activity blocks and complete values clarification exercises.",
+      clinicalObservations: "Engaging well in sessions. Has successfully completed 4 consecutive weeks of activity tracking, leading to a 6-point reduction in PHQ-9 score."
+    },
+    3: {
+      background: "Client (Emily Rodriguez, 29) initiated intake following a motor vehicle incident 8 months ago. Exhibits symptoms consistent with Post-Traumatic Stress Disorder (PTSD).",
+      symptoms: [
+        "Intrusive memories and heightened physiological reactivity when driving in heavy traffic.",
+        "Hypervigilance and sleep disruption.",
+        "Avoidance of highway routes and driving at night."
+      ],
+      riskAssessment: "Low risk. No self-harm history. Supported by partner.",
+      treatmentPlan: "Dialectical Behavior Therapy (DBT) Distress Tolerance paired with gradual prolonged exposure for driving triggers.",
+      clinicalObservations: "Demonstrating solid distress tolerance skills. PCL-5 score improved from baseline 42 down to 24 (below clinical cutoff)."
+    }
+  };
 
   // Dialog States for Outcomes & Assessments
   const [assignModalOpen, setAssignModalOpen] = useState(false);
@@ -97,7 +140,7 @@ export default function ClientDetail() {
       initials: "MC",
       age: 36,
       gender: "Male",
-      status: "high_priority",
+      status: "active",
       primaryGoal: "Overcome depressive episodes and build daily routine",
       presentingProblems: ["Major Depressive Disorder (Mild)", "Social Isolation", "Low Energy"],
       identifiedConcerns: ["Lack of motivation for exercise", "Negative self-talk", "Withdrawal from friendships"],
@@ -490,17 +533,84 @@ export default function ClientDetail() {
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-sm border-border bg-gradient-to-br from-indigo-50 to-white">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <SparklesIcon className="w-5 h-5 text-indigo-500" />
-                      AI Intake Summary
-                    </CardTitle>
+                <Card className="shadow-sm border-purple-200/80 bg-gradient-to-br from-purple-50/50 via-indigo-50/30 to-white rounded-3xl overflow-hidden">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-[#5e2be2]" />
+                        AI Intake Summary
+                      </CardTitle>
+                      <Badge variant="outline" className="bg-purple-100 text-[#5e2be2] border-purple-200 text-[10px] font-extrabold">
+                        AI Clinical Insights
+                      </Badge>
+                    </div>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-sm leading-relaxed text-slate-700">
+                  <CardContent className="space-y-3">
+                    <p className="text-xs sm:text-sm leading-relaxed text-slate-700 font-medium">
                       {client.aiIntakeSummary}
                     </p>
+
+                    {/* Read More / Read Less Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => setShowFullIntakeSummary(!showFullIntakeSummary)}
+                      className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#5e2be2] hover:text-[#4f28d9] transition-colors cursor-pointer pt-1"
+                    >
+                      <span>{showFullIntakeSummary ? "Read Less" : "Read More"}</span>
+                      <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", showFullIntakeSummary && "rotate-180")} />
+                    </button>
+
+                    {/* Full Detailed Clinical Summary Report */}
+                    {showFullIntakeSummary && (
+                      <div className="mt-4 pt-4 border-t border-purple-100 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="p-4 bg-white rounded-2xl border border-purple-100 space-y-3.5 shadow-2xs">
+                          <div>
+                            <h5 className="text-[11px] font-extrabold text-[#5e2be2] uppercase tracking-wider mb-1">Clinical Background & Presenting Problem</h5>
+                            <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                              {FULL_INTAKE_SUMMARIES[clientId]?.background || `${client.name} presented for clinical intake with symptoms impacting workplace performance and daily emotional regulation. Reports a multi-month history of stress reactivity and somatic tension.`}
+                            </p>
+                          </div>
+
+                          <div>
+                            <h5 className="text-[11px] font-extrabold text-[#5e2be2] uppercase tracking-wider mb-1">Primary Reported Symptoms</h5>
+                            <ul className="space-y-1.5">
+                              {(FULL_INTAKE_SUMMARIES[clientId]?.symptoms || [
+                                "Escalating anxiety spikes prior to key performance evaluations.",
+                                "Perfectionistic thought patterns and cognitive distortions.",
+                                "Restlessness, fatigue, and difficulty maintaining sleep continuity."
+                              ]).map((symptom: string, idx: number) => (
+                                <li key={idx} className="text-xs text-slate-700 flex items-start gap-2 font-medium">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#5e2be2] shrink-0 mt-1.5" />
+                                  <span>{symptom}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          <div>
+                            <h5 className="text-[11px] font-extrabold text-[#5e2be2] uppercase tracking-wider mb-1">Formulated Treatment Strategy</h5>
+                            <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                              {FULL_INTAKE_SUMMARIES[clientId]?.treatmentPlan || "Structured Evidence-Based Cognitive Behavioral Therapy (CBT). Protocol includes thought record logs, box breathing exercises, and gradual exposure hierarchy."}
+                            </p>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-0.5">
+                              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Risk & Safety Assessment</span>
+                              <p className="text-[11px] text-slate-700 font-medium">
+                                {FULL_INTAKE_SUMMARIES[clientId]?.riskAssessment || "Low risk for self-harm or suicide. Safety protocol established and reviewed."}
+                              </p>
+                            </div>
+                            <div className="p-3 bg-purple-50/50 rounded-xl border border-purple-100 space-y-0.5">
+                              <span className="text-[10px] font-extrabold text-[#5e2be2] uppercase tracking-wider block">Clinical Progress Notes</span>
+                              <p className="text-[11px] text-slate-700 font-medium">
+                                {FULL_INTAKE_SUMMARIES[clientId]?.clinicalObservations || "High motivation, strong homework compliance, and consistent assessment progress."}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>

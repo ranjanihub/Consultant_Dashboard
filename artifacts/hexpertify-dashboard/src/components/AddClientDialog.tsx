@@ -232,7 +232,7 @@ export default function AddClientDialog({ open, onOpenChange }: AddClientDialogP
                     <SelectContent>
                       <SelectItem value="new">New</SelectItem>
                       <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="high_priority">High Priority</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

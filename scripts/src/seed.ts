@@ -85,7 +85,7 @@ async function main() {
       initials: "MC",
       age: 36,
       gender: "Male",
-      status: "high_priority" as const,
+      status: "active" as const,
       primaryGoal: "Overcome depressive episodes and build daily routine",
       presentingProblems: ["Major Depressive Disorder (Mild)", "Social Isolation", "Low Energy"],
       identifiedConcerns: ["Lack of motivation for exercise", "Negative self-talk", "Withdrawal from friendships"],

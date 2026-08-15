@@ -174,7 +174,7 @@ const HARDCODED_CLIENT_IMPROVEMENT = {
 router.get("/dashboard/stats", async (_req, res): Promise<void> => {
   try {
     const clients = await db.select().from(clientsTable);
-    const activeClients = clients.filter((c) => c.status === "active" || c.status === "high_priority");
+    const activeClients = clients.filter((c) => c.status === "active");
     const newClients = clients.filter((c) => c.status === "new");
     const pendingSessions = await db
       .select()

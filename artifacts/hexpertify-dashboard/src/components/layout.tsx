@@ -46,7 +46,7 @@ interface SearchItem {
 const SEARCH_DATABASE: SearchItem[] = [
   // Clients
   { id: "c1", title: "Sarah Jenkins", subtitle: "Active • CBT Anxiety Protocol • GAD-7 Score: 11", category: "Clients", href: "/clients/1", badge: "Client", keywords: ["anxiety", "cbt", "insomnia", "sarah"] },
-  { id: "c2", title: "Michael Chen", subtitle: "High Priority • ACT Depression & Routine • PHQ-9 Score: 12", category: "Clients", href: "/clients/2", badge: "Client", keywords: ["depression", "sleep", "michael"] },
+  { id: "c2", title: "Michael Chen", subtitle: "Active • ACT Depression & Routine • PHQ-9 Score: 12", category: "Clients", href: "/clients/2", badge: "Client", keywords: ["depression", "sleep", "michael"] },
   { id: "c3", title: "Emily Rodriguez", subtitle: "Active • DBT Distress Tolerance • PCL-5 Score: 24", category: "Clients", href: "/clients/3", badge: "Client", keywords: ["dbt", "stress", "emily"] },
   { id: "c4", title: "David Kim", subtitle: "New • Social Anxiety CBT Exposure • GAD-7: 14", category: "Clients", href: "/clients/4", badge: "Client", keywords: ["social", "anxiety", "david"] },
   { id: "c5", title: "Jessica Taylor", subtitle: "Completed • Panic Disorder Remission • GAD-7: 3", category: "Clients", href: "/clients/5", badge: "Client", keywords: ["panic", "remission", "jessica"] },

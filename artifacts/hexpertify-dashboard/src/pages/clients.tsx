@@ -228,20 +228,14 @@ export default function Clients() {
   const activeCount = clientList.filter((c: any) => c.status === "active" || c.status === "new").length;
 
   const getStatusBadge = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-emerald-100 text-emerald-700">Active</span>;
-      case 'high_priority':
-        return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-amber-100 text-amber-700">High Priority</span>;
-      case 'new':
-        return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-blue-100 text-blue-700">New</span>;
-      case 'completed':
-        return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-slate-100 text-slate-700">Completed</span>;
-      case 'inactive':
-        return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-rose-100 text-rose-700">Inactive</span>;
-      default:
-        return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-slate-100 text-slate-700 capitalize">{status}</span>;
+    const s = (status || "").toLowerCase();
+    if (s === 'new') {
+      return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-blue-100 text-blue-700">New</span>;
     }
+    if (s === 'completed') {
+      return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-slate-100 text-slate-700">Completed</span>;
+    }
+    return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-emerald-100 text-emerald-700">Active</span>;
   };
 
   return (
@@ -290,8 +284,8 @@ export default function Clients() {
           {[
             { id: "all", label: "All" },
             { id: "active", label: "Active" },
+            { id: "new", label: "New" },
             { id: "completed", label: "Completed" },
-            { id: "inactive", label: "Inactive" },
           ].map((item) => (
             <button
               key={item.id}
@@ -341,13 +335,13 @@ export default function Clients() {
                 {filteredClients.map((clientItem: any) => (
                   <tr key={clientItem.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-4 px-6 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
+                      <div className="space-y-1">
                         <Badge variant="outline" className="bg-purple-50 text-[#5e2be2] border-purple-200 font-mono font-bold text-[10px]">
                           {clientItem.code || `#CL-10${clientItem.id}`}
                         </Badge>
-                        <span className="font-extrabold text-slate-900 text-sm">
+                        <div className="font-extrabold text-slate-900 text-sm">
                           {clientItem.name}
-                        </span>
+                        </div>
                       </div>
                     </td>
                     <td className="py-4 px-6 font-medium text-slate-600 whitespace-nowrap">
@@ -358,9 +352,9 @@ export default function Clients() {
                     </td>
                     <td className="py-4 px-6 font-bold text-[#5e2be2] font-mono whitespace-nowrap">
                       {clientItem.nextSession ? (
-                        <div className="flex items-center gap-1">
-                          <span>{clientItem.nextSession}</span>
-                          <span className="text-[11px] font-normal text-slate-500">{clientItem.nextSessionTime || '(09:00 AM)'}</span>
+                        <div>
+                          <span className="block">{clientItem.nextSession}</span>
+                          <span className="block text-[11px] font-normal text-slate-500">{clientItem.nextSessionTime || '(09:00 AM)'}</span>
                         </div>
                       ) : (
                         <span className="text-slate-400 font-normal">-</span>

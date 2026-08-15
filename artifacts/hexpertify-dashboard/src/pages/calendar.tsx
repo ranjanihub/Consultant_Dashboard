@@ -34,30 +34,45 @@ function startOfMonth(y: number, m: number) { return new Date(y, m, 1).getDay();
 function daysInMonth (y: number, m: number) { return new Date(y, m + 1, 0).getDate(); }
 
 /* Mock sessions keyed by "YYYY-M-D" */
-const INITIAL_SESSION_DATA: Record<string, { client: string; initials: string; time: string; type: string; duration: string }[]> = {
+const INITIAL_SESSION_DATA: Record<string, { client: string; initials: string; time: string; type: string; duration: string; status: "booked" | "available" }[]> = {
   "2026-7-27": [
-    { client: "Sarah Jenkins",  initials: "SJ", time: "09:00 AM", type: "CBT · Cognitive Restructuring", duration: "60 min" },
-    { client: "Michael Chen",   initials: "MC", time: "10:30 AM", type: "ACT · Values Clarification",    duration: "60 min" },
-    { client: "David Kim",      initials: "DK", time: "02:00 PM", type: "CBT · Exposure Hierarchy",     duration: "60 min" },
-    { client: "Emily Rodriguez",initials: "ER", time: "04:30 PM", type: "DBT · Distress Tolerance",     duration: "60 min" },
+    { client: "Sarah Jenkins",          initials: "SJ",   time: "09:00 AM", type: "CBT · Cognitive Restructuring", duration: "60 min", status: "booked" },
+    { client: "Michael Chen",           initials: "MC",   time: "10:30 AM", type: "ACT · Values Clarification",    duration: "60 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "12:00 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "David Kim",              initials: "DK",   time: "02:00 PM", type: "CBT · Exposure Hierarchy",     duration: "60 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "03:30 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Emily Rodriguez",        initials: "ER",   time: "04:30 PM", type: "DBT · Distress Tolerance",     duration: "60 min", status: "booked" },
   ],
   "2026-7-28": [
-    { client: "Sarah Jenkins",  initials: "SJ", time: "10:00 AM", type: "CBT · Session 13",             duration: "50 min" },
-    { client: "Michael Chen",   initials: "MC", time: "02:00 PM", type: "ACT · Session 9",              duration: "50 min" },
+    { client: "Sarah Jenkins",          initials: "SJ",   time: "10:00 AM", type: "CBT · Session 13",             duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "11:30 AM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Michael Chen",           initials: "MC",   time: "02:00 PM", type: "ACT · Session 9",              duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "04:00 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
   ],
   "2026-7-29": [
-    { client: "David Kim",      initials: "DK", time: "09:00 AM", type: "CBT · Session 3",              duration: "50 min" },
-    { client: "Emily Rodriguez",initials: "ER", time: "11:00 AM", type: "DBT · Session 16",             duration: "50 min" },
+    { client: "David Kim",              initials: "DK",   time: "09:00 AM", type: "CBT · Session 3",              duration: "50 min", status: "booked" },
+    { client: "Emily Rodriguez",        initials: "ER",   time: "11:00 AM", type: "DBT · Session 16",             duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "01:30 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "03:30 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
   ],
   "2026-7-30": [
-    { client: "Sarah Jenkins",  initials: "SJ", time: "10:00 AM", type: "CBT · Check-in",               duration: "50 min" },
-    { client: "Michael Chen",   initials: "MC", time: "02:00 PM", type: "ACT · Behavioral Activation",   duration: "50 min" },
+    { client: "Sarah Jenkins",          initials: "SJ",   time: "10:00 AM", type: "CBT · Check-in",               duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "11:30 AM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Michael Chen",           initials: "MC",   time: "02:00 PM", type: "ACT · Behavioral Activation",   duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "04:30 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
   ],
   "2026-7-31": [
-    { client: "Emily Rodriguez",initials: "ER", time: "01:00 PM", type: "DBT · Mindfulness",            duration: "50 min" },
-    { client: "Jessica Taylor", initials: "JT", time: "03:00 PM", type: "CBT · Graduation Check-in",    duration: "50 min" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "11:00 AM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Emily Rodriguez",        initials: "ER",   time: "01:00 PM", type: "DBT · Mindfulness",            duration: "50 min", status: "booked" },
+    { client: "Jessica Taylor",         initials: "JT",   time: "03:00 PM", type: "CBT · Graduation Check-in",    duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "05:00 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
   ],
 };
+
+const DEFAULT_DAY_SLOTS = [
+  { client: "Open Consultation Slot", initials: "OPEN", time: "10:00 AM", type: "Available for Client Booking", duration: "50 min", status: "available" as const },
+  { client: "Open Consultation Slot", initials: "OPEN", time: "02:30 PM", type: "Available for Client Booking", duration: "50 min", status: "available" as const },
+];
 
 /* Session dot indicator colours */
 function dotColor(count: number) {
@@ -77,7 +92,7 @@ export default function Calendar() {
   const [addEventOpen, setAddEventOpen] = useState(false);
   const [confirmedSlot, setConfirmedSlot] = useState<string | null>(null);
 
-  // Dynamic session data state to support delete and reschedule
+  // Dynamic session data state to support delete, reschedule, and available slots
   const [sessionData, setSessionData] = useState(INITIAL_SESSION_DATA);
 
   // Reschedule dialog state
@@ -87,10 +102,19 @@ export default function Calendar() {
   const [rescheduleTime, setRescheduleTime] = useState("11:00 AM");
   const [rescheduleReason, setRescheduleReason] = useState("");
 
+  // Assign client dialog state
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [assignTarget, setAssignTarget] = useState<{ key: string; index: number; slot: any } | null>(null);
+  const [assignClientName, setAssignClientName] = useState("Sarah Jenkins");
+  const [assignType, setAssignType] = useState("Individual CBT Therapy");
+
   const { data: events } = useGetCalendarEvents();
 
   const sessionKey = `${year}-${month + 1}-${selectedDay}`;
-  const daySessions = sessionData[sessionKey] ?? [];
+  const daySessions = sessionData[sessionKey] ?? DEFAULT_DAY_SLOTS;
+
+  const bookedCount = daySessions.filter(s => s.status === 'booked' || s.client !== 'Open Consultation Slot').length;
+  const availableCount = daySessions.filter(s => s.status === 'available' || s.client === 'Open Consultation Slot').length;
 
   /* calendar grid */
   const firstDay  = startOfMonth(year, month);
@@ -139,7 +163,7 @@ export default function Calendar() {
       // Add to new key with updated time
       const updatedSession = { ...session, time: rescheduleTime };
       if (!updated[newKey]) {
-        updated[newKey] = [];
+        updated[newKey] = [...DEFAULT_DAY_SLOTS];
       }
       updated[newKey] = [...updated[newKey], updatedSession];
 
@@ -155,9 +179,51 @@ export default function Calendar() {
     });
   };
 
+  const handleOpenAssignClient = (key: string, index: number, slot: any) => {
+    setAssignTarget({ key, index, slot });
+    setAssignClientName("Sarah Jenkins");
+    setAssignType("Individual CBT Therapy");
+    setAssignModalOpen(true);
+  };
+
+  const handleConfirmAssignClient = () => {
+    if (!assignTarget) return;
+    const { key, index, slot } = assignTarget;
+
+    const initials = assignClientName.split(" ").map(n => n[0]).join("").toUpperCase();
+
+    setSessionData((prev) => {
+      const updated = { ...prev };
+      if (!updated[key]) {
+        updated[key] = [...DEFAULT_DAY_SLOTS];
+      }
+      if (updated[key][index]) {
+        updated[key][index] = {
+          ...slot,
+          client: assignClientName,
+          initials: initials,
+          type: assignType,
+          status: "booked",
+        };
+      }
+      return updated;
+    });
+
+    setAssignModalOpen(false);
+    setAssignTarget(null);
+
+    toast({
+      title: "Client Booked! 🎯",
+      description: `Assigned ${assignClientName} to open slot at ${slot.time}.`,
+    });
+  };
+
   const handleDeleteSlot = (key: string, index: number, clientName: string, slotTime: string) => {
     setSessionData((prev) => {
       const updated = { ...prev };
+      if (!updated[key]) {
+        updated[key] = [...DEFAULT_DAY_SLOTS];
+      }
       if (updated[key]) {
         updated[key] = updated[key].filter((_, i) => i !== index);
       }
@@ -166,7 +232,7 @@ export default function Calendar() {
 
     toast({
       title: "Session Slot Deleted 🗑️",
-      description: `Booked slot for ${clientName} at ${slotTime} has been removed from calendar.`,
+      description: `Slot for ${clientName} at ${slotTime} has been removed from calendar.`,
     });
   };
 
@@ -198,10 +264,8 @@ export default function Calendar() {
         </div>
       </PageHeader>
 
-      {/* Responsive Grid Container for Laptop & Desktop */}
       <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-100 min-h-[600px]">
 
-        {/* ── Panel 1: Month Calendar Picker & Weekly Capacity (lg:col-span-5) ──────────────── */}
         <div className="lg:col-span-5 p-5 xl:p-6 bg-white flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -211,7 +275,6 @@ export default function Calendar() {
               </span>
             </div>
 
-            {/* Month Navigation */}
             <div className="flex items-center justify-between mb-4 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
               <button
                 onClick={prevMonth}
@@ -228,7 +291,6 @@ export default function Calendar() {
               </button>
             </div>
 
-            {/* Day-of-week Headers */}
             <div className="grid grid-cols-7 mb-2 text-center">
               {DAYS_SHORT.map(d => (
                 <div key={d} className="text-[11px] font-extrabold text-slate-400 py-1 uppercase tracking-wider">
@@ -237,12 +299,11 @@ export default function Calendar() {
               ))}
             </div>
 
-            {/* Calendar Grid */}
             <div className="grid grid-cols-7 gap-1">
               {cells.map((day, idx) => {
                 if (!day) return <div key={`empty-${idx}`} />;
                 const key   = `${year}-${month + 1}-${day}`;
-                const count = sessionData[key]?.length ?? 0;
+                const count = (sessionData[key] ?? DEFAULT_DAY_SLOTS).length;
                 const sel   = day === selectedDay;
                 const tod   = isToday(day);
 
@@ -270,7 +331,6 @@ export default function Calendar() {
             </div>
           </div>
 
-          {/* Quick Stats / Weekly Capacity Widget - Placed Below Calendar Grid */}
           <div className="mt-6 pt-5 border-t border-slate-100 space-y-2.5">
             <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Weekly Capacity</span>
             <div className="grid grid-cols-2 gap-3 text-xs">
@@ -283,14 +343,13 @@ export default function Calendar() {
               <div className="flex flex-col justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5">
                 <span className="text-slate-500 font-medium text-[11px]">Selected Day</span>
                 <span className="font-extrabold text-sm text-emerald-800 bg-emerald-100/80 px-2.5 py-1 rounded-xl w-fit border border-emerald-200">
-                  {daySessions.length} Booked
+                  {bookedCount} Booked / {availableCount} Open
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── Panel 2: Time Slots for Selected Day (lg:col-span-7) ─────────── */}
         <div className="lg:col-span-7 p-5 xl:p-6 bg-slate-50/30 flex flex-col overflow-y-auto">
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-100">
@@ -299,17 +358,19 @@ export default function Calendar() {
                   {MONTHS[month]} {selectedDay}, {year}
                 </h3>
                 <p className="text-xs text-slate-500 font-medium">
-                  {daySessions.length > 0
-                    ? `${daySessions.length} session${daySessions.length !== 1 ? "s" : ""} booked`
-                    : "No appointments scheduled"}
+                  {bookedCount} booked session{bookedCount !== 1 ? "s" : ""} · {availableCount} available open slot{availableCount !== 1 ? "s" : ""}
                 </p>
               </div>
-              <Badge variant="outline" className="bg-purple-50 text-[#5e2be2] border-purple-200 text-[11px] font-extrabold px-3 py-1">
-                {daySessions.length > 0 ? "Bookings Active" : "Day Open"}
-              </Badge>
+              <div className="flex items-center gap-1.5">
+                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px] font-extrabold px-2.5 py-0.5">
+                  {bookedCount} Booked
+                </Badge>
+                <Badge variant="outline" className="bg-purple-50 text-[#5e2be2] border-purple-200 text-[11px] font-extrabold px-2.5 py-0.5">
+                  {availableCount} Available
+                </Badge>
+              </div>
             </div>
 
-            {/* Add Session Slot Button Placed Above the List */}
             <button 
               onClick={() => setAddEventOpen(true)}
               className="w-full flex items-center justify-center gap-2 rounded-2xl border border-dashed border-purple-300 bg-white text-[#5e2be2] text-xs font-extrabold py-3 hover:bg-purple-50/80 transition-all cursor-pointer shadow-2xs"
@@ -335,60 +396,65 @@ export default function Calendar() {
             ) : (
               <div className="space-y-3">
                 {daySessions.map((s, i) => {
-                  const isConfirmed = confirmedSlot === `${sessionKey}-${i}`;
+                  const isBooked = s.status === "booked" || s.client !== "Open Consultation Slot";
                   return (
                     <div
                       key={i}
                       className={cn(
-                        "group flex items-center justify-between gap-3 rounded-2xl border p-3.5 transition-all cursor-pointer bg-white shadow-2xs hover:shadow-md",
-                        isConfirmed
-                          ? "border-[#5e2be2] ring-1 ring-[#5e2be2]/30 bg-purple-50/30"
-                          : "border-slate-200/80 hover:border-purple-200"
+                        "group flex items-center justify-between gap-3 rounded-2xl border p-3.5 transition-all bg-white shadow-2xs hover:shadow-md",
+                        isBooked
+                          ? "border-slate-200/80 hover:border-purple-200"
+                          : "border-dashed border-purple-300 bg-purple-50/20 hover:bg-purple-50/50"
                       )}
-                      onClick={() =>
-                        setConfirmedSlot(isConfirmed ? null : `${sessionKey}-${i}`)
-                      }
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
-                        {/* Time pill */}
                         <div className={cn(
                           "shrink-0 w-22 text-center py-2 rounded-xl text-xs font-black transition-all",
-                          isConfirmed
-                            ? "bg-[#5e2be2] text-white shadow-xs"
-                            : "bg-slate-100 text-slate-800 group-hover:bg-purple-100 group-hover:text-[#5e2be2]"
+                          isBooked
+                            ? "bg-slate-100 text-slate-800 group-hover:bg-purple-100 group-hover:text-[#5e2be2]"
+                            : "bg-purple-100/80 text-[#5e2be2] font-black border border-purple-200"
                         )}>
                           {s.time}
                         </div>
 
-                        {/* Client details */}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-extrabold text-xs sm:text-sm text-slate-900 truncate">{s.client}</span>
-                            <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
-                              {s.initials}
+                            <span className={cn(
+                              "font-extrabold text-xs sm:text-sm truncate",
+                              isBooked ? "text-slate-900" : "text-purple-900"
+                            )}>
+                              {s.client}
                             </span>
                           </div>
                           <p className="text-[11px] font-semibold text-slate-500 truncate mt-0.5">{s.type} · {s.duration}</p>
                         </div>
                       </div>
 
-                      {/* Status & Action buttons */}
                       <div className="flex items-center gap-2 shrink-0">
-                        {isConfirmed ? (
-                          <CheckCircle2 className="w-5 h-5 text-[#5e2be2]" />
-                        ) : (
+                        {isBooked ? (
                           <Badge className="bg-emerald-100 text-emerald-800 border-0 text-[10px] font-extrabold px-2.5 py-0.5">
                             Confirmed
                           </Badge>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <Badge className="bg-purple-100 text-[#5e2be2] border-0 text-[10px] font-extrabold px-2.5 py-0.5">
+                              Available Slot
+                            </Badge>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => handleOpenAssignClient(sessionKey, i, s)}
+                              className="bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-extrabold text-[11px] h-7 px-2.5 rounded-lg shadow-2xs cursor-pointer"
+                            >
+                              + Book Client
+                            </Button>
+                          </div>
                         )}
 
                         <button
                           type="button"
-                          title="Reschedule Session"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenReschedule(sessionKey, i, s);
-                          }}
+                          title="Reschedule Slot"
+                          onClick={() => handleOpenReschedule(sessionKey, i, s)}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-[#5e2be2] hover:bg-purple-100/60 transition-all cursor-pointer"
                         >
                           <CalendarIcon className="w-4 h-4" />
@@ -396,11 +462,8 @@ export default function Calendar() {
 
                         <button
                           type="button"
-                          title="Delete Session Slot"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteSlot(sessionKey, i, s.client, s.time);
-                          }}
+                          title="Delete Slot"
+                          onClick={() => handleDeleteSlot(sessionKey, i, s.client, s.time)}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-100/60 transition-all cursor-pointer"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -414,6 +477,74 @@ export default function Calendar() {
           </div>
         </div>
       </div>
+
+      {/* Assign Client to Open Slot Modal */}
+      <Dialog open={assignModalOpen} onOpenChange={setAssignModalOpen}>
+        <DialogContent className="sm:max-w-md rounded-3xl p-6 border-0 shadow-2xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+              <Plus className="w-5 h-5 text-[#5e2be2]" />
+              Book Client into Available Slot
+            </DialogTitle>
+            <p className="text-xs text-slate-500 font-medium">
+              Select a client to assign to the open consultation slot at {assignTarget?.slot.time}.
+            </p>
+          </DialogHeader>
+
+          {assignTarget && (
+            <div className="space-y-4 py-2">
+              <div className="p-3.5 bg-purple-50/60 rounded-2xl border border-purple-100 space-y-1 text-xs">
+                <span className="text-[10px] font-extrabold text-[#5e2be2] uppercase tracking-wider block">Target Slot</span>
+                <p className="font-extrabold text-slate-900 text-sm">Time: {assignTarget.slot.time}</p>
+                <p className="text-slate-600 font-medium">{assignTarget.slot.duration} Session</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-700 block">Select Client</label>
+                <Select value={assignClientName} onValueChange={setAssignClientName}>
+                  <SelectTrigger className="rounded-xl border-slate-200 text-xs h-10">
+                    <SelectValue placeholder="Select client" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {["Sarah Jenkins", "Michael Chen", "Emily Rodriguez", "David Kim", "Jessica Taylor", "Marcus Vance"].map((name) => (
+                      <SelectItem key={name} value={name} className="text-xs">
+                        {name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-700 block">Treatment Modality / Notes</label>
+                <Input
+                  value={assignType}
+                  onChange={(e) => setAssignType(e.target.value)}
+                  className="rounded-xl border-slate-200 text-xs h-10"
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setAssignModalOpen(false)}
+              className="rounded-xl text-xs font-bold border-slate-200 cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleConfirmAssignClient}
+              className="bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-extrabold text-xs rounded-xl shadow-md shadow-[#5e2be2]/20 cursor-pointer"
+            >
+              Confirm Booking
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Reschedule Session Dialog Modal */}
       <Dialog open={rescheduleModalOpen} onOpenChange={setRescheduleModalOpen}>
