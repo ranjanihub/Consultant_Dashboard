@@ -864,56 +864,7 @@ export default function ClientDetail() {
           {/* TAB 2: CLINICAL OUTCOMES TAB */}
           <TabsContent value="outcomes" className="space-y-6 outline-none">
 
-            {/* TOP 3 PASTEL METRIC CARDS ROW (Exact Screenshot Match) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Card 1: Goals Achieved */}
-              <div className="p-6 rounded-3xl bg-emerald-50/70 border border-emerald-200/70 space-y-4 shadow-2xs">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                    <Trophy className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900">Goals Achieved</h3>
-                    <p className="text-xs text-slate-500 font-medium">Milestones reached for {client.name}</p>
-                  </div>
-                </div>
-                <div className="text-4xl font-extrabold text-slate-900 font-mono tracking-tight">
-                  3
-                </div>
-              </div>
 
-              {/* Card 2: Current Streak */}
-              <div className="p-6 rounded-3xl bg-amber-50/70 border border-amber-200/70 space-y-4 shadow-2xs">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
-                    <Flame className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900">Current Streak</h3>
-                    <p className="text-xs text-slate-500 font-medium">Consecutive days active</p>
-                  </div>
-                </div>
-                <div className="text-4xl font-extrabold text-slate-900 font-mono tracking-tight">
-                  7
-                </div>
-              </div>
-
-              {/* Card 3: Attendance */}
-              <div className="p-6 rounded-3xl bg-blue-50/70 border border-blue-200/70 space-y-4 shadow-2xs">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
-                    <Calendar className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900">Attendance</h3>
-                    <p className="text-xs text-slate-500 font-medium">Session completion rate</p>
-                  </div>
-                </div>
-                <div className="text-4xl font-extrabold text-slate-900 font-mono tracking-tight">
-                  92%
-                </div>
-              </div>
-            </div>
 
             {/* ── 3-SESSION MILESTONE CLINICAL OUTCOME GRAPHS SECTION (Before Activity Completion) ── */}
             {(() => {
@@ -941,7 +892,7 @@ export default function ClientDetail() {
                         <Activity className="w-5 h-5" />
                       </span>
                       <div>
-                        <h3 className="text-base font-extrabold text-slate-900">3-Session Clinical Outcome Trajectories</h3>
+                        <h3 className="text-base font-extrabold text-slate-900">3-Session Clinical Outcome</h3>
                         <p className="text-xs text-slate-500 font-medium">
                           Outcome assessments performed by {client.name} after every 3 sessions of therapy
                         </p>

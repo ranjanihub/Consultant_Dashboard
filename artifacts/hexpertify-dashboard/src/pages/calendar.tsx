@@ -392,7 +392,7 @@ export default function Calendar() {
     setAssignTarget(null);
 
     toast({
-      title: "Client Booked! 🎯",
+      title: "Client Booked!",
       description: `Assigned ${assignClientName} to open slot at ${slot.time}.`,
     });
   };
@@ -603,7 +603,7 @@ export default function Calendar() {
                           <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-600 group-hover:text-slate-500 transition-colors" />
                         ) : null}
 
-                        <span className="font-mono">{slot.time}</span>
+                        <span>{slot.time}</span>
 
                         {!isBooked && (
                           <span className="hidden group-hover:inline-block text-[9px] font-black ml-0.5 underline">
@@ -888,7 +888,7 @@ export default function Calendar() {
                 <span className="text-[10px] font-extrabold text-[#5e2be2] uppercase tracking-wider block">Current Booking</span>
                 <p className="font-extrabold text-slate-900 text-sm">{rescheduleTarget.session.client} ({rescheduleTarget.session.initials})</p>
                 <p className="text-slate-600 font-medium">{rescheduleTarget.session.type} · {rescheduleTarget.session.duration}</p>
-                <p className="text-[#5e2be2] font-extrabold font-mono mt-1">Current Time: {rescheduleTarget.session.time}</p>
+                <p className="text-[#5e2be2] font-extrabold mt-1">Current Time: {rescheduleTarget.session.time}</p>
               </div>
 
               <div className="space-y-1.5">
@@ -897,19 +897,19 @@ export default function Calendar() {
                   type="date"
                   value={rescheduleDate}
                   onChange={(e) => setRescheduleDate(e.target.value)}
-                  className="rounded-xl border-slate-200 text-xs h-10 font-mono"
+                  className="rounded-xl border-slate-200 text-xs h-10"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-extrabold text-slate-700 block">Select New Time Slot</label>
                 <Select value={rescheduleTime} onValueChange={setRescheduleTime}>
-                  <SelectTrigger className="rounded-xl border-slate-200 text-xs h-10 font-mono">
+                  <SelectTrigger className="rounded-xl border-slate-200 text-xs h-10">
                     <SelectValue placeholder="Select new time" />
                   </SelectTrigger>
                   <SelectContent>
                     {["08:00 AM", "09:00 AM", "10:00 AM", "11:00 AM", "11:30 AM", "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM"].map((t) => (
-                      <SelectItem key={t} value={t} className="font-mono text-xs">
+                      <SelectItem key={t} value={t} className="text-xs">
                         {t}
                       </SelectItem>
                     ))}
