@@ -95,6 +95,7 @@ export function Sidebar() {
     { name: "Clients", href: "/clients", icon: Users, badge: `${statsData?.totalClientsCount ?? 24}` },
     { name: "Calendar", href: "/calendar", icon: Calendar, badge: `${statsData?.sessionsToday ?? 4}` },
     { name: "Messages", href: "/messages", icon: MessageSquare, badge: `${unreadCount > 0 ? unreadCount : 3}` },
+    { name: "Assessments", href: "/assessments", icon: ClipboardCheck },
     { name: "Revenue", href: "/revenue", icon: IndianRupee },
     { name: "Reviews", href: "/reviews", icon: Star, badge: "4.9" },
     { name: "Resources", href: "/resources", icon: FolderOpen },

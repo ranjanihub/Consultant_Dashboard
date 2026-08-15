@@ -771,9 +771,7 @@ export default function ActivitiesPage() {
                           <span className="text-sm font-semibold">{client}</span>
                         </div>
 
-                        <span className="text-xs font-bold text-[#5e2be2] opacity-80 flex items-center gap-0.5">
-                          Set Frequency <ChevronRight className="w-3.5 h-3.5" />
-                        </span>
+
                       </div>
                     );
                   })}

@@ -323,7 +323,7 @@ export default function Clients() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/70 border-b border-slate-100 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider whitespace-nowrap">
-                  <th className="py-4 px-6">Client Code &amp; Name</th>
+                  <th className="py-4 px-6">Client Name</th>
                   <th className="py-4 px-6">Service Modality</th>
                   <th className="py-4 px-6">Last Session</th>
                   <th className="py-4 px-6">Next Session</th>
@@ -335,13 +335,8 @@ export default function Clients() {
                 {filteredClients.map((clientItem: any) => (
                   <tr key={clientItem.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-4 px-6 whitespace-nowrap">
-                      <div className="space-y-1">
-                        <Badge variant="outline" className="bg-purple-50 text-[#5e2be2] border-purple-200 font-mono font-bold text-[10px]">
-                          {clientItem.code || `#CL-10${clientItem.id}`}
-                        </Badge>
-                        <div className="font-extrabold text-slate-900 text-sm">
-                          {clientItem.name}
-                        </div>
+                      <div className="font-extrabold text-slate-900 text-sm">
+                        {clientItem.name}
                       </div>
                     </td>
                     <td className="py-4 px-6 font-medium text-slate-600 whitespace-nowrap">
