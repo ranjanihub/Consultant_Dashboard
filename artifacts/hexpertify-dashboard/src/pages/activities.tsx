@@ -14,7 +14,6 @@ import {
   MoreVertical,
   UserPlus,
   Pencil,
-  Copy,
   Trash2,
   Users,
   Eye,
@@ -188,19 +187,7 @@ export default function ActivitiesPage() {
   // Preview Activity Modal State
   const [activeActivity, setActiveActivity] = useState<ActivityItem | null>(null);
 
-  // Add Activity Modal State
-  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
-  const [newTitle, setNewTitle] = useState("");
-  const [newDescription, setNewDescription] = useState("");
-  const [newCategory, setNewCategory] = useState("MINDFULNESS");
-  const [newDifficulty, setNewDifficulty] = useState("Easy");
-  const [newDuration, setNewDuration] = useState("10 min");
-  const [newDueDate, setNewDueDate] = useState("Today");
-  const [newImageUrl, setNewImageUrl] = useState("");
-  const [newInstructions, setNewInstructions] = useState("");
-  const [newAssignedTo, setNewAssignedTo] = useState<string[]>(["Sarah Jenkins"]);
-  const [newFrequency, setNewFrequency] = useState("Daily");
-  const [newTimeOfDay, setNewTimeOfDay] = useState("Morning (8:00 AM)");
+
 
   // Assign Modal Multi-Step State
   const [assignModalActivity, setAssignModalActivity] = useState<ActivityItem | null>(null);
@@ -249,22 +236,7 @@ export default function ActivitiesPage() {
     setActiveActivity(act);
   };
 
-  const handleDuplicate = (act: ActivityItem) => {
-    const duplicated: ActivityItem = {
-      ...act,
-      id: Date.now(),
-      title: `${act.title} (Copy)`,
-      status: "pending",
-      dueDate: "Today",
-      completedAt: null,
-    };
-    setActivities((prev) => [duplicated, ...prev]);
 
-    toast({
-      title: "Activity Duplicated",
-      description: `Created a copy of "${act.title}".`,
-    });
-  };
 
   const handleDelete = async (act: ActivityItem) => {
     try {
@@ -417,61 +389,7 @@ export default function ActivitiesPage() {
     setEditModalActivity(null);
   };
 
-  const handleCreateActivity = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle.trim() || !newDescription.trim()) return;
 
-    const defaultImages: Record<string, string> = {
-      MINDFULNESS: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80",
-      CBT: "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80",
-      GRATITUDE: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80",
-      BREATHING: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=800&q=80",
-      SOMATIC: "https://images.unsplash.com/photo-1511295742362-92c96b124e52?auto=format&fit=crop&w=800&q=80"
-    };
-
-    const newAct: ActivityItem = {
-      id: Date.now(),
-      title: newTitle.trim(),
-      description: newDescription.trim(),
-      category: newCategory,
-      difficulty: newDifficulty,
-      duration: newDuration.trim() || "10 min",
-      dueDate: newDueDate.trim() || "Today",
-      imageUrl: newImageUrl.trim() || defaultImages[newCategory] || defaultImages.MINDFULNESS,
-      status: "pending",
-      instructions: newInstructions.trim() || "Complete exercises as prescribed.",
-      assignedTo: newAssignedTo,
-      frequency: newFrequency,
-      timeOfDay: newTimeOfDay
-    };
-
-    try {
-      const res = await fetch("/api/activities", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newAct)
-      });
-      const saved = await res.json();
-      if (saved && saved.id && !saved.fallback) {
-        setActivities((prev) => [saved, ...prev]);
-      } else {
-        setActivities((prev) => [newAct, ...prev]);
-      }
-    } catch (err) {
-      setActivities((prev) => [newAct, ...prev]);
-    }
-
-    toast({
-      title: "Activity Created",
-      description: `"${newTitle}" created & assigned (${newFrequency}).`,
-    });
-
-    setIsAddModalOpen(false);
-    setNewTitle("");
-    setNewDescription("");
-    setNewInstructions("");
-    setNewImageUrl("");
-  };
 
   const filteredActivities = activities.filter((act) => {
     const matchesCategory =
@@ -505,77 +423,16 @@ export default function ActivitiesPage() {
     }
   };
 
-  const renderAssignedBadges = (act: ActivityItem) => {
-    const clientAssignments = act.clientAssignments;
-    if (clientAssignments && clientAssignments.length > 0) {
-      return (
-        <div className="space-y-1.5 mt-2">
-          <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-            <Users className="w-3.5 h-3.5 text-[#5e2be2]" />
-            <span>Assigned Clients ({clientAssignments.length})</span>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {clientAssignments.map((ca, idx) => (
-              <span
-                key={idx}
-                className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5e2be2] px-2.5 py-1 rounded-xl text-xs font-bold border border-purple-100/80"
-              >
-                <span>{ca.clientName}</span>
-                <span className="text-[10px] bg-[#5e2be2]/10 text-[#5e2be2] px-1.5 py-0.5 rounded-md font-extrabold">
-                  {ca.frequency}
-                </span>
-              </span>
-            ))}
-          </div>
-        </div>
-      );
-    }
-    const assignedTo = act.assignedTo || [];
-    const freq = act.frequency || "Daily";
-    if (assignedTo.length === 0) {
-      return (
-        <span className="text-xs text-slate-400 font-medium">Unassigned</span>
-      );
-    }
-    return (
-      <div className="inline-flex items-center gap-1.5 bg-purple-50 text-[#5e2be2] px-3 py-1 rounded-full text-xs font-semibold border border-purple-100">
-        <Users className="w-3.5 h-3.5 text-[#5e2be2]" />
-        <span>{assignedTo.join(", ")} • {freq}</span>
-      </div>
-    );
-  };
+
 
   return (
     <div className="space-y-8 pb-16">
       <PageHeader
-        title="Therapy Activities Library"
-        description="Browse, assign, create, and manage therapeutic exercises and worksheets with custom frequency schedules for your clients."
+        title="Activities Library"
+        description="Browse, assign, and manage therapeutic exercises and worksheets with custom frequency schedules for your clients."
         badge="ACTIVITY MANAGEMENT"
         icon={<Activity className="w-4 h-4 text-purple-200" />}
-      >
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          {/* Search bar */}
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              type="text"
-              placeholder="Search activities..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 rounded-full border-slate-200 bg-white text-slate-900 shadow-sm focus-visible:ring-[#5e2be2] h-9 text-xs"
-            />
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 bg-white text-[#5e2be2] hover:bg-white/90 font-extrabold text-xs px-4 py-2.5 rounded-full shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Create Activity</span>
-          </button>
-        </div>
-      </PageHeader>
+      />
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
@@ -621,11 +478,8 @@ export default function ActivitiesPage() {
                     <span>{act.category}</span>
                   </div>
 
-                  {/* Top Right Controls: Difficulty + 3-Dot Menu */}
+                  {/* Top Right Controls: 3-Dot Menu */}
                   <div className="absolute top-4 right-4 flex items-center gap-2">
-                    <span className="bg-white/90 backdrop-blur-md px-3.5 py-1 rounded-full text-[11px] font-semibold text-slate-800 shadow-sm border border-white/40">
-                      {act.difficulty}
-                    </span>
 
                     {/* 3-Dot Options Dropdown */}
                     <DropdownMenu>
@@ -683,13 +537,7 @@ export default function ActivitiesPage() {
                           <span>Edit Activity</span>
                         </DropdownMenuItem>
 
-                        <DropdownMenuItem
-                          onClick={() => handleDuplicate(act)}
-                          className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold rounded-xl cursor-pointer"
-                        >
-                          <Copy className="w-4 h-4 text-slate-600" />
-                          <span>Duplicate</span>
-                        </DropdownMenuItem>
+
 
                         <DropdownMenuSeparator className="my-1" />
 
@@ -715,10 +563,7 @@ export default function ActivitiesPage() {
                       {act.description}
                     </p>
 
-                    {/* Assigned Clients & Frequency Badge */}
-                    <div>
-                      {renderAssignedBadges(act)}
-                    </div>
+
                   </div>
 
                   {/* Meta info & Action */}
@@ -1171,179 +1016,6 @@ export default function ActivitiesPage() {
             </form>
           </DialogContent>
         )}
-      </Dialog>
-
-      {/* Add New Activity Modal */}
-      <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-lg p-6 sm:p-7 rounded-3xl bg-white border-none shadow-2xl">
-          <DialogHeader className="pb-2">
-            <DialogTitle className="text-2xl font-bold text-slate-900 tracking-tight">
-              Create & Assign New Activity
-            </DialogTitle>
-            <DialogDescription className="text-slate-500 text-sm font-medium">
-              Create a custom activity and assign it to your selected clients with recurrence frequency.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleCreateActivity} className="space-y-4 mt-2">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                Activity Title *
-              </label>
-              <Input
-                type="text"
-                placeholder="e.g. 5-4-3-2-1 Sensory Grounding"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                required
-                className="rounded-2xl border-slate-200 h-11"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                  Category
-                </label>
-                <select
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5e2be2]"
-                >
-                  <option value="MINDFULNESS">MINDFULNESS</option>
-                  <option value="CBT">CBT</option>
-                  <option value="GRATITUDE">GRATITUDE</option>
-                  <option value="BREATHING">BREATHING</option>
-                  <option value="SOMATIC">SOMATIC</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                  Recurrence Frequency
-                </label>
-                <select
-                  value={newFrequency}
-                  onChange={(e) => setNewFrequency(e.target.value)}
-                  className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5e2be2]"
-                >
-                  <option value="Daily">Daily</option>
-                  <option value="2-3 Times / Week">2-3 Times / Week</option>
-                  <option value="Weekly">Weekly</option>
-                  <option value="Bi-Weekly">Bi-Weekly</option>
-                  <option value="As Needed (PRN)">As Needed (PRN)</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Select Clients */}
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                Assign to Clients ({newAssignedTo.length} selected)
-              </label>
-              <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto border border-slate-200 rounded-2xl p-2 bg-slate-50/50">
-                {CLIENT_LIST.map((client) => {
-                  const checked = newAssignedTo.includes(client);
-                  return (
-                    <label
-                      key={client}
-                      onClick={() => {
-                        setNewAssignedTo((prev) =>
-                          prev.includes(client) ? prev.filter((c) => c !== client) : [...prev, client]
-                        );
-                      }}
-                      className="flex items-center gap-2 p-2 rounded-xl text-xs font-semibold cursor-pointer select-none bg-white border border-slate-200/80 hover:bg-slate-100"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => {}}
-                        className="rounded border-slate-300 text-[#5e2be2] focus:ring-[#5e2be2]"
-                      />
-                      <span className="truncate">{client}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                  Duration
-                </label>
-                <Input
-                  type="text"
-                  placeholder="e.g. 10 min"
-                  value={newDuration}
-                  onChange={(e) => setNewDuration(e.target.value)}
-                  className="rounded-2xl border-slate-200 h-11"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                  Time of Day
-                </label>
-                <select
-                  value={newTimeOfDay}
-                  onChange={(e) => setNewTimeOfDay(e.target.value)}
-                  className="w-full h-11 rounded-2xl border border-slate-200 bg-white px-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#5e2be2]"
-                >
-                  {TIME_SLOTS.map((slot) => (
-                    <option key={slot} value={slot}>
-                      {slot}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                Summary Description *
-              </label>
-              <textarea
-                rows={2}
-                placeholder="Brief summary of the exercise and its goal..."
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-                required
-                className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#5e2be2]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                Step-by-Step Instructions
-              </label>
-              <textarea
-                rows={3}
-                placeholder="1. Sit comfortably...\n2. Inhale deeply..."
-                value={newInstructions}
-                onChange={(e) => setNewInstructions(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#5e2be2]"
-              />
-            </div>
-
-            <DialogFooter className="pt-3 border-t border-slate-100 gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsAddModalOpen(false)}
-                className="rounded-2xl border-slate-200 font-semibold h-11"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="rounded-2xl bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 cursor-pointer"
-              >
-                Create & Assign Activity
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
       </Dialog>
     </div>
   );

@@ -38,17 +38,14 @@ const TIMES = Array.from({ length: 28 }, (_, i) => {
 const DURATIONS = ["30 min", "50 min", "60 min", "80 min", "90 min", "120 min"];
 
 const CLIENTS = [
-  "Emma Martinez", "James Chen", "Priya Kapoor", "Marcus ONeill",
-  "Olivia Bennett", "Ryan Alvarez", "Hana Suzuki", "David Kim",
-  "Sofia Rodriguez", "Alex Thompson", "Amara Johnson", "Tom Bradley",
-  "Nina Patel", "Jake Morrison", "Rachel Green", "Samuel Okafor",
-  "Lucy Wang", "Fatima Hassan", "Chris Anderson", "Isabelle Fontaine", "Kevin Park",
+  "Sarah Jenkins", "Michael Chen", "Emily Rodriguez", "David Kim", "Jessica Taylor",
+  "Amanda Miller", "Robert Johnson", "Olivia Bennett", "Ryan Alvarez",
 ];
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultDate?: string; // e.g. "2025-07-07"
+  defaultDate?: string; // e.g. "2026-07-27"
 }
 
 export default function AddEventDialog({ open, onOpenChange, defaultDate }: Props) {
@@ -57,7 +54,7 @@ export default function AddEventDialog({ open, onOpenChange, defaultDate }: Prop
 
   const [form, setForm] = useState({
     type:     "session",
-    client:   "Emma Martinez",
+    client:   "Sarah Jenkins",
     date:     defaultDate ?? new Date().toISOString().slice(0, 10),
     start:    "10:00 AM",
     end:      "10:50 AM",

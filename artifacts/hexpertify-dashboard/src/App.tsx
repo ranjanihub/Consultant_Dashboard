@@ -24,7 +24,6 @@ import HtmlChunkPages from '@/pages/html-chunk-pages';
 import HtmlChunkEditor from '@/pages/html-chunk-editor';
 import PublicHtmlChunkPage from '@/pages/public-html-chunk-page';
 import Profile from '@/pages/profile';
-import Settings from '@/pages/settings';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,7 +61,6 @@ function Router() {
               <Route path="/html-chunk-pages/new" component={HtmlChunkEditor} />
               <Route path="/html-chunk-pages/:id/edit" component={HtmlChunkEditor} />
               <Route path="/profile" component={Profile} />
-              <Route path="/settings" component={Settings} />
               <Route component={NotFound} />
             </Switch>
           </AppLayout>

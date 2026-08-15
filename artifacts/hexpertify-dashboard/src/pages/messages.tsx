@@ -44,37 +44,37 @@ export default function Messages() {
     },
     {
       id: 2,
-      name: "Marcus Vance",
+      name: "Michael Chen",
       status: "online",
       lastMessage: "Could we reschedule our Friday session to 2:00 PM?",
       unreadCount: 1,
       time: "9:15 AM",
       history: [
-        { id: 1, sender: "therapist", text: "Hi Marcus, let me know if you need any adjustments to the schedule.", time: "Yesterday, 1:00 PM" },
+        { id: 1, sender: "therapist", text: "Hi Michael, let me know if you need any adjustments to your ACT values session schedule.", time: "Yesterday, 1:00 PM" },
         { id: 2, sender: "client", text: "Could we reschedule our Friday session to 2:00 PM?", time: "9:15 AM" }
       ]
     },
     {
       id: 3,
-      name: "Emily Chen",
+      name: "Emily Rodriguez",
       status: "offline",
       lastMessage: "Thank you for the grounding exercises resource.",
       unreadCount: 0,
       time: "Yesterday",
       history: [
-        { id: 1, sender: "therapist", text: "Hi Emily, I have uploaded the box breathing guide in your resources workspace.", time: "Yesterday, 10:00 AM" },
+        { id: 1, sender: "therapist", text: "Hi Emily, I have uploaded the DBT TIPP distress tolerance guide in your resources workspace.", time: "Yesterday, 10:00 AM" },
         { id: 2, sender: "client", text: "Thank you for the grounding exercises resource.", time: "Yesterday, 11:30 AM" }
       ]
     },
     {
       id: 4,
-      name: "David K.",
+      name: "David Kim",
       status: "offline",
-      lastMessage: "I practiced the relaxation technique before my meeting.",
+      lastMessage: "I practiced the 4-7-8 breathing technique before my presentation.",
       unreadCount: 0,
       time: "Jul 23",
       history: [
-        { id: 1, sender: "client", text: "I practiced the relaxation technique before my meeting.", time: "Jul 23, 2:00 PM" }
+        { id: 1, sender: "client", text: "I practiced the 4-7-8 breathing technique before my presentation.", time: "Jul 23, 2:00 PM" }
       ]
     }
   ]);

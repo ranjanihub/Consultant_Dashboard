@@ -64,56 +64,56 @@ interface AssessmentRecord {
 const INITIAL_ASSESSMENTS: AssessmentRecord[] = [
   {
     id: "ASM-101",
-    clientName: "James Chen",
-    clientInitials: "JC",
+    clientName: "Sarah Jenkins",
+    clientInitials: "SJ",
     avatarBg: "bg-purple-100 text-purple-700",
     therapyType: "CBT · Anxiety & Depression",
     instrument: "General Anxiety Disorder",
     instrumentCode: "GAD-7",
-    score: "17 / 21",
-    numericScore: 17,
+    score: "11 / 21",
+    numericScore: 11,
     maxScore: 21,
-    severity: "Severe Anxiety",
-    severityColor: "red",
-    trend: "worsened",
-    trendDiff: "+2 pts increase",
+    severity: "Moderate Anxiety",
+    severityColor: "yellow",
+    trend: "improved",
+    trendDiff: "-5 pts (-31%)",
     sentDate: "Jul 30, 2026",
     completedDate: "Jul 31, 2026",
     status: "Completed",
-    flag: "High Risk",
+    flag: "Requires Follow-up",
     questions: [
-      { q: "1. Feeling nervous, anxious, or on edge", a: "Nearly every day (3/3)" },
-      { q: "2. Not being able to stop or control worrying", a: "Nearly every day (3/3)" },
-      { q: "3. Worrying too much about different things", a: "More than half the days (2/3)" },
-      { q: "4. Trouble relaxing", a: "Nearly every day (3/3)" },
-      { q: "5. Being so restless that it's hard to sit still", a: "More than half the days (2/3)" },
-      { q: "6. Becoming easily annoyed or irritable", a: "Several days (1/3)" },
-      { q: "7. Feeling afraid as if something awful might happen", a: "Nearly every day (3/3)", flagged: true },
+      { q: "1. Feeling nervous, anxious, or on edge", a: "Several days (1/3)" },
+      { q: "2. Not being able to stop or control worrying", a: "More than half the days (2/3)" },
+      { q: "3. Worrying too much about different things", a: "Several days (1/3)" },
+      { q: "4. Trouble relaxing", a: "More than half the days (2/3)" },
+      { q: "5. Being so restless that it's hard to sit still", a: "Several days (1/3)" },
+      { q: "6. Becoming easily annoyed or irritable", a: "Not at all (0/3)" },
+      { q: "7. Feeling afraid as if something awful might happen", a: "More than half the days (2/3)", flagged: true },
     ],
   },
   {
     id: "ASM-102",
-    clientName: "Emma Martinez",
-    clientInitials: "EM",
+    clientName: "Michael Chen",
+    clientInitials: "MC",
     avatarBg: "bg-blue-100 text-blue-700",
-    therapyType: "CBT · Major Depression",
+    therapyType: "ACT · Major Depression",
     instrument: "Patient Health Questionnaire",
     instrumentCode: "PHQ-9",
-    score: "8 / 27",
-    numericScore: 8,
+    score: "12 / 27",
+    numericScore: 12,
     maxScore: 27,
-    severity: "Mild Depression",
+    severity: "Moderate Depression",
     severityColor: "yellow",
     trend: "improved",
-    trendDiff: "-8 pts (-50%)",
+    trendDiff: "-6 pts (-33%)",
     sentDate: "Jul 28, 2026",
     completedDate: "Jul 29, 2026",
     status: "Completed",
     flag: "Normal",
     questions: [
       { q: "1. Little interest or pleasure in doing things", a: "Several days (1/3)" },
-      { q: "2. Feeling down, depressed, or hopeless", a: "Several days (1/3)" },
-      { q: "3. Trouble falling or staying asleep", a: "More than half the days (2/3)" },
+      { q: "2. Feeling down, depressed, or hopeless", a: "More than half the days (2/3)" },
+      { q: "3. Trouble falling or staying asleep", a: "Several days (1/3)" },
       { q: "4. Feeling tired or having little energy", a: "More than half the days (2/3)" },
       { q: "5. Poor appetite or overeating", a: "Several days (1/3)" },
       { q: "6. Feeling bad about yourself", a: "Not at all (0/3)" },
@@ -124,10 +124,10 @@ const INITIAL_ASSESSMENTS: AssessmentRecord[] = [
   },
   {
     id: "ASM-103",
-    clientName: "Priya Kapoor",
-    clientInitials: "PK",
+    clientName: "Emily Rodriguez",
+    clientInitials: "ER",
     avatarBg: "bg-emerald-100 text-emerald-700",
-    therapyType: "EMDR · Trauma & PTSD",
+    therapyType: "DBT · Distress Tolerance",
     instrument: "PTSD Checklist for DSM-5",
     instrumentCode: "PCL-5",
     score: "24 / 80",
@@ -135,8 +135,8 @@ const INITIAL_ASSESSMENTS: AssessmentRecord[] = [
     maxScore: 80,
     severity: "Below Clinical Cutoff",
     severityColor: "green",
-    trend: "improved",
-    trendDiff: "-18 pts (-42%)",
+    trend: "stable",
+    trendDiff: "No change",
     sentDate: "Jul 25, 2026",
     completedDate: "Jul 26, 2026",
     status: "Completed",
@@ -147,40 +147,40 @@ const INITIAL_ASSESSMENTS: AssessmentRecord[] = [
     clientName: "David Kim",
     clientInitials: "DK",
     avatarBg: "bg-amber-100 text-amber-700",
-    therapyType: "CBT · Depression",
+    therapyType: "CBT · Social Anxiety",
     instrument: "Patient Health Questionnaire",
     instrumentCode: "PHQ-9",
-    score: "--",
-    numericScore: null,
+    score: "8 / 27",
+    numericScore: 8,
     maxScore: 27,
-    severity: "Awaiting Client Response",
-    severityColor: "gray",
-    trend: "none",
-    trendDiff: "--",
+    severity: "Mild Depression",
+    severityColor: "yellow",
+    trend: "improved",
+    trendDiff: "-2 pts",
     sentDate: "Jul 31, 2026",
-    completedDate: "Due Aug 04",
-    status: "Pending",
+    completedDate: "Aug 02, 2026",
+    status: "Completed",
     flag: "Normal",
   },
   {
     id: "ASM-105",
-    clientName: "Alex Thompson",
-    clientInitials: "AT",
+    clientName: "Jessica Taylor",
+    clientInitials: "JT",
     avatarBg: "bg-rose-100 text-rose-700",
-    therapyType: "ACT · Substance & Wellness",
-    instrument: "Alcohol Use Disorders Test",
-    instrumentCode: "AUDIT-C",
-    score: "--",
-    numericScore: null,
-    maxScore: 12,
-    severity: "3 Days Overdue",
-    severityColor: "orange",
-    trend: "none",
-    trendDiff: "--",
-    sentDate: "Jul 22, 2026",
-    completedDate: "Due Jul 28",
-    status: "Overdue",
-    flag: "Overdue",
+    therapyType: "CBT · Panic Protocol",
+    instrument: "Generalized Anxiety Scale",
+    instrumentCode: "GAD-7",
+    score: "3 / 21",
+    numericScore: 3,
+    maxScore: 21,
+    severity: "Minimal Anxiety (Remission)",
+    severityColor: "green",
+    trend: "improved",
+    trendDiff: "-9 pts (-75%)",
+    sentDate: "Jul 10, 2026",
+    completedDate: "Jul 12, 2026",
+    status: "Completed",
+    flag: "Normal",
   },
   {
     id: "ASM-106",
@@ -505,26 +505,18 @@ export default function Assessments() {
                   <tr key={item.id} className="hover:bg-slate-50/60 transition-colors group">
                     {/* Client Name & Category */}
                     <td className="py-4.5 px-6">
-                      <div className="flex items-center gap-3.5">
-                        <div className={cn(
-                          "w-10 h-10 rounded-full font-bold flex items-center justify-center text-xs shrink-0 shadow-sm",
-                          item.avatarBg
-                        )}>
-                          {item.clientInitials}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900 text-sm group-hover:text-primary transition-colors">
-                              {item.clientName}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-900 text-sm group-hover:text-primary transition-colors">
+                            {item.clientName}
+                          </span>
+                          {item.flag === "High Risk" && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-extrabold uppercase">
+                              High Risk
                             </span>
-                            {item.flag === "High Risk" && (
-                              <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-extrabold uppercase">
-                                High Risk
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-slate-500 mt-0.5 font-medium">{item.therapyType}</p>
+                          )}
                         </div>
+                        <p className="text-xs text-slate-500 mt-0.5 font-medium">{item.therapyType}</p>
                       </div>
                     </td>
 

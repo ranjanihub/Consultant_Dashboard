@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@10.2.0",
   "scripts": {
-    "dev": "pnpm --filter @workspace/hexpertify-dashboard dev",
+    "dev": "pnpm --filter \"@workspace/*\" --parallel dev",
     "dev:dashboard": "pnpm --filter @workspace/hexpertify-dashboard dev",
     "dev:api": "pnpm --filter @workspace/api-server dev",
     "build": "pnpm run typecheck && pnpm --filter @workspace/hexpertify-dashboard build && pnpm --filter @workspace/api-server build",

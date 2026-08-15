@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, Link } from "wouter";
 import { 
   useGetClient, 
@@ -13,15 +14,47 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Clock, Calendar, Video, FileText, CheckCircle2, TrendingUp, TrendingDown, Activity, AlertCircle, FilePlus, Plus, HelpCircle, User, MessageSquare } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  ArrowLeft, Clock, Calendar, Video, FileText, CheckCircle2, TrendingUp, TrendingDown, 
+  Activity, AlertCircle, FilePlus, Plus, HelpCircle, User, MessageSquare, Bell, Brain,
+  Calculator, Send, Sparkles, ChevronDown, ChevronUp, ClipboardCheck, ArrowUpRight, Check,
+  Target, RefreshCw, Eye, ShieldCheck, FileSpreadsheet, Scale, Layers, AlertTriangle, ArrowRight, Minus,
+  LineChart as LineChartIcon
+} from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { formatDate } from "@/lib/format";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { cn } from "@/lib/utils";
+import { useOutcomeStore } from "@/lib/outcome-store";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ClientDetail() {
   const { id } = useParams();
   const clientId = Number(id);
+  const { toast } = useToast();
+  const { outcomes, calculateOutcome: triggerOutcomeCalc } = useOutcomeStore();
+
+  const [activeTab, setActiveTab] = useState("overview");
+
+  // Dialog States for Outcomes & Assessments
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [calcModalOpen, setCalcModalOpen] = useState(false);
+  const [itemDetailsScale, setItemDetailsScale] = useState<any | null>(null);
+
+  // Form states for Assign Assessment
+  const [selectedAssignScale, setSelectedAssignScale] = useState("GAD-7");
+  const [assignNote, setAssignNote] = useState("");
+  const [assignDueDate, setAssignDueDate] = useState("2026-08-15");
+
+  // Form states for Calculate Outcome
+  const [calcMilestone, setCalcMilestone] = useState("12");
+  const [calcScale, setCalcScale] = useState("GAD-7");
+  const [calcPrevScore, setCalcPrevScore] = useState("18");
+  const [calcCurrScore, setCalcCurrScore] = useState("6");
+
   const { data: clientData, isLoading: clientLoading } = useGetClient(clientId, { query: { enabled: !!clientId, queryKey: ['client', clientId] } });
   const { data: assessmentsData, isLoading: assessmentsLoading } = useGetClientAssessments(clientId, { query: { enabled: !!clientId, queryKey: ['assessments', clientId] } });
   const { data: moodData, isLoading: moodLoading } = useGetClientMood(clientId, { query: { enabled: !!clientId, queryKey: ['mood', clientId] } });
@@ -164,7 +197,7 @@ export default function ClientDetail() {
       name: "Generalized Anxiety Disorder-7",
       currentScore: 6.0,
       maxScore: 21.0,
-      previousScore: 14.0,
+      previousScore: 18.0,
       severity: "Mild Anxiety",
       completedAt: "2026-07-18",
       trend: [
@@ -180,7 +213,7 @@ export default function ClientDetail() {
       name: "Patient Health Questionnaire-9",
       currentScore: 4.0,
       maxScore: 27.0,
-      previousScore: 9.0,
+      previousScore: 14.0,
       severity: "Minimal Depression",
       completedAt: "2026-07-18",
       trend: [
@@ -248,10 +281,103 @@ export default function ClientDetail() {
     { date: "2026-07-23", mood: 8.5, note: "Felt confident and calm all day." },
   ];
 
+  const DEFAULT_CLIENT_MILESTONE_LOGS: Record<number, any[]> = {
+    1: [
+      { milestone: 3, code: "GAD-7", baseline: 18, score: 14, delta: -4, label: "-4 pts (-22%)", status: "Improved", notified: true, date: "2026-03-15" },
+      { milestone: 6, code: "GAD-7", baseline: 18, score: 9, delta: -9, label: "-9 pts (-50%)", status: "Substantial Improvement", notified: true, date: "2026-05-01" },
+      { milestone: 9, code: "PHQ-9", baseline: 14, score: 7, delta: -7, label: "-7 pts (-50%)", status: "Moderate Remission", notified: true, date: "2026-06-15" },
+      { milestone: 12, code: "GAD-7", baseline: 18, score: 6, delta: -12, label: "-12 pts (-66.7%)", status: "Significant Remission Target Met", notified: true, date: "2026-07-20" },
+    ],
+    2: [
+      { milestone: 3, code: "PHQ-9", baseline: 18, score: 15, delta: -3, label: "-3 pts (-16.7%)", status: "Mild Improvement", notified: true, date: "2026-04-01" },
+      { milestone: 6, code: "PHQ-9", baseline: 18, score: 12, delta: -6, label: "-6 pts (-33.3%)", status: "Responding to BA Protocol", notified: true, date: "2026-05-20" },
+      { milestone: 8, code: "PHQ-9", baseline: 18, score: 8, delta: -10, label: "-10 pts (-55.5%)", status: "Substantial Improvement", notified: true, date: "2026-07-15" },
+    ],
+    3: [
+      { milestone: 3, code: "PCL-5", baseline: 42, score: 35, delta: -7, label: "-7 pts (-16.7%)", status: "Improved", notified: true, date: "2026-03-01" },
+      { milestone: 6, code: "PCL-5", baseline: 42, score: 28, delta: -14, label: "-14 pts (-33.3%)", status: "Clinically Significant", notified: true, date: "2026-04-30" },
+      { milestone: 12, code: "PCL-5", baseline: 42, score: 24, delta: -18, label: "-18 pts (-42.8%)", status: "Below Clinical Cutoff", notified: true, date: "2026-07-10" },
+    ],
+    4: [
+      { milestone: 2, code: "GAD-7", baseline: 15, score: 11, delta: -4, label: "-4 pts (-26.7%)", status: "Early Response", notified: true, date: "2026-07-17" },
+    ],
+    5: [
+      { milestone: 3, code: "GAD-7", baseline: 19, score: 14, delta: -5, label: "-5 pts", status: "Improved", notified: true, date: "2026-03-01" },
+      { milestone: 8, code: "GAD-7", baseline: 19, score: 8, delta: -11, label: "-11 pts", status: "Substantial", notified: true, date: "2026-05-01" },
+      { milestone: 16, code: "GAD-7", baseline: 19, score: 4, delta: -15, label: "-15 pts (-78.9%)", status: "Full Symptom Remission", notified: true, date: "2026-07-12" },
+    ]
+  };
+
+  const DEMO_QUESTION_BREAKDOWNS: Record<string, any[]> = {
+    "GAD-7": [
+      { q: "1. Feeling nervous, anxious, or on edge", baseline: "Nearly every day (3/3)", current: "Several days (1/3)", change: "-2" },
+      { q: "2. Not being able to stop or control worrying", baseline: "Nearly every day (3/3)", current: "Several days (1/3)", change: "-2" },
+      { q: "3. Worrying too much about different things", baseline: "More than half the days (2/3)", current: "Several days (1/3)", change: "-1" },
+      { q: "4. Trouble relaxing", baseline: "Nearly every day (3/3)", current: "Several days (1/3)", change: "-2" },
+      { q: "5. Being so restless that it's hard to sit still", baseline: "More than half the days (2/3)", current: "Not at all (0/3)", change: "-2" },
+      { q: "6. Becoming easily annoyed or irritable", baseline: "Several days (1/3)", current: "Not at all (0/3)", change: "-1" },
+      { q: "7. Feeling afraid as if something awful might happen", baseline: "Nearly every day (3/3)", current: "Several days (1/3)", change: "-2", flagged: true }
+    ],
+    "PHQ-9": [
+      { q: "1. Little interest or pleasure in doing things", baseline: "Nearly every day (3/3)", current: "Several days (1/3)", change: "-2" },
+      { q: "2. Feeling down, depressed, or hopeless", baseline: "Nearly every day (3/3)", current: "Not at all (0/3)", change: "-3" },
+      { q: "3. Trouble falling or staying asleep, or sleeping too much", baseline: "More than half the days (2/3)", current: "Several days (1/3)", change: "-1" },
+      { q: "4. Feeling tired or having little energy", baseline: "More than half the days (2/3)", current: "Several days (1/3)", change: "-1" },
+      { q: "5. Poor appetite or overeating", baseline: "Several days (1/3)", current: "Not at all (0/3)", change: "-1" },
+      { q: "6. Feeling bad about yourself or that you are a failure", baseline: "More than half the days (2/3)", current: "Not at all (0/3)", change: "-2" },
+      { q: "7. Trouble concentrating on things", baseline: "Several days (1/3)", current: "Not at all (0/3)", change: "-1" },
+      { q: "8. Moving or speaking slowly / fidgety", baseline: "Not at all (0/3)", current: "Not at all (0/3)", change: "0" },
+      { q: "9. Thoughts that you would be better off dead or hurting yourself", baseline: "Not at all (0/3)", current: "Not at all (0/3)", change: "0" }
+    ],
+    "PCL-5": [
+      { q: "1. Repeated, disturbing memories or thoughts of stressful experience", baseline: "Extremely (4/4)", current: "Moderately (2/4)", change: "-2" },
+      { q: "2. Repeated, disturbing dreams of stressful experience", baseline: "Quite a bit (3/4)", current: "A little bit (1/4)", change: "-2" },
+      { q: "3. Suddenly feeling or acting as if stressful experience were happening", baseline: "Moderately (2/4)", current: "Not at all (0/4)", change: "-2" },
+      { q: "4. Avoidance of external reminders (people, places, conversations)", baseline: "Extremely (4/4)", current: "Moderately (2/4)", change: "-2", flagged: true },
+      { q: "5. Trouble remembering important parts of stressful experience", baseline: "Moderately (2/4)", current: "A little bit (1/4)", change: "-1" }
+    ]
+  };
+
   const assessments = (Array.isArray(assessmentsData) && assessmentsData.length > 0) ? assessmentsData : DEMO_ASSESSMENTS;
   const homework = (Array.isArray(homeworkData) && homeworkData.length > 0) ? homeworkData : DEMO_HOMEWORK;
   const history = (Array.isArray(historyData) && historyData.length > 0) ? historyData : DEMO_HISTORY;
   const moodTrend = (Array.isArray(moodData?.weeklyTrend) && moodData.weeklyTrend.length > 0) ? moodData.weeklyTrend : DEMO_MOOD;
+  const clientMilestoneLogs = DEFAULT_CLIENT_MILESTONE_LOGS[clientId] || DEFAULT_CLIENT_MILESTONE_LOGS[1];
+
+  const handleAssignSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAssignModalOpen(false);
+    toast({
+      title: "Assessment Scale Dispatched! 🚀",
+      description: `${selectedAssignScale} sent to ${client.name} with due date ${formatDate(assignDueDate)}. Notification logged.`,
+    });
+    setAssignNote("");
+  };
+
+  const handleCalcSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const prev = Number(calcPrevScore);
+    const curr = Number(calcCurrScore);
+    const ms = Number(calcMilestone);
+
+    triggerOutcomeCalc({
+      clientId: String(clientId),
+      clientName: client.name,
+      clientInitials: client.initials,
+      assessmentName: calcScale === "GAD-7" ? "Generalized Anxiety" : calcScale === "PHQ-9" ? "Patient Health Questionnaire" : "Clinical Scale",
+      assessmentCode: calcScale,
+      sessionMilestone: ms,
+      previousScore: prev,
+      currentScore: curr,
+      maxScore: calcScale === "GAD-7" ? 21 : calcScale === "PHQ-9" ? 27 : 80,
+    });
+
+    setCalcModalOpen(false);
+    toast({
+      title: "3-Session Outcome Calculated! ⚡",
+      description: `Session ${ms} milestone calculated for ${client.name}. Score change: ${curr - prev > 0 ? '+' : ''}${curr - prev} points. Therapist alert dispatched.`,
+    });
+  };
 
   return (
     <div className="space-y-6 pb-10">
@@ -288,16 +414,28 @@ export default function ClientDetail() {
         </div>
       </PageHeader>
 
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="bg-white border border-border w-full justify-start p-1 h-14 rounded-xl overflow-x-auto flex-nowrap shrink-0 hide-scrollbar">
-          <TabsTrigger value="overview" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">Overview</TabsTrigger>
-          <TabsTrigger value="assessments" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">Assessments</TabsTrigger>
-          <TabsTrigger value="mood" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">Mood Tracking</TabsTrigger>
-          <TabsTrigger value="homework" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">Activities & Homework</TabsTrigger>
-          <TabsTrigger value="history" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">Session History</TabsTrigger>
+          <TabsTrigger value="overview" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="outcomes-assessments" className="rounded-lg h-11 px-6 data-[state=active]:bg-[#5e2be2]/10 data-[state=active]:text-[#5e2be2] font-extrabold text-muted-foreground flex items-center gap-2">
+            <LineChartIcon className="w-4 h-4 text-[#5e2be2]" />
+            <span>Outcomes &amp; Assessments</span>
+          </TabsTrigger>
+          <TabsTrigger value="mood" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">
+            Mood Tracking
+          </TabsTrigger>
+          <TabsTrigger value="homework" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">
+            Activities &amp; Homework
+          </TabsTrigger>
+          <TabsTrigger value="history" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">
+            Session History
+          </TabsTrigger>
         </TabsList>
 
         <div className="mt-6">
+          {/* TAB 1: OVERVIEW */}
           <TabsContent value="overview" className="space-y-6 outline-none">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
@@ -354,6 +492,75 @@ export default function ClientDetail() {
               </div>
 
               <div className="space-y-6">
+                {/* 3-Session Outcome Calculation Workflow Card */}
+                {(() => {
+                  const currentSessions = client.sessionCount || 6;
+                  const lastMilestone = Math.floor(currentSessions / 3) * 3 || 3;
+                  const nextMilestone = lastMilestone + 3;
+
+                  let assessmentName = "Anxiety & Worry (GAD-7)";
+                  let prevScore = 18;
+                  let currScore = 6;
+                  let diffLabel = "-12 pts (-66.7%)";
+
+                  if (clientId === 2 || client.name.includes("Michael")) {
+                    assessmentName = "Mood & Wellbeing (PHQ-9)";
+                    prevScore = 18;
+                    currScore = 8;
+                    diffLabel = "-10 pts";
+                  } else if (clientId === 3 || client.name.includes("Emily")) {
+                    assessmentName = "Trauma & PTSD (PCL-5)";
+                    prevScore = 42;
+                    currScore = 24;
+                    diffLabel = "-18 pts";
+                  }
+
+                  return (
+                    <Card className="shadow-sm border-purple-200 bg-gradient-to-b from-purple-50/60 to-white">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                            <Brain className="w-4 h-4 text-[#5e2be2]" />
+                            3-Session Outcome Workflow
+                          </CardTitle>
+                          <Badge className="bg-[#5e2be2] text-white border-none text-[10px] font-bold">
+                            Every 3 Sessions
+                          </Badge>
+                        </div>
+                        <CardDescription className="text-xs text-slate-500">
+                          Calculates score change &amp; alerts therapist automatically
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="p-3 rounded-xl bg-white border border-purple-100 space-y-2 text-xs">
+                          <div className="flex items-center justify-between text-slate-700">
+                            <span className="font-bold">Last Milestone:</span>
+                            <span className="font-bold text-[#5e2be2]">Session {lastMilestone} Completed</span>
+                          </div>
+                          <div className="flex items-center justify-between font-mono bg-slate-50 p-2 rounded-lg border border-slate-200">
+                            <span className="text-slate-600 font-sans truncate max-w-[140px]">{assessmentName}:</span>
+                            <span className="font-bold text-slate-900">{prevScore} → {currScore} ({diffLabel})</span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
+                            <span>Therapist Notified:</span>
+                            <span className="text-emerald-600 font-bold flex items-center gap-1">
+                              <Bell className="w-3 h-3" /> Delivered to Panel
+                            </span>
+                          </div>
+                        </div>
+
+                        <Button 
+                          onClick={() => setActiveTab("outcomes-assessments")}
+                          variant="outline" 
+                          className="w-full text-xs h-9 font-bold text-[#5e2be2] border-purple-200 hover:bg-purple-50 cursor-pointer"
+                        >
+                          View Outcomes &amp; Assessments Tab →
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })()}
+
                 <Card className="shadow-sm border-border">
                   <CardHeader>
                     <CardTitle className="text-lg">Recent Assessments</CardTitle>
@@ -383,8 +590,12 @@ export default function ClientDetail() {
                             </div>
                           </div>
                         ))}
-                        <Button variant="outline" className="w-full text-sm h-9" onClick={() => document.querySelector<HTMLButtonElement>('[value="assessments"]')?.click()}>
-                          View all trends
+                        <Button 
+                          variant="outline" 
+                          className="w-full text-sm h-9 cursor-pointer font-bold text-[#5e2be2]" 
+                          onClick={() => setActiveTab("outcomes-assessments")}
+                        >
+                          View all outcome trends →
                         </Button>
                       </div>
                     )}
@@ -421,47 +632,311 @@ export default function ClientDetail() {
             </div>
           </TabsContent>
 
-          <TabsContent value="assessments" className="space-y-6 outline-none">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {assessments?.map((assessment) => (
-                <Card key={assessment.id} className="shadow-sm border-border">
-                  <CardHeader className="pb-2 flex flex-row items-start justify-between">
-                    <div>
-                      <CardTitle>{assessment.type}</CardTitle>
-                      <CardDescription>{assessment.name}</CardDescription>
+          {/* TAB 2: COMBINED OUTCOMES & ASSESSMENTS TAB */}
+          {(activeTab === "outcomes-assessments" || activeTab === "assessments") && (
+            <TabsContent value={activeTab} className="space-y-6 outline-none">
+              {/* Header Toolbar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-purple-900 via-[#5e2be2] to-indigo-800 text-white shadow-lg">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-white/20 text-white border-white/30 text-[10px] uppercase font-bold tracking-widest">
+                      Clinical Outcomes &amp; Assessment Intelligence
+                    </Badge>
+                    <Badge className="bg-emerald-400/20 text-emerald-200 border-emerald-400/30 text-[10px] font-bold">
+                      3-Session Trigger Active
+                    </Badge>
+                  </div>
+                  <h2 className="text-xl font-extrabold tracking-tight">Outcome Metrics &amp; Diagnostic Battery</h2>
+                  <p className="text-xs text-purple-100/80 max-w-xl">
+                    Automated 3-session milestone calculations, baseline vs current score diffs, therapist notification alerts, and longitudinal scale trends for {client.name}.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button 
+                    onClick={() => setAssignModalOpen(true)}
+                    className="bg-white text-[#5e2be2] hover:bg-white/90 font-extrabold text-xs rounded-xl shadow-md cursor-pointer"
+                  >
+                    <Send className="w-3.5 h-3.5 mr-1.5" />
+                    Assign Scale
+                  </Button>
+                  <Button 
+                    onClick={() => setCalcModalOpen(true)}
+                    className="bg-purple-400/20 hover:bg-purple-400/30 text-white border border-white/20 font-bold text-xs rounded-xl cursor-pointer"
+                  >
+                    <Calculator className="w-3.5 h-3.5 mr-1.5" />
+                    Calculate Outcome
+                  </Button>
+                </div>
+              </div>
+
+              {/* 4 Summary Metric Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="shadow-xs border-purple-100 bg-gradient-to-br from-purple-50/50 to-white">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Baseline vs Latest</span>
+                      <Scale className="w-4 h-4 text-[#5e2be2]" />
                     </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-foreground">{assessment.currentScore}<span className="text-sm font-normal text-muted-foreground">/{assessment.maxScore}</span></div>
-                      <div className={cn(
-                        "text-xs font-semibold px-2 py-0.5 rounded-full inline-block mt-1",
-                        assessment.severity === 'Severe' ? 'bg-red-100 text-red-700' : 
-                        assessment.severity === 'Moderate' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
-                      )}>
-                        {assessment.severity}
+                    <div className="mt-2 flex items-baseline gap-2">
+                      <span className="text-2xl font-black text-slate-900">18 → 6</span>
+                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 font-bold text-xs">
+                        -66.7%
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1 font-medium">
+                      <TrendingDown className="w-3.5 h-3.5 text-emerald-600" />
+                      -12 pts overall symptom reduction
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-xs border-blue-100 bg-gradient-to-br from-blue-50/50 to-white">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Clinical Trajectory</span>
+                      <Sparkles className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div className="mt-2 flex items-baseline gap-2">
+                      <span className="text-xl font-black text-slate-900">Remission Path</span>
+                    </div>
+                    <div className="mt-2">
+                      <div className="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                        <span>Goal Attainment Target</span>
+                        <span className="text-blue-700 font-bold">75% Achieved</span>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[200px] w-full mt-4">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={Array.isArray(assessment?.trend) ? assessment.trend : []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                          <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} dy={10} tickFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short' })} />
-                          <YAxis domain={[0, assessment.maxScore]} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
-                          <Tooltip 
-                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                            labelFormatter={(label) => formatDate(label as string)}
-                          />
-                          <Line type="monotone" dataKey="score" stroke="#5e2be2" strokeWidth={3} dot={{ r: 4, fill: "#5e2be2", strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 6 }} />
-                        </LineChart>
-                      </ResponsiveContainer>
+                      <Progress value={75} className="h-1.5 bg-blue-100" indicatorClassName="bg-blue-600" />
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          </TabsContent>
 
+                <Card className="shadow-xs border-indigo-100 bg-gradient-to-br from-indigo-50/50 to-white">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">3-Session Workflow</span>
+                      <Brain className="w-4 h-4 text-indigo-600" />
+                    </div>
+                    <div className="mt-2">
+                      <span className="text-xl font-black text-slate-900">Session 12</span>
+                      <span className="text-xs text-slate-500 ml-1 font-medium">(Current)</span>
+                    </div>
+                    <p className="text-[11px] text-indigo-700 mt-1 font-semibold flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" /> Next trigger after Session 15
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="shadow-xs border-emerald-100 bg-gradient-to-br from-emerald-50/50 to-white">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Therapist Alert Panel</span>
+                      <Bell className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                      <span className="text-sm font-extrabold text-slate-900">Delivered &amp; Synchronized</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1 font-medium">
+                      Automated alert sent post Session 12
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Section 1: 3-Session Outcome Calculation Matrix & Workflow */}
+              <Card className="shadow-sm border-purple-200 overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-purple-50 via-indigo-50/40 to-white border-b border-purple-100 pb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                          <Calculator className="w-5 h-5 text-[#5e2be2]" />
+                          3-Session Outcome Calculation Workflow
+                        </CardTitle>
+                        <Badge className="bg-[#5e2be2] text-white border-none text-[10px] font-bold">
+                          Automated Engine
+                        </Badge>
+                      </div>
+                      <CardDescription className="text-xs text-slate-500 mt-0.5">
+                        Calculates score delta every 3 sessions (Baseline → S3 → S6 → S9 → S12) and dispatches panel notifications
+                      </CardDescription>
+                    </div>
+
+                    <Button 
+                      onClick={() => setCalcModalOpen(true)}
+                      variant="outline" 
+                      size="sm"
+                      className="text-xs font-bold border-purple-200 text-[#5e2be2] hover:bg-purple-100 shrink-0 cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" />
+                      Calculate New Milestone
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-extrabold border-b border-slate-200/80">
+                        <tr>
+                          <th className="py-3 px-4">Milestone</th>
+                          <th className="py-3 px-4">Scale</th>
+                          <th className="py-3 px-4">Baseline Score</th>
+                          <th className="py-3 px-4">Milestone Score</th>
+                          <th className="py-3 px-4">Point Change</th>
+                          <th className="py-3 px-4">Clinical Impact</th>
+                          <th className="py-3 px-4">Therapist Alert</th>
+                          <th className="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {clientMilestoneLogs.map((log: any, idx: number) => (
+                          <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                            <td className="py-3.5 px-4 font-bold text-slate-900">
+                              <div className="flex items-center gap-2">
+                                <span className="w-6 h-6 rounded-full bg-purple-100 text-[#5e2be2] flex items-center justify-center font-extrabold text-[11px]">
+                                  S{log.milestone}
+                                </span>
+                                <span>Session {log.milestone}</span>
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <Badge variant="outline" className="font-mono font-bold bg-white text-slate-700 border-slate-200">
+                                {log.code}
+                              </Badge>
+                            </td>
+                            <td className="py-3.5 px-4 font-medium text-slate-600">
+                              {log.baseline} pts
+                            </td>
+                            <td className="py-3.5 px-4 font-bold text-slate-900">
+                              {log.score} pts
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <span className={cn(
+                                "font-extrabold text-xs px-2.5 py-1 rounded-full inline-flex items-center gap-1",
+                                log.delta < 0 ? "bg-emerald-100 text-emerald-800" : log.delta > 0 ? "bg-red-100 text-red-800" : "bg-slate-100 text-slate-800"
+                              )}>
+                                {log.delta < 0 ? <TrendingDown className="w-3 h-3" /> : log.delta > 0 ? <TrendingUp className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
+                                {log.label}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4 font-medium text-slate-700">
+                              {log.status}
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                <CheckCircle2 className="w-3 h-3" /> Delivered
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4 text-right">
+                              <Button 
+                                onClick={() => {
+                                  const scaleObj = assessments.find(a => a.type === log.code) || { type: log.code, name: log.code, currentScore: log.score, maxScore: 21 };
+                                  setItemDetailsScale(scaleObj);
+                                }}
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-7 text-[11px] font-bold text-[#5e2be2] hover:bg-purple-50 cursor-pointer"
+                              >
+                                View Items
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Section 2: Diagnostic Assessment Battery & Recharts Trends */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                      <ClipboardCheck className="w-5 h-5 text-[#5e2be2]" />
+                      Diagnostic Assessment Battery &amp; Longitudinal Trends
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Standardized psychometric measurements administered over the course of treatment
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="text-xs font-semibold text-slate-600 bg-white">
+                    {assessments?.length || 2} Instruments Active
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {assessments?.map((assessment) => (
+                    <Card key={assessment.id} className="shadow-sm border-border hover:border-purple-200 transition-colors">
+                      <CardHeader className="pb-2 flex flex-row items-start justify-between border-b border-slate-100 bg-slate-50/50">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <CardTitle className="text-base font-bold text-slate-900">{assessment.type}</CardTitle>
+                            <Badge variant="outline" className="text-[10px] font-mono bg-white">
+                              Instrument Code
+                            </Badge>
+                          </div>
+                          <CardDescription className="text-xs text-slate-500 mt-0.5">{assessment.name}</CardDescription>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-black text-slate-900">
+                            {assessment.currentScore}
+                            <span className="text-xs font-normal text-slate-400">/{assessment.maxScore}</span>
+                          </div>
+                          <div className={cn(
+                            "text-xs font-bold px-2.5 py-0.5 rounded-full inline-block mt-1",
+                            assessment.severity === 'Severe' || assessment.severity === 'Severe Anxiety' ? 'bg-red-100 text-red-700' : 
+                            assessment.severity === 'Moderate' || assessment.severity === 'Mild Anxiety' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                          )}>
+                            {assessment.severity}
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-4 space-y-4">
+                        <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
+                          <span>Score Trajectory across sessions:</span>
+                          <span className="text-slate-700 font-bold">Last completed: {formatDate(assessment.completedAt)}</span>
+                        </div>
+
+                        {/* Chart */}
+                        <div className="h-[200px] w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={Array.isArray(assessment?.trend) ? assessment.trend : []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} dy={10} tickFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
+                              <YAxis domain={[0, assessment.maxScore]} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} />
+                              <Tooltip 
+                                contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                                labelFormatter={(label) => formatDate(label as string)}
+                              />
+                              <Line type="monotone" dataKey="score" stroke="#5e2be2" strokeWidth={3} dot={{ r: 5, fill: "#5e2be2", strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 7 }} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                          <div className="text-xs text-slate-500">
+                            Baseline: <span className="font-bold text-slate-900">{assessment.previousScore || (assessment.currentScore + 8)}</span> → Latest: <span className="font-bold text-[#5e2be2]">{assessment.currentScore}</span>
+                          </div>
+                          <Button 
+                            onClick={() => setItemDetailsScale(assessment)}
+                            variant="outline" 
+                            size="sm"
+                            className="text-xs font-bold text-[#5e2be2] border-purple-200 hover:bg-purple-50 h-8 cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5 mr-1" />
+                            View Item Breakdown
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+          )}
+
+          {/* TAB 3: MOOD TRACKING */}
           <TabsContent value="mood" className="space-y-6 outline-none">
             <Card className="shadow-sm border-border">
               <CardHeader>
@@ -507,6 +982,7 @@ export default function ClientDetail() {
             </div>
           </TabsContent>
 
+          {/* TAB 4: ACTIVITIES & HOMEWORK */}
           <TabsContent value="homework" className="space-y-6 outline-none">
             <div className="flex justify-end mb-4">
               <Button className="bg-primary hover:bg-primary/90">
@@ -559,6 +1035,7 @@ export default function ClientDetail() {
             </div>
           </TabsContent>
 
+          {/* TAB 5: SESSION HISTORY */}
           <TabsContent value="history" className="space-y-6 outline-none">
             <div className="relative border-l-2 border-border ml-4 pl-8 space-y-8 py-4">
               {history?.map((session, i) => (
@@ -613,6 +1090,190 @@ export default function ClientDetail() {
           </TabsContent>
         </div>
       </Tabs>
+
+      {/* DIALOG 1: ASSIGN ASSESSMENT SCALE */}
+      <Dialog open={assignModalOpen} onOpenChange={setAssignModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2 text-slate-900">
+              <Send className="w-5 h-5 text-[#5e2be2]" />
+              Assign Assessment Scale
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Dispatch a standardized clinical assessment to {client.name}'s client app.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAssignSubmit} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-slate-600 uppercase">Select Assessment Instrument</label>
+              <Select value={selectedAssignScale} onValueChange={setSelectedAssignScale}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="GAD-7">GAD-7 (Generalized Anxiety Scale - 7 Items)</SelectItem>
+                  <SelectItem value="PHQ-9">PHQ-9 (Patient Health Questionnaire - 9 Items)</SelectItem>
+                  <SelectItem value="PCL-5">PCL-5 (PTSD Checklist for DSM-5 - 20 Items)</SelectItem>
+                  <SelectItem value="WHODAS-12">WHODAS 2.0 (World Health Organization Disability - 12 Items)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-slate-600 uppercase">Due Date</label>
+              <Input 
+                type="date" 
+                value={assignDueDate} 
+                onChange={(e) => setAssignDueDate(e.target.value)} 
+                className="w-full text-xs"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-slate-600 uppercase">Therapist Instructions (Optional)</label>
+              <Input 
+                placeholder="e.g. Please complete prior to our Session #13 discussion."
+                value={assignNote}
+                onChange={(e) => setAssignNote(e.target.value)}
+                className="w-full text-xs"
+              />
+            </div>
+
+            <DialogFooter className="pt-2">
+              <Button type="button" variant="outline" onClick={() => setAssignModalOpen(false)}>Cancel</Button>
+              <Button type="submit" className="bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold cursor-pointer">Dispatch Scale</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG 2: CALCULATE 3-SESSION OUTCOME */}
+      <Dialog open={calcModalOpen} onOpenChange={setCalcModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2 text-slate-900">
+              <Calculator className="w-5 h-5 text-[#5e2be2]" />
+              Calculate 3-Session Outcome Milestone
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Record score milestone for {client.name} and trigger automated therapist panel alerts.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCalcSubmit} className="space-y-4 pt-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-600 uppercase">Milestone Session #</label>
+                <Select value={calcMilestone} onValueChange={setCalcMilestone}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="3">Session 3</SelectItem>
+                    <SelectItem value="6">Session 6</SelectItem>
+                    <SelectItem value="9">Session 9</SelectItem>
+                    <SelectItem value="12">Session 12</SelectItem>
+                    <SelectItem value="15">Session 15</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-600 uppercase">Scale Code</label>
+                <Select value={calcScale} onValueChange={setCalcScale}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="GAD-7">GAD-7</SelectItem>
+                    <SelectItem value="PHQ-9">PHQ-9</SelectItem>
+                    <SelectItem value="PCL-5">PCL-5</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-600 uppercase">Previous / Baseline Score</label>
+                <Input 
+                  type="number" 
+                  value={calcPrevScore} 
+                  onChange={(e) => setCalcPrevScore(e.target.value)}
+                  className="font-mono font-bold"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-600 uppercase">New Milestone Score</label>
+                <Input 
+                  type="number" 
+                  value={calcCurrScore} 
+                  onChange={(e) => setCalcCurrScore(e.target.value)}
+                  className="font-mono font-bold"
+                />
+              </div>
+            </div>
+
+            <div className="p-3 bg-purple-50 rounded-xl border border-purple-100 flex items-center justify-between text-xs">
+              <span className="font-bold text-slate-700">Calculated Score Difference:</span>
+              <span className="font-black text-sm text-[#5e2be2]">
+                {Number(calcCurrScore) - Number(calcPrevScore) > 0 ? `+${Number(calcCurrScore) - Number(calcPrevScore)}` : `${Number(calcCurrScore) - Number(calcPrevScore)}`} pts
+              </span>
+            </div>
+
+            <DialogFooter className="pt-2">
+              <Button type="button" variant="outline" onClick={() => setCalcModalOpen(false)}>Cancel</Button>
+              <Button type="submit" className="bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold cursor-pointer">Run Outcome Engine</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG 3: ITEM RESPONSE BREAKDOWN */}
+      <Dialog open={!!itemDetailsScale} onOpenChange={() => setItemDetailsScale(null)}>
+        <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2 text-slate-900">
+              <Eye className="w-5 h-5 text-[#5e2be2]" />
+              {itemDetailsScale?.type || "Assessment"} - Line Item Responses
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Item-by-item response breakdown for {client.name} (Latest completed evaluation)
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 pt-2">
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
+              <div>
+                <span className="font-bold text-slate-900 block">{itemDetailsScale?.name}</span>
+                <span className="text-slate-500">Completed: {formatDate(itemDetailsScale?.completedAt || '2026-07-20')}</span>
+              </div>
+              <Badge className="bg-[#5e2be2] text-white font-bold">
+                Score: {itemDetailsScale?.currentScore} / {itemDetailsScale?.maxScore || 21}
+              </Badge>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Question Responses &amp; Baseline Comparison</h4>
+              {((itemDetailsScale?.type && DEMO_QUESTION_BREAKDOWNS[itemDetailsScale.type]) || DEMO_QUESTION_BREAKDOWNS["GAD-7"]).map((item: any, idx: number) => (
+                <div key={idx} className={cn("p-3 rounded-xl border text-xs space-y-1.5 transition-colors", item.flagged ? "bg-amber-50/70 border-amber-200" : "bg-white border-slate-100 hover:border-purple-100")}>
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-bold text-slate-900 leading-snug">{item.q}</span>
+                    {item.flagged && (
+                      <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-[10px] shrink-0 font-bold">
+                        Clinical Concern
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100">
+                    <span className="text-slate-500">Baseline: <strong className="text-slate-700">{item.baseline}</strong></span>
+                    <span className="text-slate-500">Latest: <strong className="text-[#5e2be2] font-extrabold">{item.current}</strong> ({item.change})</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -642,3 +1303,4 @@ function BookOpenIcon(props: React.ComponentProps<"svg">) {
     </svg>
   )
 }
+
