@@ -6,6 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -24,17 +34,57 @@ import {
   Lock,
   Unlock,
   Ban,
+  MoreVertical,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 
 /* ─── helpers ─────────────────────────────────────────────── */
-const DAYS_SHORT  = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS      = ["January","February","March","April","May","June",
-                     "July","August","September","October","November","December"];
+const DAYS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTHS = ["January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"];
 
 function startOfMonth(y: number, m: number) { return new Date(y, m, 1).getDay(); }
-function daysInMonth (y: number, m: number) { return new Date(y, m + 1, 0).getDate(); }
+function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate(); }
+
+function checkCanCancelSlot(key: string, timeStr: string): { canCancel: boolean; hoursLeft: number } {
+  try {
+    const parts = key.split("-");
+    if (parts.length !== 3) return { canCancel: true, hoursLeft: 24 };
+
+    const y = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10) - 1;
+    const d = parseInt(parts[2], 10);
+
+    const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!match) return { canCancel: true, hoursLeft: 24 };
+
+    let h = parseInt(match[1], 10);
+    const min = parseInt(match[2], 10);
+    const ampm = match[3].toUpperCase();
+
+    if (ampm === "PM" && h < 12) h += 12;
+    if (ampm === "AM" && h === 12) h = 0;
+
+    const slotDate = new Date(y, m, d, h, min);
+    const now = new Date();
+
+    const diffHours = (slotDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+    return {
+      canCancel: diffHours >= 3,
+      hoursLeft: Math.max(0, Math.round(diffHours * 10) / 10),
+    };
+  } catch {
+    return { canCancel: true, hoursLeft: 24 };
+  }
+}
 
 export type SessionStatus = "booked" | "available" | "blocked";
 
@@ -50,38 +100,38 @@ export interface SessionSlot {
 /* Mock sessions keyed by "YYYY-M-D" */
 const INITIAL_SESSION_DATA: Record<string, SessionSlot[]> = {
   "2026-7-27": [
-    { client: "Sarah Jenkins",          initials: "SJ",    time: "09:00 AM", type: "CBT · Cognitive Restructuring", duration: "60 min", status: "booked" },
-    { client: "Michael Chen",           initials: "MC",    time: "10:30 AM", type: "ACT · Values Clarification",    duration: "60 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN",  time: "12:00 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
-    { client: "Blocked Time Slot",      initials: "BLOCK", time: "01:30 PM", type: "Unavailable / Blocked by Therapist", duration: "60 min", status: "blocked" },
-    { client: "David Kim",              initials: "DK",    time: "02:00 PM", type: "CBT · Exposure Hierarchy",     duration: "60 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN",  time: "03:30 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
-    { client: "Emily Rodriguez",        initials: "ER",    time: "04:30 PM", type: "DBT · Distress Tolerance",     duration: "60 min", status: "booked" },
+    { client: "Sarah Jenkins", initials: "SJ", time: "09:00 AM", type: "CBT · Cognitive Restructuring", duration: "60 min", status: "booked" },
+    { client: "Michael Chen", initials: "MC", time: "10:30 AM", type: "ACT · Values Clarification", duration: "60 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "12:00 PM", type: "Available for Client Booking", duration: "50 min", status: "available" },
+    { client: "Blocked Time Slot", initials: "BLOCK", time: "01:30 PM", type: "Unavailable / Blocked by Therapist", duration: "60 min", status: "blocked" },
+    { client: "David Kim", initials: "DK", time: "02:00 PM", type: "CBT · Exposure Hierarchy", duration: "60 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "03:30 PM", type: "Available for Client Booking", duration: "50 min", status: "available" },
+    { client: "Emily Rodriguez", initials: "ER", time: "04:30 PM", type: "DBT · Distress Tolerance", duration: "60 min", status: "booked" },
   ],
   "2026-7-28": [
-    { client: "Sarah Jenkins",          initials: "SJ",    time: "10:00 AM", type: "CBT · Session 13",             duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN",  time: "11:30 AM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
-    { client: "Blocked Time Slot",      initials: "BLOCK", time: "01:00 PM", type: "Admin / Personal Block",       duration: "60 min", status: "blocked" },
-    { client: "Michael Chen",           initials: "MC",    time: "02:00 PM", type: "ACT · Session 9",              duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN",  time: "04:00 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Sarah Jenkins", initials: "SJ", time: "10:00 AM", type: "CBT · Session 13", duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "11:30 AM", type: "Available for Client Booking", duration: "50 min", status: "available" },
+    { client: "Blocked Time Slot", initials: "BLOCK", time: "01:00 PM", type: "Admin / Personal Block", duration: "60 min", status: "blocked" },
+    { client: "Michael Chen", initials: "MC", time: "02:00 PM", type: "ACT · Session 9", duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "04:00 PM", type: "Available for Client Booking", duration: "50 min", status: "available" },
   ],
   "2026-7-29": [
-    { client: "David Kim",              initials: "DK",    time: "09:00 AM", type: "CBT · Session 3",              duration: "50 min", status: "booked" },
-    { client: "Emily Rodriguez",        initials: "ER",    time: "11:00 AM", type: "DBT · Session 16",             duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN",  time: "01:30 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
-    { client: "Blocked Time Slot",      initials: "BLOCK", time: "03:30 PM", type: "Unavailable / Blocked by Therapist", duration: "50 min", status: "blocked" },
+    { client: "David Kim", initials: "DK", time: "09:00 AM", type: "CBT · Session 3", duration: "50 min", status: "booked" },
+    { client: "Emily Rodriguez", initials: "ER", time: "11:00 AM", type: "DBT · Session 16", duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "01:30 PM", type: "Available for Client Booking", duration: "50 min", status: "available" },
+    { client: "Blocked Time Slot", initials: "BLOCK", time: "03:30 PM", type: "Unavailable / Blocked by Therapist", duration: "50 min", status: "blocked" },
   ],
   "2026-7-30": [
-    { client: "Sarah Jenkins",          initials: "SJ",    time: "10:00 AM", type: "CBT · Check-in",               duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN",  time: "11:30 AM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
-    { client: "Michael Chen",           initials: "MC",    time: "02:00 PM", type: "ACT · Behavioral Activation",   duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN",  time: "04:30 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Sarah Jenkins", initials: "SJ", time: "10:00 AM", type: "CBT · Check-in", duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "11:30 AM", type: "Available for Client Booking", duration: "50 min", status: "available" },
+    { client: "Michael Chen", initials: "MC", time: "02:00 PM", type: "ACT · Behavioral Activation", duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "04:30 PM", type: "Available for Client Booking", duration: "50 min", status: "available" },
   ],
   "2026-7-31": [
-    { client: "Open Consultation Slot", initials: "OPEN",  time: "11:00 AM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
-    { client: "Emily Rodriguez",        initials: "ER",    time: "01:00 PM", type: "DBT · Mindfulness",            duration: "50 min", status: "booked" },
-    { client: "Jessica Taylor",         initials: "JT",    time: "03:00 PM", type: "CBT · Graduation Check-in",    duration: "50 min", status: "booked" },
-    { client: "Blocked Time Slot",      initials: "BLOCK", time: "05:00 PM", type: "Unavailable / Blocked by Therapist", duration: "50 min", status: "blocked" },
+    { client: "Open Consultation Slot", initials: "OPEN", time: "11:00 AM", type: "Available for Client Booking", duration: "50 min", status: "available" },
+    { client: "Emily Rodriguez", initials: "ER", time: "01:00 PM", type: "DBT · Mindfulness", duration: "50 min", status: "booked" },
+    { client: "Jessica Taylor", initials: "JT", time: "03:00 PM", type: "CBT · Graduation Check-in", duration: "50 min", status: "booked" },
+    { client: "Blocked Time Slot", initials: "BLOCK", time: "05:00 PM", type: "Unavailable / Blocked by Therapist", duration: "50 min", status: "blocked" },
   ],
 };
 
@@ -102,7 +152,7 @@ function dotColor(count: number) {
 export default function Calendar() {
   const { toast } = useToast();
   const today = useMemo(() => new Date(), []);
-  const [year,  setYear]  = useState(2026);
+  const [year, setYear] = useState(2026);
   const [month, setMonth] = useState(6); // 0-indexed, 6 = July
   const [selectedDay, setSelectedDay] = useState(27); // July 27
   const [availabilityOpen, setAvailabilityOpen] = useState(false);
@@ -113,6 +163,7 @@ export default function Calendar() {
   const [sessionData, setSessionData] = useState<Record<string, SessionSlot[]>>(INITIAL_SESSION_DATA);
 
   // Reschedule dialog state
+  const [confirmRescheduleOpen, setConfirmRescheduleOpen] = useState(false);
   const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
   const [rescheduleTarget, setRescheduleTarget] = useState<{ key: string; index: number; session: SessionSlot } | null>(null);
   const [rescheduleDate, setRescheduleDate] = useState("2026-07-29");
@@ -135,7 +186,7 @@ export default function Calendar() {
   const blockedCount = daySessions.filter(s => s.status === 'blocked' || s.client === 'Blocked Time Slot').length;
 
   /* calendar grid */
-  const firstDay  = startOfMonth(year, month);
+  const firstDay = startOfMonth(year, month);
   const totalDays = daysInMonth(year, month);
   const cells = Array.from({ length: firstDay + totalDays }, (_, i) =>
     i < firstDay ? null : i - firstDay + 1
@@ -187,7 +238,7 @@ export default function Calendar() {
 
       toast({
         title: isCurrentlyBlocked ? "Slot Unblocked " : "Slot Blocked ",
-        description: isCurrentlyBlocked 
+        description: isCurrentlyBlocked
           ? `Time slot at ${slot.time} is now open and available for client bookings.`
           : `Time slot at ${slot.time} has been blocked from client bookings.`,
       });
@@ -224,12 +275,53 @@ export default function Calendar() {
     });
   };
 
+  const handleConfirmCancelBooking = () => {
+    if (!rescheduleTarget) return;
+
+    const { key, index, session } = rescheduleTarget;
+
+    setSessionData((prev) => {
+      const updated = { ...prev };
+      const currentList = updated[key] ? [...updated[key]] : [...DEFAULT_DAY_SLOTS];
+      if (currentList[index]) {
+        currentList[index] = {
+          ...currentList[index],
+          client: "Open Consultation Slot",
+          initials: "OPEN",
+          type: "Available for Client Booking",
+          status: "available",
+        };
+        updated[key] = currentList;
+      }
+      return updated;
+    });
+
+    setConfirmRescheduleOpen(false);
+    setRescheduleTarget(null);
+
+    toast({
+      title: "Booking Cancelled",
+      description: `The booking for ${session.client} at ${session.time} has been cancelled. The slot is now open.`,
+    });
+  };
+
   const handleOpenReschedule = (key: string, index: number, session: SessionSlot) => {
+    const { canCancel, hoursLeft } = checkCanCancelSlot(key, session.time);
+
+    if (!canCancel) {
+      toast({
+        variant: "destructive",
+        title: "Cancellation Policy Restriction",
+        description: `Sessions can only be cancelled at least 3 hours before start time. (Session starts in ${hoursLeft > 0 ? `${hoursLeft} hrs` : "less than 3 hrs"}).`,
+      });
+      return;
+    }
+
     setRescheduleTarget({ key, index, session });
     setRescheduleTime(session.time);
     setRescheduleDate(`${year}-${String(month + 1).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`);
     setRescheduleReason("");
-    setRescheduleModalOpen(true);
+    setConfirmRescheduleOpen(true);
   };
 
   const handleConfirmReschedule = () => {
@@ -241,7 +333,7 @@ export default function Calendar() {
 
     setSessionData((prev) => {
       const updated = { ...prev };
-      
+
       // Remove from old key
       if (updated[oldKey]) {
         updated[oldKey] = updated[oldKey].filter((_, i) => i !== index);
@@ -318,7 +410,7 @@ export default function Calendar() {
     });
 
     toast({
-      title: "Session Slot Deleted 🗑️",
+      title: "Session Slot Deleted ",
       description: `Slot for ${clientName} at ${slotTime} has been removed from calendar.`,
     });
   };
@@ -389,10 +481,10 @@ export default function Calendar() {
             <div className="grid grid-cols-7 gap-1">
               {cells.map((day, idx) => {
                 if (!day) return <div key={`empty-${idx}`} />;
-                const key   = `${year}-${month + 1}-${day}`;
+                const key = `${year}-${month + 1}-${day}`;
                 const count = (sessionData[key] ?? DEFAULT_DAY_SLOTS).length;
-                const sel   = day === selectedDay;
-                const tod   = isToday(day);
+                const sel = day === selectedDay;
+                const tod = isToday(day);
 
                 return (
                   <button
@@ -400,8 +492,8 @@ export default function Calendar() {
                     onClick={() => setSelectedDay(day)}
                     className={cn(
                       "relative flex flex-col items-center justify-center rounded-2xl h-10 w-full text-xs font-bold transition-all cursor-pointer",
-                      sel  && "bg-[#5e2be2] text-white shadow-md shadow-[#5e2be2]/20 scale-105 z-10",
-                      !sel && tod  && "border-2 border-[#5e2be2] text-[#5e2be2] bg-purple-50/50 font-extrabold",
+                      sel && "bg-[#5e2be2] text-white shadow-md shadow-[#5e2be2]/20 scale-105 z-10",
+                      !sel && tod && "border-2 border-[#5e2be2] text-[#5e2be2] bg-purple-50/50 font-extrabold",
                       !sel && !tod && "text-slate-700 hover:bg-slate-100/80",
                     )}
                   >
@@ -430,9 +522,9 @@ export default function Calendar() {
               <div className="flex flex-col justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5">
                 <span className="text-slate-500 font-medium text-[11px]">Selected Day</span>
                 <span className="font-extrabold text-[11px] text-slate-800 bg-white p-2 rounded-xl border border-slate-200 space-y-0.5">
-                  <div className="text-purple-700 font-black">🟣 {bookedCount} Booked</div>
-                  <div className="text-emerald-700 font-black">🟢 {availableCount} Available</div>
-                  <div className="text-rose-700 font-black">🔴 {blockedCount} Blocked</div>
+                  <div className="text-slate-600 font-extrabold flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-400 inline-block" /> {bookedCount} Booked</div>
+                  <div className="text-emerald-700 font-extrabold flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> {availableCount} Available</div>
+                  <div className="text-slate-600 font-extrabold flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-500 inline-block" /> {blockedCount} Blocked</div>
                 </span>
               </div>
             </div>
@@ -450,51 +542,36 @@ export default function Calendar() {
                   {bookedCount} booked · {availableCount} available · {blockedCount} blocked
                 </p>
               </div>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <Badge variant="outline" className="bg-purple-50 text-[#5e2be2] border-purple-200 text-[11px] font-extrabold px-2.5 py-0.5">
-                  {bookedCount} Booked
-                </Badge>
-                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px] font-extrabold px-2.5 py-0.5">
-                  {availableCount} Available
-                </Badge>
-                <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-200 text-[11px] font-extrabold px-2.5 py-0.5">
-                  {blockedCount} Blocked
-                </Badge>
-              </div>
             </div>
 
-            {/* ── Interactive Time Slot Bubbles & Quick Block Section ── */}
+            {/* ── Interactive Time Slots & Quick Block Section ── */}
             <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs space-y-3">
               <div className="flex items-center justify-between gap-2 flex-wrap pb-2 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-[#5e2be2]" />
                   <h4 className="text-xs font-black text-slate-900 tracking-tight uppercase">
-                    Daily Time Slot Bubbles
+                    Time Slots
                   </h4>
                 </div>
                 <div className="flex items-center gap-1.5 text-[10px] font-bold">
-                  <span className="flex items-center gap-1 text-purple-800 bg-purple-100/70 px-2 py-0.5 rounded-md border border-purple-200">
-                    <span className="w-2 h-2 rounded-full bg-[#5e2be2]" />
+                  <span className="flex items-center gap-1 text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                    <span className="w-2 h-2 rounded-full bg-slate-400" />
                     Booked
                   </span>
                   <span className="flex items-center gap-1 text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded-md border border-emerald-200">
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
                     Available
                   </span>
-                  <span className="flex items-center gap-1 text-rose-800 bg-rose-100/70 px-2 py-0.5 rounded-md border border-rose-200">
-                    <span className="w-2 h-2 rounded-full bg-rose-500" />
+                  <span className="flex items-center gap-1 text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                    <span className="w-2 h-2 rounded-full bg-slate-500" />
                     Blocked
                   </span>
                 </div>
               </div>
 
-              <p className="text-[11px] text-slate-500 font-medium leading-tight">
-                Click an <span className="text-emerald-700 font-bold">Available bubble</span> to block it instantly, or a <span className="text-rose-700 font-bold">Blocked bubble</span> to unblock it.
-              </p>
 
               <div className="flex flex-wrap gap-2 pt-1">
                 {daySessions.length === 0 ? (
-                  <span className="text-xs text-slate-400 font-medium italic">No time slot bubbles available for this day.</span>
+                  <span className="text-xs text-slate-400 font-medium italic">No time slots available for this day.</span>
                 ) : (
                   daySessions.map((slot, index) => {
                     const isBooked = slot.status === "booked" || (slot.client !== "Open Consultation Slot" && slot.status !== "blocked" && slot.client !== "Blocked Time Slot");
@@ -510,23 +587,21 @@ export default function Calendar() {
                           isBooked
                             ? `Booked by ${slot.client} (${slot.time})`
                             : isBlocked
-                            ? `Click to Unblock ${slot.time}`
-                            : `Click to Block ${slot.time}`
+                              ? `Click to Unblock ${slot.time}`
+                              : `Click to Block ${slot.time}`
                         }
                         className={cn(
                           "group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border shadow-2xs active:scale-95",
-                          isBooked && "bg-purple-100 text-[#5e2be2] border-purple-300 hover:bg-purple-200 cursor-default",
-                          isAvailable && "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-400",
-                          isBlocked && "bg-rose-50 text-rose-800 border-rose-300 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-400"
+                          isBooked && "bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200/70 cursor-default",
+                          isAvailable && "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-slate-100 hover:text-slate-800 hover:border-slate-300",
+                          isBlocked && "bg-slate-100 text-slate-700 border-slate-300 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-300"
                         )}
                       >
-                        {isBooked ? (
-                          <Users className="w-3.5 h-3.5 shrink-0 text-[#5e2be2]" />
-                        ) : isBlocked ? (
-                          <Lock className="w-3.5 h-3.5 shrink-0 text-rose-600 group-hover:text-emerald-600 transition-colors" />
-                        ) : (
-                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-600 group-hover:text-rose-600 transition-colors" />
-                        )}
+                        {isBlocked ? (
+                          <Lock className="w-3.5 h-3.5 shrink-0 text-slate-500 group-hover:text-emerald-600 transition-colors" />
+                        ) : isAvailable ? (
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-600 group-hover:text-slate-500 transition-colors" />
+                        ) : null}
 
                         <span className="font-mono">{slot.time}</span>
 
@@ -542,7 +617,7 @@ export default function Calendar() {
               </div>
             </div>
 
-            <button 
+            <button
               onClick={() => setAddEventOpen(true)}
               className="w-full flex items-center justify-center gap-2 rounded-2xl border border-dashed border-purple-300 bg-white text-[#5e2be2] text-xs font-extrabold py-3 hover:bg-purple-50/80 transition-all cursor-pointer shadow-2xs"
             >
@@ -555,9 +630,9 @@ export default function Calendar() {
                 <CalendarDays className="w-10 h-10 text-slate-300 mb-3" />
                 <p className="text-sm font-extrabold text-slate-800">No sessions scheduled</p>
                 <p className="text-xs text-slate-500 mt-1 max-w-xs">This day is currently clear for client appointments or open consultation slots.</p>
-                <Button 
+                <Button
                   onClick={() => setAddEventOpen(true)}
-                  size="sm" 
+                  size="sm"
                   className="mt-5 bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md shadow-[#5e2be2]/20 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5 mr-1.5" />
@@ -576,17 +651,17 @@ export default function Calendar() {
                       key={i}
                       className={cn(
                         "group flex items-center justify-between gap-3 rounded-2xl border p-3.5 transition-all bg-white shadow-2xs hover:shadow-md",
-                        isBooked && "border-slate-200/80 hover:border-purple-200",
+                        isBooked && "border-slate-200/80 hover:border-slate-300",
                         isAvailable && "border-dashed border-emerald-300 bg-emerald-50/20 hover:bg-emerald-50/50",
-                        isBlocked && "border-dashed border-rose-300 bg-rose-50/20 hover:bg-rose-50/50"
+                        isBlocked && "border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100/60"
                       )}
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className={cn(
                           "shrink-0 w-22 text-center py-2 rounded-xl text-xs font-black transition-all",
-                          isBooked && "bg-slate-100 text-slate-800 group-hover:bg-purple-100 group-hover:text-[#5e2be2]",
+                          isBooked && "bg-slate-100 text-slate-700 border border-slate-200",
                           isAvailable && "bg-emerald-100/80 text-emerald-800 font-black border border-emerald-200",
-                          isBlocked && "bg-rose-100/80 text-rose-800 font-black border border-rose-200"
+                          isBlocked && "bg-slate-200/80 text-slate-700 font-black border border-slate-300"
                         )}>
                           {s.time}
                         </div>
@@ -597,7 +672,7 @@ export default function Calendar() {
                               "font-extrabold text-xs sm:text-sm truncate",
                               isBooked && "text-slate-900",
                               isAvailable && "text-emerald-900",
-                              isBlocked && "text-rose-900 line-through decoration-rose-400"
+                              isBlocked && "text-slate-700 line-through decoration-slate-400"
                             )}>
                               {s.client}
                             </span>
@@ -608,38 +683,19 @@ export default function Calendar() {
 
                       <div className="flex items-center gap-2 shrink-0">
                         {isBooked ? (
-                          <Badge className="bg-purple-100 text-[#5e2be2] border-0 text-[10px] font-extrabold px-2.5 py-0.5">
+                          <Badge className="bg-slate-100 text-slate-700 border-0 text-[10px] font-extrabold px-2.5 py-0.5">
                             Confirmed
                           </Badge>
                         ) : isBlocked ? (
-                          <div className="flex items-center gap-1.5">
-                            <Badge className="bg-rose-100 text-rose-800 border-0 text-[10px] font-extrabold px-2.5 py-0.5 flex items-center gap-1">
-                              <Lock className="w-3 h-3 text-rose-600" />
-                              Blocked Slot
-                            </Badge>
-                            <Button
-                              type="button"
-                              size="sm"
-                              onClick={() => handleToggleBlockSlot(sessionKey, i)}
-                              className="bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-[11px] h-7 px-2.5 rounded-lg shadow-2xs cursor-pointer"
-                            >
-                              Unblock
-                            </Button>
-                          </div>
+                          <Badge className="bg-slate-100 text-slate-700 border-0 text-[10px] font-extrabold px-2.5 py-0.5 flex items-center gap-1">
+                            <Lock className="w-3 h-3 text-slate-500" />
+                            Blocked Slot
+                          </Badge>
                         ) : (
                           <div className="flex items-center gap-1.5">
                             <Badge className="bg-emerald-100 text-emerald-800 border-0 text-[10px] font-extrabold px-2.5 py-0.5">
                               Available Slot
                             </Badge>
-                            <Button
-                              type="button"
-                              size="sm"
-                              onClick={() => handleToggleBlockSlot(sessionKey, i)}
-                              variant="outline"
-                              className="border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-800 font-extrabold text-[11px] h-7 px-2.5 rounded-lg cursor-pointer"
-                            >
-                              Block
-                            </Button>
                             <Button
                               type="button"
                               size="sm"
@@ -651,23 +707,55 @@ export default function Calendar() {
                           </div>
                         )}
 
-                        <button
-                          type="button"
-                          title="Reschedule Slot"
-                          onClick={() => handleOpenReschedule(sessionKey, i, s)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-[#5e2be2] hover:bg-purple-100/60 transition-all cursor-pointer"
-                        >
-                          <CalendarIcon className="w-4 h-4" />
-                        </button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              title="More Options"
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-40 rounded-xl p-1 shadow-lg border-slate-200">
+                            {isBooked && (
+                              <DropdownMenuItem
+                                onClick={() => handleOpenReschedule(sessionKey, i, s)}
+                                className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                              >
+                                <Ban className="w-3.5 h-3.5 text-rose-600" />
+                                <span>Cancel Booking</span>
+                              </DropdownMenuItem>
+                            )}
 
-                        <button
-                          type="button"
-                          title="Delete Slot"
-                          onClick={() => handleDeleteSlot(sessionKey, i, s.client, s.time)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-100/60 transition-all cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                            {!isBooked && (
+                              <DropdownMenuItem
+                                onClick={() => handleToggleBlockSlot(sessionKey, i)}
+                                className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-lg cursor-pointer"
+                              >
+                                {isBlocked ? (
+                                  <>
+                                    <Unlock className="w-3.5 h-3.5 text-emerald-600" />
+                                    <span>Unblock Slot</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Lock className="w-3.5 h-3.5 text-slate-600" />
+                                    <span>Block Slot</span>
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                            )}
+
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteSlot(sessionKey, i, s.client, s.time)}
+                              className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                              <span>Delete Slot</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   );
@@ -745,6 +833,41 @@ export default function Calendar() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Cancel Booking Confirmation Popup (Cancel / Yes) */}
+      <AlertDialog open={confirmRescheduleOpen} onOpenChange={setConfirmRescheduleOpen}>
+        <AlertDialogContent className="rounded-3xl p-6 max-w-md border-0 shadow-2xl bg-white">
+          <AlertDialogHeader className="space-y-2">
+            <AlertDialogTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+              <Ban className="w-5 h-5 text-rose-600" />
+              Cancel Booking?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-slate-600 font-medium leading-relaxed space-y-2">
+              <span>
+                Are you sure you want to cancel the booking for <strong className="text-slate-900">{rescheduleTarget?.session.client}</strong> scheduled at <strong className="text-[#5e2be2]">{rescheduleTarget?.session.time}</strong>? This will release the slot back as an available consultation slot.
+              </span>
+              <span className="flex items-center gap-1.5 text-[11px] font-bold text-amber-800 bg-amber-50/90 p-2.5 rounded-xl border border-amber-200 mt-2.5">
+                <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <span>Cancellation Policy: Allowed up to 3 hours before session start time.</span>
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
+            <AlertDialogCancel
+              onClick={() => setConfirmRescheduleOpen(false)}
+              className="rounded-xl text-xs font-extrabold border-slate-200 hover:bg-slate-100 cursor-pointer"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmCancelBooking}
+              className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-xl shadow-md shadow-rose-600/20 cursor-pointer"
+            >
+              Yes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Reschedule Session Dialog Modal */}
       <Dialog open={rescheduleModalOpen} onOpenChange={setRescheduleModalOpen}>
