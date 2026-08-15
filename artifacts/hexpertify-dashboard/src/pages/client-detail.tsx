@@ -22,7 +22,7 @@ import {
   Activity, AlertCircle, FilePlus, Plus, HelpCircle, User, MessageSquare, Bell, Brain,
   Calculator, Send, Sparkles, ChevronDown, ChevronUp, ClipboardCheck, ArrowUpRight, Check,
   Target, RefreshCw, Eye, ShieldCheck, FileSpreadsheet, Scale, Layers, AlertTriangle, ArrowRight, Minus,
-  LineChart as LineChartIcon
+  LineChart as LineChartIcon, Trophy, Flame, Heart, BarChart2, Gamepad2
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { formatDate } from "@/lib/format";
@@ -43,6 +43,14 @@ export default function ClientDetail() {
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [calcModalOpen, setCalcModalOpen] = useState(false);
   const [itemDetailsScale, setItemDetailsScale] = useState<any | null>(null);
+
+  // Dialog & Form states for Assign Activity
+  const [assignActivityModalOpen, setAssignActivityModalOpen] = useState(false);
+  const [activityTitle, setActivityTitle] = useState("Zen Breath & Focus Chamber");
+  const [activityCategory, setActivityCategory] = useState("MINDFULNESS");
+  const [activityInstructions, setActivityInstructions] = useState("Practice 5 minutes of mindful breath awareness & thought bubble popping before sleep.");
+  const [activityFrequency, setActivityFrequency] = useState("Daily");
+  const [activityDueDate, setActivityDueDate] = useState("2026-08-22");
 
   // Form states for Assign Assessment
   const [selectedAssignScale, setSelectedAssignScale] = useState("GAD-7");
@@ -354,6 +362,15 @@ export default function ClientDetail() {
     setAssignNote("");
   };
 
+  const handleAssignActivitySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAssignActivityModalOpen(false);
+    toast({
+      title: "Therapeutic Activity Assigned! 🎮",
+      description: `"${activityTitle}" (${activityCategory}) assigned to ${client.name} due by ${formatDate(activityDueDate)}. Synchronized to client portal.`,
+    });
+  };
+
   const handleCalcSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const prev = Number(calcPrevScore);
@@ -391,8 +408,6 @@ export default function ClientDetail() {
       <PageHeader
         title={client.name}
         description={`${client.age} yrs · ${client.gender} · ${client.primaryGoal}`}
-        badge={`CLIENT PROFILE · ${client.status.toUpperCase()}`}
-        icon={<User className="w-4 h-4 text-purple-200" />}
       >
         <div className="flex items-center gap-3">
           <Link href="/messages">
@@ -419,12 +434,11 @@ export default function ClientDetail() {
           <TabsTrigger value="overview" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">
             Overview
           </TabsTrigger>
-          <TabsTrigger value="outcomes-assessments" className="rounded-lg h-11 px-6 data-[state=active]:bg-[#5e2be2]/10 data-[state=active]:text-[#5e2be2] font-extrabold text-muted-foreground flex items-center gap-2">
-            <LineChartIcon className="w-4 h-4 text-[#5e2be2]" />
-            <span>Outcomes &amp; Assessments</span>
+          <TabsTrigger value="outcomes" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">
+            Clinical Outcomes
           </TabsTrigger>
-          <TabsTrigger value="mood" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">
-            Mood Tracking
+          <TabsTrigger value="assessments" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">
+            Diagnostic Assessments
           </TabsTrigger>
           <TabsTrigger value="homework" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">
             Activities &amp; Homework
@@ -550,11 +564,11 @@ export default function ClientDetail() {
                         </div>
 
                         <Button 
-                          onClick={() => setActiveTab("outcomes-assessments")}
+                          onClick={() => setActiveTab("outcomes")}
                           variant="outline" 
                           className="w-full text-xs h-9 font-bold text-[#5e2be2] border-purple-200 hover:bg-purple-50 cursor-pointer"
                         >
-                          View Outcomes &amp; Assessments Tab →
+                          View Clinical Outcomes Tab →
                         </Button>
                       </CardContent>
                     </Card>
@@ -593,9 +607,9 @@ export default function ClientDetail() {
                         <Button 
                           variant="outline" 
                           className="w-full text-sm h-9 cursor-pointer font-bold text-[#5e2be2]" 
-                          onClick={() => setActiveTab("outcomes-assessments")}
+                          onClick={() => setActiveTab("assessments")}
                         >
-                          View all outcome trends →
+                          View Diagnostic Assessments →
                         </Button>
                       </div>
                     )}
@@ -632,360 +646,239 @@ export default function ClientDetail() {
             </div>
           </TabsContent>
 
-          {/* TAB 2: COMBINED OUTCOMES & ASSESSMENTS TAB */}
-          {(activeTab === "outcomes-assessments" || activeTab === "assessments") && (
-            <TabsContent value={activeTab} className="space-y-6 outline-none">
-              {/* Header Toolbar */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-purple-900 via-[#5e2be2] to-indigo-800 text-white shadow-lg">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-white/20 text-white border-white/30 text-[10px] uppercase font-bold tracking-widest">
-                      Clinical Outcomes &amp; Assessment Intelligence
-                    </Badge>
-                    <Badge className="bg-emerald-400/20 text-emerald-200 border-emerald-400/30 text-[10px] font-bold">
-                      3-Session Trigger Active
-                    </Badge>
+          {/* TAB 2: CLINICAL OUTCOMES TAB */}
+          <TabsContent value="outcomes" className="space-y-6 outline-none">
+
+            {/* TOP 3 PASTEL METRIC CARDS ROW (Exact Screenshot Match) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Card 1: Goals Achieved */}
+              <div className="p-6 rounded-3xl bg-emerald-50/70 border border-emerald-200/70 space-y-4 shadow-2xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                    <Trophy className="w-5 h-5" />
                   </div>
-                  <h2 className="text-xl font-extrabold tracking-tight">Outcome Metrics &amp; Diagnostic Battery</h2>
-                  <p className="text-xs text-purple-100/80 max-w-xl">
-                    Automated 3-session milestone calculations, baseline vs current score diffs, therapist notification alerts, and longitudinal scale trends for {client.name}.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button 
-                    onClick={() => setAssignModalOpen(true)}
-                    className="bg-white text-[#5e2be2] hover:bg-white/90 font-extrabold text-xs rounded-xl shadow-md cursor-pointer"
-                  >
-                    <Send className="w-3.5 h-3.5 mr-1.5" />
-                    Assign Scale
-                  </Button>
-                  <Button 
-                    onClick={() => setCalcModalOpen(true)}
-                    className="bg-purple-400/20 hover:bg-purple-400/30 text-white border border-white/20 font-bold text-xs rounded-xl cursor-pointer"
-                  >
-                    <Calculator className="w-3.5 h-3.5 mr-1.5" />
-                    Calculate Outcome
-                  </Button>
-                </div>
-              </div>
-
-              {/* 4 Summary Metric Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="shadow-xs border-purple-100 bg-gradient-to-br from-purple-50/50 to-white">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Baseline vs Latest</span>
-                      <Scale className="w-4 h-4 text-[#5e2be2]" />
-                    </div>
-                    <div className="mt-2 flex items-baseline gap-2">
-                      <span className="text-2xl font-black text-slate-900">18 → 6</span>
-                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 font-bold text-xs">
-                        -66.7%
-                      </Badge>
-                    </div>
-                    <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1 font-medium">
-                      <TrendingDown className="w-3.5 h-3.5 text-emerald-600" />
-                      -12 pts overall symptom reduction
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="shadow-xs border-blue-100 bg-gradient-to-br from-blue-50/50 to-white">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Clinical Trajectory</span>
-                      <Sparkles className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <div className="mt-2 flex items-baseline gap-2">
-                      <span className="text-xl font-black text-slate-900">Remission Path</span>
-                    </div>
-                    <div className="mt-2">
-                      <div className="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
-                        <span>Goal Attainment Target</span>
-                        <span className="text-blue-700 font-bold">75% Achieved</span>
-                      </div>
-                      <Progress value={75} className="h-1.5 bg-blue-100" indicatorClassName="bg-blue-600" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="shadow-xs border-indigo-100 bg-gradient-to-br from-indigo-50/50 to-white">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">3-Session Workflow</span>
-                      <Brain className="w-4 h-4 text-indigo-600" />
-                    </div>
-                    <div className="mt-2">
-                      <span className="text-xl font-black text-slate-900">Session 12</span>
-                      <span className="text-xs text-slate-500 ml-1 font-medium">(Current)</span>
-                    </div>
-                    <p className="text-[11px] text-indigo-700 mt-1 font-semibold flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" /> Next trigger after Session 15
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="shadow-xs border-emerald-100 bg-gradient-to-br from-emerald-50/50 to-white">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Therapist Alert Panel</span>
-                      <Bell className="w-4 h-4 text-emerald-600" />
-                    </div>
-                    <div className="mt-2 flex items-center gap-1.5">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                      <span className="text-sm font-extrabold text-slate-900">Delivered &amp; Synchronized</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 mt-1 font-medium">
-                      Automated alert sent post Session 12
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Section 1: 3-Session Outcome Calculation Matrix & Workflow */}
-              <Card className="shadow-sm border-purple-200 overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-purple-50 via-indigo-50/40 to-white border-b border-purple-100 pb-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                          <Calculator className="w-5 h-5 text-[#5e2be2]" />
-                          3-Session Outcome Calculation Workflow
-                        </CardTitle>
-                        <Badge className="bg-[#5e2be2] text-white border-none text-[10px] font-bold">
-                          Automated Engine
-                        </Badge>
-                      </div>
-                      <CardDescription className="text-xs text-slate-500 mt-0.5">
-                        Calculates score delta every 3 sessions (Baseline → S3 → S6 → S9 → S12) and dispatches panel notifications
-                      </CardDescription>
-                    </div>
-
-                    <Button 
-                      onClick={() => setCalcModalOpen(true)}
-                      variant="outline" 
-                      size="sm"
-                      className="text-xs font-bold border-purple-200 text-[#5e2be2] hover:bg-purple-100 shrink-0 cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5 mr-1" />
-                      Calculate New Milestone
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-extrabold border-b border-slate-200/80">
-                        <tr>
-                          <th className="py-3 px-4">Milestone</th>
-                          <th className="py-3 px-4">Scale</th>
-                          <th className="py-3 px-4">Baseline Score</th>
-                          <th className="py-3 px-4">Milestone Score</th>
-                          <th className="py-3 px-4">Point Change</th>
-                          <th className="py-3 px-4">Clinical Impact</th>
-                          <th className="py-3 px-4">Therapist Alert</th>
-                          <th className="py-3 px-4 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {clientMilestoneLogs.map((log: any, idx: number) => (
-                          <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
-                            <td className="py-3.5 px-4 font-bold text-slate-900">
-                              <div className="flex items-center gap-2">
-                                <span className="w-6 h-6 rounded-full bg-purple-100 text-[#5e2be2] flex items-center justify-center font-extrabold text-[11px]">
-                                  S{log.milestone}
-                                </span>
-                                <span>Session {log.milestone}</span>
-                              </div>
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <Badge variant="outline" className="font-mono font-bold bg-white text-slate-700 border-slate-200">
-                                {log.code}
-                              </Badge>
-                            </td>
-                            <td className="py-3.5 px-4 font-medium text-slate-600">
-                              {log.baseline} pts
-                            </td>
-                            <td className="py-3.5 px-4 font-bold text-slate-900">
-                              {log.score} pts
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <span className={cn(
-                                "font-extrabold text-xs px-2.5 py-1 rounded-full inline-flex items-center gap-1",
-                                log.delta < 0 ? "bg-emerald-100 text-emerald-800" : log.delta > 0 ? "bg-red-100 text-red-800" : "bg-slate-100 text-slate-800"
-                              )}>
-                                {log.delta < 0 ? <TrendingDown className="w-3 h-3" /> : log.delta > 0 ? <TrendingUp className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-                                {log.label}
-                              </span>
-                            </td>
-                            <td className="py-3.5 px-4 font-medium text-slate-700">
-                              {log.status}
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                                <CheckCircle2 className="w-3 h-3" /> Delivered
-                              </span>
-                            </td>
-                            <td className="py-3.5 px-4 text-right">
-                              <Button 
-                                onClick={() => {
-                                  const scaleObj = assessments.find(a => a.type === log.code) || { type: log.code, name: log.code, currentScore: log.score, maxScore: 21 };
-                                  setItemDetailsScale(scaleObj);
-                                }}
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-7 text-[11px] font-bold text-[#5e2be2] hover:bg-purple-50 cursor-pointer"
-                              >
-                                View Items
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Section 2: Diagnostic Assessment Battery & Recharts Trends */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                      <ClipboardCheck className="w-5 h-5 text-[#5e2be2]" />
-                      Diagnostic Assessment Battery &amp; Longitudinal Trends
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                      Standardized psychometric measurements administered over the course of treatment
-                    </p>
+                    <h3 className="text-sm font-bold text-slate-900">Goals Achieved</h3>
+                    <p className="text-xs text-slate-500 font-medium">Milestones reached for {client.name}</p>
                   </div>
-                  <Badge variant="outline" className="text-xs font-semibold text-slate-600 bg-white">
-                    {assessments?.length || 2} Instruments Active
+                </div>
+                <div className="text-4xl font-extrabold text-slate-900 font-mono tracking-tight">
+                  3
+                </div>
+              </div>
+
+              {/* Card 2: Current Streak */}
+              <div className="p-6 rounded-3xl bg-amber-50/70 border border-amber-200/70 space-y-4 shadow-2xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+                    <Flame className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">Current Streak</h3>
+                    <p className="text-xs text-slate-500 font-medium">Consecutive days active</p>
+                  </div>
+                </div>
+                <div className="text-4xl font-extrabold text-slate-900 font-mono tracking-tight">
+                  7
+                </div>
+              </div>
+
+              {/* Card 3: Attendance */}
+              <div className="p-6 rounded-3xl bg-blue-50/70 border border-blue-200/70 space-y-4 shadow-2xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                    <Calendar className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">Attendance</h3>
+                    <p className="text-xs text-slate-500 font-medium">Session completion rate</p>
+                  </div>
+                </div>
+                <div className="text-4xl font-extrabold text-slate-900 font-mono tracking-tight">
+                  92%
+                </div>
+              </div>
+            </div>
+
+            {/* MIDDLE SECTION: CHART (Exact Screenshot Match) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Right Chart: Activity Completion */}
+              <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="p-2 rounded-xl bg-emerald-100 text-emerald-600">
+                      <BarChart2 className="w-4 h-4" />
+                    </span>
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900">Activity Completion</h3>
+                      <p className="text-xs text-slate-500 font-medium">Weekly exercises finished by {client.name}</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 font-bold text-[10px]">
+                    Weekly Exercises
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {assessments?.map((assessment) => (
-                    <Card key={assessment.id} className="shadow-sm border-border hover:border-purple-200 transition-colors">
-                      <CardHeader className="pb-2 flex flex-row items-start justify-between border-b border-slate-100 bg-slate-50/50">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <CardTitle className="text-base font-bold text-slate-900">{assessment.type}</CardTitle>
-                            <Badge variant="outline" className="text-[10px] font-mono bg-white">
-                              Instrument Code
-                            </Badge>
-                          </div>
-                          <CardDescription className="text-xs text-slate-500 mt-0.5">{assessment.name}</CardDescription>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-black text-slate-900">
-                            {assessment.currentScore}
-                            <span className="text-xs font-normal text-slate-400">/{assessment.maxScore}</span>
-                          </div>
-                          <div className={cn(
-                            "text-xs font-bold px-2.5 py-0.5 rounded-full inline-block mt-1",
-                            assessment.severity === 'Severe' || assessment.severity === 'Severe Anxiety' ? 'bg-red-100 text-red-700' : 
-                            assessment.severity === 'Moderate' || assessment.severity === 'Mild Anxiety' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
-                          )}>
-                            {assessment.severity}
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-4 space-y-4">
-                        <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
-                          <span>Score Trajectory across sessions:</span>
-                          <span className="text-slate-700 font-bold">Last completed: {formatDate(assessment.completedAt)}</span>
-                        </div>
-
-                        {/* Chart */}
-                        <div className="h-[200px] w-full">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={Array.isArray(assessment?.trend) ? assessment.trend : []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} dy={10} tickFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
-                              <YAxis domain={[0, assessment.maxScore]} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} />
-                              <Tooltip 
-                                contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
-                                labelFormatter={(label) => formatDate(label as string)}
-                              />
-                              <Line type="monotone" dataKey="score" stroke="#5e2be2" strokeWidth={3} dot={{ r: 5, fill: "#5e2be2", strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 7 }} />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                          <div className="text-xs text-slate-500">
-                            Baseline: <span className="font-bold text-slate-900">{assessment.previousScore || (assessment.currentScore + 8)}</span> → Latest: <span className="font-bold text-[#5e2be2]">{assessment.currentScore}</span>
-                          </div>
-                          <Button 
-                            onClick={() => setItemDetailsScale(assessment)}
-                            variant="outline" 
-                            size="sm"
-                            className="text-xs font-bold text-[#5e2be2] border-purple-200 hover:bg-purple-50 h-8 cursor-pointer"
-                          >
-                            <Eye className="w-3.5 h-3.5 mr-1" />
-                            View Item Breakdown
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </TabsContent>
-          )}
-
-          {/* TAB 3: MOOD TRACKING */}
-          <TabsContent value="mood" className="space-y-6 outline-none">
-            <Card className="shadow-sm border-border">
-              <CardHeader>
-                <CardTitle>Mood Tracking Trend</CardTitle>
-                <CardDescription>Daily client self-reported mood (1-10)</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[300px] w-full mt-2">
+                <div className="h-64 w-full pt-2">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={moodTrend || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="colorMood" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} dy={10} tickFormatter={(val) => new Date(val).toLocaleDateString('en-US', { weekday: 'short' })} />
-                      <YAxis domain={[1, 10]} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
+                    <BarChart data={[
+                      { day: "Mon", count: 2 },
+                      { day: "Tue", count: 1 },
+                      { day: "Wed", count: 3 },
+                      { day: "Thu", count: 2 },
+                      { day: "Fri", count: 4 },
+                      { day: "Sat", count: 1 },
+                      { day: "Sun", count: 3 },
+                    ]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
                       <Tooltip 
-                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                        labelFormatter={(label) => formatDate(label as string)}
+                        contentStyle={{ backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
+                        labelStyle={{ fontWeight: 'bold', color: '#0f172a' }}
                       />
-                      <Area type="monotone" dataKey="mood" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#colorMood)" activeDot={{ r: 6, fill: "#f59e0b", stroke: "#fff", strokeWidth: 2 }} />
-                    </AreaChart>
+                      <Bar dataKey="count" fill="#10b981" radius={[8, 8, 0, 0]} barSize={36} />
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
-              </CardContent>
-            </Card>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {moodTrend.filter(t => t.note).map((entry, i) => (
-                <Card key={i} className="shadow-sm border-border bg-amber-50/50">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-sm font-medium text-muted-foreground">{formatDate(entry.date)}</span>
-                      <Badge className="bg-amber-100 text-amber-800 border-amber-200">Mood: {entry.mood}/10</Badge>
+              </div>
+            </div>
+
+            {/* CURRENT GOALS PROGRESS CARD */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Current Goals for {client.name}</h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    3-session outcome milestones &amp; active treatment objectives
+                  </p>
+                </div>
+                <Badge className="bg-[#5e2be2] text-white border-none text-xs font-bold px-3 py-1">
+                  Session 12 / 15
+                </Badge>
+              </div>
+
+              <div className="space-y-6">
+                {[
+                  { title: "Mindfulness & Grounding Practice", current: 8, total: 10, progress: 80 },
+                  { title: "Sleep Hygiene & Routine Adherence", current: 6, total: 8, progress: 75 },
+                  { title: "Cognitive Restructuring Thought Records", current: 7, total: 10, progress: 70 },
+                  { title: "Workplace Assertiveness Exercises", current: 5, total: 10, progress: 50 },
+                ].map((goal, idx) => (
+                  <div key={idx} className="space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold">
+                      <span className="text-slate-900">{goal.title}</span>
+                      <span className="text-[#5e2be2] font-mono font-extrabold">{goal.current} / {goal.total}</span>
                     </div>
-                    <p className="text-sm text-slate-700 italic">"{entry.note}"</p>
-                  </CardContent>
-                </Card>
-              ))}
+                    <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/60">
+                      <div 
+                        className="h-full bg-[#5e2be2] rounded-full transition-all duration-500" 
+                        style={{ width: `${goal.progress}%` }} 
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* TAB 3: DIAGNOSTIC ASSESSMENTS TAB */}
+          <TabsContent value="assessments" className="space-y-6 outline-none">
+
+            {/* Diagnostic Assessment Battery Cards & Recharts Trends */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                    <ClipboardCheck className="w-5 h-5 text-[#5e2be2]" />
+                    Active Assessment Instruments &amp; Longitudinal Trends
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Track score trajectories across sessions and inspect question breakdowns
+                  </p>
+                </div>
+                <Badge variant="outline" className="text-xs font-semibold text-slate-600 bg-white">
+                  {assessments?.length || 2} Instruments Active
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {assessments?.map((assessment) => (
+                  <Card key={assessment.id} className="shadow-sm border-border hover:border-purple-200 transition-colors">
+                    <CardHeader className="pb-2 flex flex-row items-start justify-between border-b border-slate-100 bg-slate-50/50">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-base font-bold text-slate-900">{assessment.type}</CardTitle>
+                          <Badge variant="outline" className="text-[10px] font-mono bg-white">
+                            Instrument Code
+                          </Badge>
+                        </div>
+                        <CardDescription className="text-xs text-slate-500 mt-0.5">{assessment.name}</CardDescription>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-black text-slate-900">
+                          {assessment.currentScore}
+                          <span className="text-xs font-normal text-slate-400">/{assessment.maxScore}</span>
+                        </div>
+                        <div className={cn(
+                          "text-xs font-bold px-2.5 py-0.5 rounded-full inline-block mt-1",
+                          assessment.severity === 'Severe' || assessment.severity === 'Severe Anxiety' ? 'bg-red-100 text-red-700' : 
+                          assessment.severity === 'Moderate' || assessment.severity === 'Mild Anxiety' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                        )}>
+                          {assessment.severity}
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                      <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
+                        <span>Score Trajectory across sessions:</span>
+                        <span className="text-slate-700 font-bold">Last completed: {formatDate(assessment.completedAt)}</span>
+                      </div>
+
+                      {/* Chart */}
+                      <div className="h-[200px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={Array.isArray(assessment?.trend) ? assessment.trend : []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                            <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} dy={10} tickFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
+                            <YAxis domain={[0, assessment.maxScore]} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} />
+                            <Tooltip 
+                              contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                              labelFormatter={(label) => formatDate(label as string)}
+                            />
+                            <Line type="monotone" dataKey="score" stroke="#5e2be2" strokeWidth={3} dot={{ r: 5, fill: "#5e2be2", strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 7 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                        <div className="text-xs text-slate-500">
+                          Baseline: <span className="font-bold text-slate-900">{assessment.previousScore || (assessment.currentScore + 8)}</span> → Latest: <span className="font-bold text-[#5e2be2]">{assessment.currentScore}</span>
+                        </div>
+                        <Button 
+                          onClick={() => setItemDetailsScale(assessment)}
+                          variant="outline" 
+                          size="sm"
+                          className="text-xs font-bold text-[#5e2be2] border-purple-200 hover:bg-purple-50 h-8 cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5 mr-1" />
+                          View Item Breakdown
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </TabsContent>
 
           {/* TAB 4: ACTIVITIES & HOMEWORK */}
           <TabsContent value="homework" className="space-y-6 outline-none">
             <div className="flex justify-end mb-4">
-              <Button className="bg-primary hover:bg-primary/90">
+              <Button 
+                onClick={() => setAssignActivityModalOpen(true)}
+                className="bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Assign Activity
               </Button>
@@ -1272,6 +1165,89 @@ export default function ClientDetail() {
               ))}
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG 4: ASSIGN THERAPEUTIC ACTIVITY */}
+      <Dialog open={assignActivityModalOpen} onOpenChange={setAssignActivityModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2 text-slate-900">
+              <Gamepad2 className="w-5 h-5 text-[#5e2be2]" />
+              Assign Therapeutic Activity
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Assign an interactive exercise or practice simulation to {client.name}'s portal.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAssignActivitySubmit} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-slate-600 uppercase">Activity Title</label>
+              <Input 
+                value={activityTitle} 
+                onChange={(e) => setActivityTitle(e.target.value)} 
+                placeholder="e.g. Zen Breath & Focus Chamber"
+                className="w-full text-xs font-bold"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-600 uppercase">Exercise Category</label>
+                <Select value={activityCategory} onValueChange={setActivityCategory}>
+                  <SelectTrigger className="text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="MINDFULNESS">Mindfulness &amp; Focus</SelectItem>
+                    <SelectItem value="CBT">CBT Cognitive Reframe</SelectItem>
+                    <SelectItem value="GRATITUDE">Gratitude Jar</SelectItem>
+                    <SelectItem value="BREATHING">4-7-8 Breathing Wave</SelectItem>
+                    <SelectItem value="SOMATIC">Somatic Muscle Release</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-600 uppercase">Frequency</label>
+                <Select value={activityFrequency} onValueChange={setActivityFrequency}>
+                  <SelectTrigger className="text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Daily">Daily Practice</SelectItem>
+                    <SelectItem value="3x/Week">3x Per Week</SelectItem>
+                    <SelectItem value="Weekly">Weekly Goal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-slate-600 uppercase">Due Date</label>
+              <Input 
+                type="date" 
+                value={activityDueDate} 
+                onChange={(e) => setActivityDueDate(e.target.value)} 
+                className="w-full text-xs"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold text-slate-600 uppercase">Therapist Instructions</label>
+              <Input 
+                value={activityInstructions} 
+                onChange={(e) => setActivityInstructions(e.target.value)} 
+                placeholder="Practice guidelines..."
+                className="w-full text-xs"
+              />
+            </div>
+
+            <DialogFooter className="pt-2">
+              <Button type="button" variant="outline" onClick={() => setAssignActivityModalOpen(false)}>Cancel</Button>
+              <Button type="submit" className="bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold cursor-pointer">Assign Activity</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

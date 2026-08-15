@@ -254,6 +254,8 @@ export function calculateOutcome(params: {
   const outcomeId = `out-${Date.now()}`;
   const notifId = `notif-${Date.now()}`;
 
+  // ALWAYS dispatch an outcome notification to the therapist panel upon 3-session milestone assessment completion,
+  // regardless of whether score decreased, increased, or stayed unchanged.
   const outcome: OutcomeRecord = {
     id: outcomeId,
     clientId,
@@ -270,7 +272,7 @@ export function calculateOutcome(params: {
     changeLabel,
     changeDirection,
     completedDate: `Just completed after Session ${sessionMilestone}`,
-    therapistNotified: true,
+    therapistNotified: true, // Always true
     notifiedAt: "Just now",
   };
 

@@ -57,11 +57,11 @@ const SEARCH_DATABASE: SearchItem[] = [
   { id: "p3", title: "Client Directory", subtitle: "Full client list, intake forms & clinical details", category: "Pages & Modules", href: "/clients", badge: "Module", keywords: ["patients", "records", "intake"] },
   { id: "p4", title: "Session Calendar", subtitle: "Schedule appointments & view timeline", category: "Pages & Modules", href: "/calendar", badge: "Module", keywords: ["booking", "schedule", "events"] },
   { id: "p5", title: "Client Messages", subtitle: "Secure direct messaging & chat logs", category: "Pages & Modules", href: "/messages", badge: "Module", keywords: ["chat", "inbox", "communication"] },
-  { id: "p6", title: "Clinical Outcomes", subtitle: "Track PHQ-9 & GAD-7 assessment progress", category: "Pages & Modules", href: "/clients?tab=outcomes", badge: "Module", keywords: ["phq9", "gad7", "scores", "progress"] },
+  { id: "p6", title: "Clinical Outcomes", subtitle: "Track PHQ-9 & GAD-7 assessment progress", category: "Pages & Modules", href: "/outcomes", badge: "Module", keywords: ["phq9", "gad7", "scores", "progress"] },
   { id: "p7", title: "Revenue & Analytics", subtitle: "Financial reports, payouts & session billing", category: "Pages & Modules", href: "/revenue", badge: "Module", keywords: ["invoices", "income", "payments"] },
   { id: "p8", title: "Reviews & Ratings", subtitle: "Patient feedback & satisfaction metrics", category: "Pages & Modules", href: "/reviews", badge: "Module", keywords: ["feedback", "ratings", "stars"] },
   { id: "p9", title: "Clinical Resources", subtitle: "Worksheets, psychoeducation & document files", category: "Pages & Modules", href: "/resources", badge: "Module", keywords: ["pdf", "files", "materials"] },
-  { id: "p10", title: "Assessments", subtitle: "Clinical evaluation questionnaires", category: "Pages & Modules", href: "/clients?tab=assessments", badge: "Module", keywords: ["tests", "evaluations", "forms"] },
+  { id: "p10", title: "Assessments", subtitle: "Clinical evaluation questionnaires", category: "Pages & Modules", href: "/assessments", badge: "Module", keywords: ["tests", "evaluations", "forms"] },
   { id: "p11", title: "Blog & Psychoeducation", subtitle: "Articles & clinical insights for clients", category: "Pages & Modules", href: "/blog", badge: "Content", keywords: ["articles", "posts", "education"] },
 
   // Activities
@@ -296,7 +296,6 @@ export function Sidebar() {
                   <p className="text-[11px] text-slate-500 font-medium">{user?.title || "Platform Admin"}</p>
                 </div>
               </div>
-              <ChevronUp className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''}`} />
             </div>
           </div>
         </div>

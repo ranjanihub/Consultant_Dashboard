@@ -33,6 +33,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/page-header";
+import { ActivityGamePlayer } from "@/components/activity-game-player";
+import { cn } from "@/lib/utils";
 
 export interface ClientAssignment {
   clientName: string;
@@ -186,6 +188,7 @@ export default function ActivitiesPage() {
 
   // Preview Activity Modal State
   const [activeActivity, setActiveActivity] = useState<ActivityItem | null>(null);
+  const [previewTab, setPreviewTab] = useState<"game" | "instructions">("game");
 
 
 
@@ -234,6 +237,7 @@ export default function ActivitiesPage() {
 
   const handlePreviewActivity = (act: ActivityItem) => {
     setActiveActivity(act);
+    setPreviewTab("game");
   };
 
 
@@ -608,46 +612,81 @@ export default function ActivitiesPage() {
         </div>
       )}
 
-      {/* Preview Activity Modal */}
+      {/* Preview Activity Modal with Interactive Game Player */}
       <Dialog open={!!activeActivity} onOpenChange={() => setActiveActivity(null)}>
         {activeActivity && (
-          <DialogContent className="max-w-xl p-0 rounded-3xl overflow-hidden border-none shadow-2xl">
-            <div className="relative h-48 w-full overflow-hidden bg-slate-900">
+          <DialogContent className="max-w-2xl p-0 rounded-3xl overflow-hidden border-none shadow-2xl bg-slate-950 text-white max-h-[90vh] overflow-y-auto">
+            {/* Header Banner */}
+            <div className="relative h-40 w-full overflow-hidden bg-slate-900 shrink-0">
               <img
                 src={activeActivity.imageUrl}
                 alt={activeActivity.title}
-                className="w-full h-full object-cover opacity-80"
+                className="w-full h-full object-cover opacity-60"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-              <div className="absolute bottom-4 left-6 right-6 text-white">
-                <div className="flex items-center gap-2 text-xs font-bold text-purple-300 uppercase tracking-wider mb-1">
-                  {getCategoryIcon(activeActivity.category)}
-                  <span>{activeActivity.category} • {activeActivity.duration}</span>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
+              <div className="absolute bottom-4 left-6 right-6 text-white flex items-end justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-purple-300 uppercase tracking-wider mb-1">
+                    {getCategoryIcon(activeActivity.category)}
+                    <span>{activeActivity.category} • {activeActivity.duration}</span>
+                  </div>
+                  <h2 className="text-2xl font-bold leading-tight text-white">
+                    {activeActivity.title}
+                  </h2>
                 </div>
-                <h2 className="text-2xl font-bold leading-tight text-white">
-                  {activeActivity.title}
-                </h2>
+
+                {/* Tab Switcher: Game vs Guidelines */}
+                <div className="flex items-center gap-1 bg-slate-900/90 border border-white/20 rounded-full p-1 backdrop-blur-md">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewTab("game")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+                      previewTab === "game"
+                        ? "bg-[#5e2be2] text-white shadow-md"
+                        : "text-slate-400 hover:text-white"
+                    )}
+                  >
+                    <span>🎮 Play Game</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewTab("instructions")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+                      previewTab === "instructions"
+                        ? "bg-[#5e2be2] text-white shadow-md"
+                        : "text-slate-400 hover:text-white"
+                    )}
+                  >
+                    <span>📋 Guidelines</span>
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="p-6 sm:p-7 space-y-6 bg-white">
-              {/* Instructions */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Exercise Guidelines & Instructions
-                </h3>
-                <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-sm text-slate-700 leading-relaxed whitespace-pre-line font-medium">
-                  {activeActivity.instructions || activeActivity.description}
+            {/* Modal Body: Render Interactive Game or Instructions */}
+            <div className="p-6 sm:p-7 space-y-6 bg-slate-950">
+              {previewTab === "game" ? (
+                <ActivityGamePlayer activity={activeActivity} />
+              ) : (
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Clinical Guidelines & Exercise Protocol
+                  </h3>
+                  <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-sm text-slate-300 leading-relaxed whitespace-pre-line font-medium">
+                    {activeActivity.instructions || activeActivity.description}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-between pt-4 border-t border-slate-900">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setActiveActivity(null)}
-                  className="rounded-2xl border-slate-200 font-semibold text-slate-700 h-11 px-5"
+                  className="rounded-2xl border-slate-800 text-slate-300 hover:bg-slate-900 font-semibold text-xs h-11 px-5 cursor-pointer"
                 >
                   Close Preview
                 </Button>
@@ -658,7 +697,7 @@ export default function ActivitiesPage() {
                     setActiveActivity(null);
                     openAssignModal(actToAssign);
                   }}
-                  className="rounded-2xl bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold h-11 px-6 shadow-md shadow-purple-500/20 gap-2 cursor-pointer"
+                  className="rounded-2xl bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold text-xs h-11 px-6 shadow-md shadow-purple-500/20 gap-2 cursor-pointer"
                 >
                   <UserPlus className="w-4 h-4 stroke-[2.5]" />
                   <span>Assign to Client & Set Frequency</span>

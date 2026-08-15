@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { useGetClients } from "@workspace/api-client-react";
 import AddClientDialog from "@/components/AddClientDialog";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Outcomes from "@/pages/outcomes";
-import Assessments from "@/pages/assessments";
+import { Button } from "@/components/ui/button";
 import {
   Search,
   Plus,
@@ -34,7 +32,6 @@ import {
   ClipboardCheck,
   Layers,
 } from "lucide-react";
-import { PageHeader } from "@/components/page-header";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Link, useLocation } from "wouter";
@@ -72,15 +69,6 @@ export default function Clients() {
     }
   }, [location]);
 
-  const handleTabChange = (val: string) => {
-    setMainTab(val);
-    if (val === "directory") {
-      setLocation("/clients");
-    } else {
-      setLocation(`/clients?tab=${val}`);
-    }
-  };
-
   const [copiedSummary, setCopiedSummary] = useState(false);
   const [expandedScale, setExpandedScale] = useState<string | null>(null);
   const [newGoalInput, setNewGoalInput] = useState("");
@@ -95,103 +83,6 @@ export default function Clients() {
     { id: 101, title: "CBT Thought Record Log", frequency: "Daily", status: "completed", dueDate: "2026-07-27" },
     { id: 102, title: "Progressive Muscle Relaxation", frequency: "2x/day", status: "pending", dueDate: "2026-08-01" },
   ]);
-
-  const { data: clients, isLoading } = useGetClients({
-    search: search || undefined,
-    status: statusFilter !== "all" ? (statusFilter as any) : undefined
-  });
-
-  const DEMO_CLIENTS = [
-    {
-      id: 1,
-      code: "#CL-101",
-      name: "Sarah Jenkins",
-      email: "sarah.j@example.com",
-      phone: "+1 (555) 234-5678",
-      therapist: "Dr. Alex Harrison",
-      modality: "Individual Therapy",
-      lastSession: "2026-07-28",
-      nextSession: "2026-08-01",
-      nextSessionTime: "(09:00 AM)",
-      status: "active" as const,
-      primaryGoal: "Generalized Anxiety & Workplace Stress",
-    },
-    {
-      id: 2,
-      code: "#CL-102",
-      name: "Michael & Jennifer Chen",
-      email: "m.chen@example.com",
-      phone: "+1 (555) 876-5432",
-      therapist: "Dr. Elena Rostova",
-      modality: "Couple Therapy",
-      lastSession: "2026-07-29",
-      nextSession: "2026-08-01",
-      nextSessionTime: "(10:30 AM)",
-      status: "active" as const,
-      primaryGoal: "Marital Communication & Emotional Regulation",
-    },
-    {
-      id: 3,
-      code: "#CL-103",
-      name: "Emily Rodriguez",
-      email: "emily.r@example.com",
-      phone: "+1 (555) 345-6789",
-      therapist: "Dr. Alex Harrison",
-      modality: "CBT Therapy",
-      lastSession: "2026-07-26",
-      nextSession: "2026-08-02",
-      nextSessionTime: "(02:00 PM)",
-      status: "active" as const,
-      primaryGoal: "Panic Disorder & Agoraphobia Management",
-    },
-    {
-      id: 4,
-      code: "#CL-104",
-      name: "David Kim",
-      email: "david.kim@example.com",
-      phone: "+1 (555) 456-7890",
-      therapist: "Dr. Alex Harrison",
-      modality: "Individual Therapy",
-      lastSession: "2026-07-24",
-      nextSession: "2026-08-03",
-      nextSessionTime: "(11:15 AM)",
-      status: "new" as const,
-      primaryGoal: "Social Anxiety in Executive Leadership",
-    },
-    {
-      id: 5,
-      code: "#CL-105",
-      name: "Jessica Taylor",
-      email: "jessica.t@example.com",
-      phone: "+1 (555) 567-8901",
-      therapist: "Dr. Alex Harrison",
-      modality: "Panic CBT",
-      lastSession: "2026-07-12",
-      nextSession: undefined,
-      nextSessionTime: "",
-      status: "completed" as const,
-      primaryGoal: "Interoceptive Panic Exposure Remission",
-    },
-  ];
-
-  const clientList = (Array.isArray(clients) && clients.length > 0) ? clients : DEMO_CLIENTS;
-
-  const getStatusBadge = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return <span className="text-[11px] px-3 py-1 font-bold rounded-full inline-block bg-emerald-100 text-emerald-700">Active</span>;
-      case 'high_priority':
-        return <span className="text-[11px] px-3 py-1 font-bold rounded-full inline-block bg-amber-100 text-amber-700">High Priority</span>;
-      case 'new':
-        return <span className="text-[11px] px-3 py-1 font-bold rounded-full inline-block bg-blue-100 text-blue-700">New</span>;
-      case 'completed':
-        return <span className="text-[11px] px-3 py-1 font-bold rounded-full inline-block bg-slate-100 text-slate-700">Completed</span>;
-      case 'inactive':
-        return <span className="text-[11px] px-3 py-1 font-bold rounded-full inline-block bg-rose-100 text-rose-700">Inactive</span>;
-      default:
-        return <span className="text-[11px] px-3 py-1 font-bold rounded-full inline-block bg-slate-100 text-slate-700 capitalize">{status}</span>;
-    }
-  };
 
   const handleCopySummary = () => {
     const text = "Client presents with persistent generalized anxiety, work-related burnout, and mild insomnia over the past 6 months. Seeking CBT coping strategies and sleep hygiene guidance.";
@@ -241,179 +132,257 @@ export default function Clients() {
     );
   };
 
-  return (
-    <div className="space-y-6 pb-10">
-      <Tabs value={mainTab} onValueChange={handleTabChange} className="w-full">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-2.5 rounded-2xl border border-slate-200/80 shadow-xs">
-          <TabsList className="bg-slate-100/90 p-1.5 rounded-xl h-13 flex items-center justify-start overflow-x-auto hide-scrollbar shrink-0 border border-slate-200/60">
-            <TabsTrigger 
-              value="directory" 
-              className="rounded-lg h-10 px-5 text-xs font-bold data-[state=active]:bg-white data-[state=active]:text-[#5e2be2] data-[state=active]:shadow-xs flex items-center gap-2 transition-all cursor-pointer"
-            >
-              <Users className="w-4 h-4 text-[#5e2be2]" />
-              <span>Client Directory &amp; Roster</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="outcomes" 
-              className="rounded-lg h-10 px-5 text-xs font-bold data-[state=active]:bg-white data-[state=active]:text-[#5e2be2] data-[state=active]:shadow-xs flex items-center gap-2 transition-all cursor-pointer"
-            >
-              <LineChart className="w-4 h-4 text-[#5e2be2]" />
-              <span>Outcomes Workflow</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="assessments" 
-              className="rounded-lg h-10 px-5 text-xs font-bold data-[state=active]:bg-white data-[state=active]:text-[#5e2be2] data-[state=active]:shadow-xs flex items-center gap-2 transition-all cursor-pointer"
-            >
-              <ClipboardCheck className="w-4 h-4 text-[#5e2be2]" />
-              <span>Clinical Diagnostic Assessments</span>
-            </TabsTrigger>
-          </TabsList>
+  const { data: clients, isLoading } = useGetClients({
+    search: search || undefined,
+    status: statusFilter !== "all" ? (statusFilter as any) : undefined
+  });
 
-          <div className="flex items-center gap-2 px-2 shrink-0">
-            <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#5e2be2] bg-purple-50 px-3 py-1.5 rounded-xl border border-purple-200">
-              <Brain className="w-3.5 h-3.5" />
-              <span>Unified Client Hub</span>
-            </span>
-          </div>
+  const DEMO_CLIENTS = [
+    {
+      id: 1,
+      code: "#CL-101",
+      name: "Sarah Jenkins",
+      email: "sarah.j@example.com",
+      phone: "+1(555) 234-5678",
+      therapist: "Dr. Alex Harrison",
+      modality: "Individual Therapy",
+      lastSession: "2026-07-28",
+      nextSession: "2026-08-01",
+      nextSessionTime: "(09:00 AM)",
+      status: "active" as const,
+      primaryGoal: "Generalized Anxiety & Workplace Stress",
+    },
+    {
+      id: 2,
+      code: "#CL-102",
+      name: "Michael & Jennifer Chen",
+      email: "m.chen@example.com",
+      phone: "+1(555) 876-5432",
+      therapist: "Dr. Elena Rostova",
+      modality: "Couple Therapy",
+      lastSession: "2026-07-29",
+      nextSession: "2026-08-01",
+      nextSessionTime: "(10:30 AM)",
+      status: "active" as const,
+      primaryGoal: "Marital Communication & Emotional Regulation",
+    },
+    {
+      id: 3,
+      code: "#CL-103",
+      name: "Emily Rodriguez",
+      email: "emily.r@example.com",
+      phone: "+1(555) 345-6789",
+      therapist: "Dr. Alex Harrison",
+      modality: "CBT Therapy",
+      lastSession: "2026-07-26",
+      nextSession: "2026-08-02",
+      nextSessionTime: "(02:00 PM)",
+      status: "active" as const,
+      primaryGoal: "Panic Disorder & Agoraphobia Management",
+    },
+    {
+      id: 4,
+      code: "#CL-104",
+      name: "David Kim",
+      email: "david.kim@example.com",
+      phone: "+1(555) 456-7890",
+      therapist: "Dr. Alex Harrison",
+      modality: "Individual Therapy",
+      lastSession: "2026-07-24",
+      nextSession: "2026-08-03",
+      nextSessionTime: "(11:15 AM)",
+      status: "active" as const,
+      primaryGoal: "Social Anxiety in Executive Leadership",
+    },
+    {
+      id: 5,
+      code: "#CL-105",
+      name: "Jessica Taylor",
+      email: "jessica.t@example.com",
+      phone: "+1(555) 567-8901",
+      therapist: "Dr. Alex Harrison",
+      modality: "Panic CBT",
+      lastSession: "2026-07-12",
+      nextSession: undefined,
+      nextSessionTime: "",
+      status: "completed" as const,
+      primaryGoal: "Interoceptive Panic Exposure Remission",
+    },
+  ];
+
+  const clientList = (Array.isArray(clients) && clients.length > 0) ? clients : DEMO_CLIENTS;
+
+  const filteredClients = clientList.filter((c: any) => {
+    const q = search.toLowerCase().trim();
+    const matchesSearch = !q || 
+      (c.name && c.name.toLowerCase().includes(q)) || 
+      (c.email && c.email.toLowerCase().includes(q)) ||
+      (c.phone && c.phone.includes(q)) ||
+      (c.code && c.code.toLowerCase().includes(q)) ||
+      (c.therapist && c.therapist.toLowerCase().includes(q));
+
+    const matchesStatus = statusFilter === "all" || (c.status && c.status.toLowerCase() === statusFilter.toLowerCase());
+    return matchesSearch && matchesStatus;
+  });
+
+  const activeCount = clientList.filter((c: any) => c.status === "active" || c.status === "new").length;
+
+  const getStatusBadge = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-emerald-100 text-emerald-700">Active</span>;
+      case 'high_priority':
+        return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-amber-100 text-amber-700">High Priority</span>;
+      case 'new':
+        return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-blue-100 text-blue-700">New</span>;
+      case 'completed':
+        return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-slate-100 text-slate-700">Completed</span>;
+      case 'inactive':
+        return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-rose-100 text-rose-700">Inactive</span>;
+      default:
+        return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-slate-100 text-slate-700 capitalize">{status}</span>;
+    }
+  };
+
+  return (
+    <div className="space-y-6 pb-12">
+      {/* TOP HEADER PURPLE BANNER MATCHING HEXPERTIFY SYSTEM COLOR THEME */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#431bb5] via-[#5e2be2] to-[#361394] p-6 sm:p-8 text-white shadow-lg shadow-purple-900/10 border border-white/10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        {/* Decorative ambient background glows */}
+        <div className="absolute top-0 right-0 w-[350px] h-[350px] bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-purple-400/15 rounded-full blur-3xl translate-y-1/2 pointer-events-none" />
+
+        <div className="space-y-2 relative z-10">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            Client Medical Records &amp; Intake Hub
+          </h1>
+          <p className="text-xs sm:text-sm text-purple-100/90 max-w-2xl font-medium leading-relaxed">
+            Access complete client medical details, AI intake surveys, clinical assessment scores, mood tracking, and session notes.
+          </p>
         </div>
 
-        <TabsContent value="directory" className="space-y-6 outline-none mt-6">
-          <PageHeader
-            title="Client Directory"
-            description="Manage your active caseload, track client progress, and schedule upcoming therapy sessions."
-            badge="CASELOAD MANAGEMENT"
-            icon={<Users className="w-4 h-4 text-purple-200" />}
-          >
-            <button
-              type="button"
-              onClick={() => setAddClientOpen(true)}
-              className="inline-flex items-center justify-center gap-2 bg-white text-[#5e2be2] hover:bg-white/90 font-extrabold text-xs px-4 py-2.5 rounded-full shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
-            >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>Add Client</span>
-            </button>
-          </PageHeader>
-
-          <AddClientDialog open={addClientOpen} onOpenChange={setAddClientOpen} />
-
-          <div className="flex flex-col sm:flex-row items-center gap-4 justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <div className="relative w-full sm:w-[300px]">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input 
-                  placeholder="Search clients by name..." 
-                  className="pl-10 w-full rounded-xl border-slate-200 text-xs h-10"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[160px] rounded-xl border-slate-200 text-xs h-10">
-                  <Filter className="w-4 h-4 mr-2 text-slate-400" />
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Clients</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="new">New</SelectItem>
-                  <SelectItem value="high_priority">High Priority</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <span className="text-xs font-semibold text-slate-400">
-              Showing {clientList.length} client{clientList.length === 1 ? '' : 's'}
-            </span>
+        <div className="relative z-10 flex items-center gap-4 bg-white/15 backdrop-blur-md p-4 px-6 rounded-2xl border border-white/20 shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white">
+            <Users className="w-5 h-5" />
           </div>
+          <div>
+            <span className="text-[11px] font-semibold text-purple-200 block uppercase tracking-wider">Total Registered Clients</span>
+            <span className="text-xl font-extrabold text-white">{activeCount} Active Records</span>
+          </div>
+        </div>
+      </div>
 
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((n) => (
-                <Skeleton key={n} className="h-64 rounded-2xl" />
-              ))}
-            </div>
-          ) : clientList.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-2xl border border-slate-100">
-              <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <h3 className="text-sm font-bold text-slate-900">No clients found</h3>
-              <p className="text-xs text-slate-500 mt-1">Try adjusting your search query or filter.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {clientList.map((clientItem: any) => (
-                <div 
-                  key={clientItem.id}
-                  className="bg-white rounded-2xl border border-slate-100 p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
-                >
-                  <div className="space-y-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-2xl bg-purple-100 text-[#5e2be2] font-black text-sm flex items-center justify-center shrink-0">
-                          {clientItem.name.split(' ').map((n: string) => n[0]).join('')}
-                        </div>
-                        <div>
-                          <Link href={`/clients/${clientItem.id}`}>
-                            <h3 className="font-extrabold text-sm text-slate-900 group-hover:text-[#5e2be2] transition-colors cursor-pointer">
-                              {clientItem.name}
-                            </h3>
-                          </Link>
-                          <span className="text-[11px] font-mono font-medium text-slate-400">{clientItem.code || `#CL-10${clientItem.id}`}</span>
-                        </div>
+      <AddClientDialog open={addClientOpen} onOpenChange={setAddClientOpen} />
+
+      {/* FILTER & SEARCH BAR */}
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Input 
+            placeholder="Search by client name, email, phone, ID, or therapist..." 
+            className="pl-11 h-11 bg-slate-50 border-slate-200 rounded-2xl text-xs font-medium focus:bg-white"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar">
+          {[
+            { id: "all", label: "All" },
+            { id: "active", label: "Active" },
+            { id: "completed", label: "Completed" },
+            { id: "inactive", label: "Inactive" },
+          ].map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setStatusFilter(item.id)}
+              className={cn(
+                "px-5 py-2 rounded-full text-xs font-extrabold capitalize transition-all cursor-pointer whitespace-nowrap",
+                statusFilter === item.id 
+                  ? "bg-[#5e2be2] text-white shadow-md shadow-[#5e2be2]/20" 
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              )}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* CLIENT ROSTER TABLE */}
+      {isLoading ? (
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 space-y-4">
+          {[1, 2, 3].map((n) => (
+            <Skeleton key={n} className="h-16 rounded-2xl" />
+          ))}
+        </div>
+      ) : filteredClients.length === 0 ? (
+        <div className="text-center py-16 bg-white rounded-3xl border border-slate-200">
+          <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+          <h3 className="text-sm font-bold text-slate-900">No clients match your filter</h3>
+          <p className="text-xs text-slate-500 mt-1">Try adjusting your search query or status filter.</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50/70 border-b border-slate-100 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                  <th className="py-4 px-6">Client Code &amp; Name</th>
+                  <th className="py-4 px-6">Service Modality</th>
+                  <th className="py-4 px-6">Last Session</th>
+                  <th className="py-4 px-6">Next Session</th>
+                  <th className="py-4 px-6">Status</th>
+                  <th className="py-4 px-6 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {filteredClients.map((clientItem: any) => (
+                  <tr key={clientItem.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-4 px-6 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-purple-50 text-[#5e2be2] border-purple-200 font-mono font-bold text-[10px]">
+                          {clientItem.code || `#CL-10${clientItem.id}`}
+                        </Badge>
+                        <span className="font-extrabold text-slate-900 text-sm">
+                          {clientItem.name}
+                        </span>
                       </div>
+                    </td>
+                    <td className="py-4 px-6 font-medium text-slate-600 whitespace-nowrap">
+                      {clientItem.modality || 'Individual Therapy'}
+                    </td>
+                    <td className="py-4 px-6 font-medium text-slate-500 font-mono whitespace-nowrap">
+                      {clientItem.lastSession || '2026-07-28'}
+                    </td>
+                    <td className="py-4 px-6 font-bold text-[#5e2be2] font-mono whitespace-nowrap">
+                      {clientItem.nextSession ? (
+                        <div className="flex items-center gap-1">
+                          <span>{clientItem.nextSession}</span>
+                          <span className="text-[11px] font-normal text-slate-500">{clientItem.nextSessionTime || '(09:00 AM)'}</span>
+                        </div>
+                      ) : (
+                        <span className="text-slate-400 font-normal">-</span>
+                      )}
+                    </td>
+                    <td className="py-4 px-6 whitespace-nowrap">
                       {getStatusBadge(clientItem.status)}
-                    </div>
-
-                    <div className="p-3 bg-slate-50 rounded-xl space-y-1.5 border border-slate-100 text-xs">
-                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Primary Treatment Goal</span>
-                      <p className="font-bold text-slate-800 line-clamp-2">{clientItem.primaryGoal || "Managing stress & emotional health"}</p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-500">
-                      <div>
-                        <span className="text-[10px] font-semibold text-slate-400 block">Modality</span>
-                        <span className="font-bold text-slate-700">{clientItem.modality || "Individual CBT"}</span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-semibold text-slate-400 block">Therapist</span>
-                        <span className="font-bold text-slate-700 truncate block">{clientItem.therapist || "Dr. Alex Harrison"}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedRecordClient(clientItem);
-                        setActiveModalTab("intake");
-                      }}
-                      className="text-xs font-bold text-slate-600 hover:text-[#5e2be2] transition-colors cursor-pointer"
-                    >
-                      Quick Overview
-                    </button>
-                    <Link href={`/clients/${clientItem.id}`}>
-                      <button 
-                        type="button"
-                        className="bg-purple-50 hover:bg-[#5e2be2] text-[#5e2be2] hover:text-white text-xs font-extrabold px-3.5 py-1.5 rounded-xl transition-all cursor-pointer"
-                      >
-                        Full Profile →
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="outcomes" className="space-y-6 outline-none mt-6">
-          <Outcomes />
-        </TabsContent>
-
-        <TabsContent value="assessments" className="space-y-6 outline-none mt-6">
-          <Assessments />
-        </TabsContent>
-      </Tabs>
+                    </td>
+                    <td className="py-4 px-6 text-right whitespace-nowrap">
+                      <Link href={`/clients/${clientItem.id}`}>
+                        <Button className="bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-sm transition-all cursor-pointer whitespace-nowrap">
+                          View Full Record
+                        </Button>
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <Dialog open={!!selectedRecordClient} onOpenChange={() => setSelectedRecordClient(null)}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-0 rounded-3xl border-0 shadow-2xl">
