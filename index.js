@@ -1329,7 +1329,7 @@ var HARDCODED_CLIENT_IMPROVEMENT = {
 router3.get("/dashboard/stats", async (_req, res) => {
   try {
     const clients = await db.select().from(clientsTable);
-    const activeClients = clients.filter((c) => c.status === "active" || c.status === "high_priority");
+    const activeClients = clients.filter((c) => c.status === "active");
     const newClients = clients.filter((c) => c.status === "new");
     const pendingSessions = await db.select().from(sessionsTable).where(and(eq(sessionsTable.status, "completed"), eq(sessionsTable.reportSubmitted, false)));
     const homeworkPending = await db.select().from(homeworkTable).where(eq(homeworkTable.status, "pending"));
@@ -1482,7 +1482,7 @@ var HARDCODED_CLIENTS_MAP = {
     initials: "MC",
     age: 36,
     gender: "Male",
-    status: "high_priority",
+    status: "active",
     primaryGoal: "Overcome depressive episodes and build daily routine",
     presentingProblems: ["Major Depressive Disorder (Mild)", "Social Isolation", "Low Energy"],
     identifiedConcerns: ["Lack of motivation for exercise", "Negative self-talk", "Withdrawal from friendships"],

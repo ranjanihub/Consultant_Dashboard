@@ -21,6 +21,9 @@ import {
   Sparkles,
   Calendar as CalendarIcon,
   Trash2,
+  Lock,
+  Unlock,
+  Ban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
@@ -33,45 +36,59 @@ const MONTHS      = ["January","February","March","April","May","June",
 function startOfMonth(y: number, m: number) { return new Date(y, m, 1).getDay(); }
 function daysInMonth (y: number, m: number) { return new Date(y, m + 1, 0).getDate(); }
 
+export type SessionStatus = "booked" | "available" | "blocked";
+
+export interface SessionSlot {
+  client: string;
+  initials: string;
+  time: string;
+  type: string;
+  duration: string;
+  status: SessionStatus;
+}
+
 /* Mock sessions keyed by "YYYY-M-D" */
-const INITIAL_SESSION_DATA: Record<string, { client: string; initials: string; time: string; type: string; duration: string; status: "booked" | "available" }[]> = {
+const INITIAL_SESSION_DATA: Record<string, SessionSlot[]> = {
   "2026-7-27": [
-    { client: "Sarah Jenkins",          initials: "SJ",   time: "09:00 AM", type: "CBT · Cognitive Restructuring", duration: "60 min", status: "booked" },
-    { client: "Michael Chen",           initials: "MC",   time: "10:30 AM", type: "ACT · Values Clarification",    duration: "60 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "12:00 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
-    { client: "David Kim",              initials: "DK",   time: "02:00 PM", type: "CBT · Exposure Hierarchy",     duration: "60 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "03:30 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
-    { client: "Emily Rodriguez",        initials: "ER",   time: "04:30 PM", type: "DBT · Distress Tolerance",     duration: "60 min", status: "booked" },
+    { client: "Sarah Jenkins",          initials: "SJ",    time: "09:00 AM", type: "CBT · Cognitive Restructuring", duration: "60 min", status: "booked" },
+    { client: "Michael Chen",           initials: "MC",    time: "10:30 AM", type: "ACT · Values Clarification",    duration: "60 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN",  time: "12:00 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Blocked Time Slot",      initials: "BLOCK", time: "01:30 PM", type: "Unavailable / Blocked by Therapist", duration: "60 min", status: "blocked" },
+    { client: "David Kim",              initials: "DK",    time: "02:00 PM", type: "CBT · Exposure Hierarchy",     duration: "60 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN",  time: "03:30 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Emily Rodriguez",        initials: "ER",    time: "04:30 PM", type: "DBT · Distress Tolerance",     duration: "60 min", status: "booked" },
   ],
   "2026-7-28": [
-    { client: "Sarah Jenkins",          initials: "SJ",   time: "10:00 AM", type: "CBT · Session 13",             duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "11:30 AM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
-    { client: "Michael Chen",           initials: "MC",   time: "02:00 PM", type: "ACT · Session 9",              duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "04:00 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Sarah Jenkins",          initials: "SJ",    time: "10:00 AM", type: "CBT · Session 13",             duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN",  time: "11:30 AM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Blocked Time Slot",      initials: "BLOCK", time: "01:00 PM", type: "Admin / Personal Block",       duration: "60 min", status: "blocked" },
+    { client: "Michael Chen",           initials: "MC",    time: "02:00 PM", type: "ACT · Session 9",              duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN",  time: "04:00 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
   ],
   "2026-7-29": [
-    { client: "David Kim",              initials: "DK",   time: "09:00 AM", type: "CBT · Session 3",              duration: "50 min", status: "booked" },
-    { client: "Emily Rodriguez",        initials: "ER",   time: "11:00 AM", type: "DBT · Session 16",             duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "01:30 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "03:30 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "David Kim",              initials: "DK",    time: "09:00 AM", type: "CBT · Session 3",              duration: "50 min", status: "booked" },
+    { client: "Emily Rodriguez",        initials: "ER",    time: "11:00 AM", type: "DBT · Session 16",             duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN",  time: "01:30 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Blocked Time Slot",      initials: "BLOCK", time: "03:30 PM", type: "Unavailable / Blocked by Therapist", duration: "50 min", status: "blocked" },
   ],
   "2026-7-30": [
-    { client: "Sarah Jenkins",          initials: "SJ",   time: "10:00 AM", type: "CBT · Check-in",               duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "11:30 AM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
-    { client: "Michael Chen",           initials: "MC",   time: "02:00 PM", type: "ACT · Behavioral Activation",   duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "04:30 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Sarah Jenkins",          initials: "SJ",    time: "10:00 AM", type: "CBT · Check-in",               duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN",  time: "11:30 AM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Michael Chen",           initials: "MC",    time: "02:00 PM", type: "ACT · Behavioral Activation",   duration: "50 min", status: "booked" },
+    { client: "Open Consultation Slot", initials: "OPEN",  time: "04:30 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
   ],
   "2026-7-31": [
-    { client: "Open Consultation Slot", initials: "OPEN", time: "11:00 AM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
-    { client: "Emily Rodriguez",        initials: "ER",   time: "01:00 PM", type: "DBT · Mindfulness",            duration: "50 min", status: "booked" },
-    { client: "Jessica Taylor",         initials: "JT",   time: "03:00 PM", type: "CBT · Graduation Check-in",    duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "05:00 PM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Open Consultation Slot", initials: "OPEN",  time: "11:00 AM", type: "Available for Client Booking",  duration: "50 min", status: "available" },
+    { client: "Emily Rodriguez",        initials: "ER",    time: "01:00 PM", type: "DBT · Mindfulness",            duration: "50 min", status: "booked" },
+    { client: "Jessica Taylor",         initials: "JT",    time: "03:00 PM", type: "CBT · Graduation Check-in",    duration: "50 min", status: "booked" },
+    { client: "Blocked Time Slot",      initials: "BLOCK", time: "05:00 PM", type: "Unavailable / Blocked by Therapist", duration: "50 min", status: "blocked" },
   ],
 };
 
-const DEFAULT_DAY_SLOTS = [
-  { client: "Open Consultation Slot", initials: "OPEN", time: "10:00 AM", type: "Available for Client Booking", duration: "50 min", status: "available" as const },
-  { client: "Open Consultation Slot", initials: "OPEN", time: "02:30 PM", type: "Available for Client Booking", duration: "50 min", status: "available" as const },
+const DEFAULT_DAY_SLOTS: SessionSlot[] = [
+  { client: "Open Consultation Slot", initials: "OPEN", time: "10:00 AM", type: "Available for Client Booking", duration: "50 min", status: "available" },
+  { client: "Blocked Time Slot", initials: "BLOCK", time: "12:30 PM", type: "Unavailable / Blocked by Therapist", duration: "60 min", status: "blocked" },
+  { client: "Open Consultation Slot", initials: "OPEN", time: "02:30 PM", type: "Available for Client Booking", duration: "50 min", status: "available" },
 ];
 
 /* Session dot indicator colours */
@@ -92,19 +109,19 @@ export default function Calendar() {
   const [addEventOpen, setAddEventOpen] = useState(false);
   const [confirmedSlot, setConfirmedSlot] = useState<string | null>(null);
 
-  // Dynamic session data state to support delete, reschedule, and available slots
-  const [sessionData, setSessionData] = useState(INITIAL_SESSION_DATA);
+  // Dynamic session data state to support delete, reschedule, block, and available slots
+  const [sessionData, setSessionData] = useState<Record<string, SessionSlot[]>>(INITIAL_SESSION_DATA);
 
   // Reschedule dialog state
   const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
-  const [rescheduleTarget, setRescheduleTarget] = useState<{ key: string; index: number; session: any } | null>(null);
+  const [rescheduleTarget, setRescheduleTarget] = useState<{ key: string; index: number; session: SessionSlot } | null>(null);
   const [rescheduleDate, setRescheduleDate] = useState("2026-07-29");
   const [rescheduleTime, setRescheduleTime] = useState("11:00 AM");
   const [rescheduleReason, setRescheduleReason] = useState("");
 
   // Assign client dialog state
   const [assignModalOpen, setAssignModalOpen] = useState(false);
-  const [assignTarget, setAssignTarget] = useState<{ key: string; index: number; slot: any } | null>(null);
+  const [assignTarget, setAssignTarget] = useState<{ key: string; index: number; slot: SessionSlot } | null>(null);
   const [assignClientName, setAssignClientName] = useState("Sarah Jenkins");
   const [assignType, setAssignType] = useState("Individual CBT Therapy");
 
@@ -113,8 +130,9 @@ export default function Calendar() {
   const sessionKey = `${year}-${month + 1}-${selectedDay}`;
   const daySessions = sessionData[sessionKey] ?? DEFAULT_DAY_SLOTS;
 
-  const bookedCount = daySessions.filter(s => s.status === 'booked' || s.client !== 'Open Consultation Slot').length;
-  const availableCount = daySessions.filter(s => s.status === 'available' || s.client === 'Open Consultation Slot').length;
+  const bookedCount = daySessions.filter(s => s.status === 'booked' || (s.client !== 'Open Consultation Slot' && s.status !== 'blocked' && s.client !== 'Blocked Time Slot')).length;
+  const availableCount = daySessions.filter(s => s.status === 'available' || (s.client === 'Open Consultation Slot' && s.status !== 'blocked')).length;
+  const blockedCount = daySessions.filter(s => s.status === 'blocked' || s.client === 'Blocked Time Slot').length;
 
   /* calendar grid */
   const firstDay  = startOfMonth(year, month);
@@ -137,7 +155,76 @@ export default function Calendar() {
   const isToday = (d: number) =>
     d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
 
-  const handleOpenReschedule = (key: string, index: number, session: any) => {
+  const handleToggleBlockSlot = (key: string, index: number) => {
+    setSessionData((prev) => {
+      const updated = { ...prev };
+      const currentList = updated[key] ?? [...DEFAULT_DAY_SLOTS];
+      const slot = currentList[index];
+      if (!slot) return prev;
+
+      const isBookedClient = slot.status === "booked" && slot.client !== "Open Consultation Slot" && slot.client !== "Blocked Time Slot";
+      if (isBookedClient) {
+        toast({
+          title: "Booked Client Session",
+          description: `This slot is currently booked for ${slot.client}. Please reschedule or delete the session to alter availability.`,
+        });
+        return prev;
+      }
+
+      const isCurrentlyBlocked = slot.status === "blocked" || slot.client === "Blocked Time Slot";
+      const newStatus: SessionStatus = isCurrentlyBlocked ? "available" : "blocked";
+
+      const updatedSlots = [...currentList];
+      updatedSlots[index] = {
+        ...slot,
+        client: newStatus === "blocked" ? "Blocked Time Slot" : "Open Consultation Slot",
+        initials: newStatus === "blocked" ? "BLOCK" : "OPEN",
+        type: newStatus === "blocked" ? "Unavailable / Blocked by Therapist" : "Available for Client Booking",
+        status: newStatus,
+      };
+
+      updated[key] = updatedSlots;
+
+      toast({
+        title: isCurrentlyBlocked ? "Slot Unblocked " : "Slot Blocked ",
+        description: isCurrentlyBlocked 
+          ? `Time slot at ${slot.time} is now open and available for client bookings.`
+          : `Time slot at ${slot.time} has been blocked from client bookings.`,
+      });
+
+      return updated;
+    });
+  };
+
+  const handleAddSlotFromDialog = (newSlot: { date: string; time: string; title: string; client: string; type: string; duration: string; status: SessionStatus }) => {
+    const parts = newSlot.date.split("-");
+    const key = parts.length === 3 ? `${parseInt(parts[0])}-${parseInt(parts[1])}-${parseInt(parts[2])}` : sessionKey;
+
+    const initials = newSlot.client === "Blocked Time Slot" ? "BLOCK" : newSlot.client === "Open Consultation Slot" ? "OPEN" : newSlot.client.split(" ").map(n => n[0]).join("").toUpperCase();
+
+    const slotItem: SessionSlot = {
+      client: newSlot.client,
+      initials,
+      time: newSlot.time,
+      type: newSlot.type,
+      duration: newSlot.duration,
+      status: newSlot.status,
+    };
+
+    setSessionData((prev) => {
+      const updated = { ...prev };
+      const existing = updated[key] ? [...updated[key]] : [...DEFAULT_DAY_SLOTS];
+      updated[key] = [...existing, slotItem];
+      return updated;
+    });
+
+    toast({
+      title: "Slot Added to Calendar! 📅",
+      description: `Added ${newSlot.status} slot at ${newSlot.time} for ${newSlot.date}.`,
+    });
+  };
+
+  const handleOpenReschedule = (key: string, index: number, session: SessionSlot) => {
     setRescheduleTarget({ key, index, session });
     setRescheduleTime(session.time);
     setRescheduleDate(`${year}-${String(month + 1).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`);
@@ -179,7 +266,7 @@ export default function Calendar() {
     });
   };
 
-  const handleOpenAssignClient = (key: string, index: number, slot: any) => {
+  const handleOpenAssignClient = (key: string, index: number, slot: SessionSlot) => {
     setAssignTarget({ key, index, slot });
     setAssignClientName("Sarah Jenkins");
     setAssignType("Individual CBT Therapy");
@@ -332,18 +419,20 @@ export default function Calendar() {
           </div>
 
           <div className="mt-6 pt-5 border-t border-slate-100 space-y-2.5">
-            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Weekly Capacity</span>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Weekly Capacity & Status</span>
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div className="flex flex-col justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5">
-                <span className="text-slate-500 font-medium text-[11px]">This Week</span>
+                <span className="text-slate-500 font-medium text-[11px]">Total Slots</span>
                 <span className="font-extrabold text-sm text-[#5e2be2] bg-purple-100/80 text-purple-900 px-2.5 py-1 rounded-xl w-fit border border-purple-200">
                   {Object.values(sessionData).flat().length} Sessions
                 </span>
               </div>
               <div className="flex flex-col justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5">
                 <span className="text-slate-500 font-medium text-[11px]">Selected Day</span>
-                <span className="font-extrabold text-sm text-emerald-800 bg-emerald-100/80 px-2.5 py-1 rounded-xl w-fit border border-emerald-200">
-                  {bookedCount} Booked / {availableCount} Open
+                <span className="font-extrabold text-[11px] text-slate-800 bg-white p-2 rounded-xl border border-slate-200 space-y-0.5">
+                  <div className="text-purple-700 font-black">🟣 {bookedCount} Booked</div>
+                  <div className="text-emerald-700 font-black">🟢 {availableCount} Available</div>
+                  <div className="text-rose-700 font-black">🔴 {blockedCount} Blocked</div>
                 </span>
               </div>
             </div>
@@ -358,16 +447,98 @@ export default function Calendar() {
                   {MONTHS[month]} {selectedDay}, {year}
                 </h3>
                 <p className="text-xs text-slate-500 font-medium">
-                  {bookedCount} booked session{bookedCount !== 1 ? "s" : ""} · {availableCount} available open slot{availableCount !== 1 ? "s" : ""}
+                  {bookedCount} booked · {availableCount} available · {blockedCount} blocked
                 </p>
               </div>
-              <div className="flex items-center gap-1.5">
-                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px] font-extrabold px-2.5 py-0.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Badge variant="outline" className="bg-purple-50 text-[#5e2be2] border-purple-200 text-[11px] font-extrabold px-2.5 py-0.5">
                   {bookedCount} Booked
                 </Badge>
-                <Badge variant="outline" className="bg-purple-50 text-[#5e2be2] border-purple-200 text-[11px] font-extrabold px-2.5 py-0.5">
+                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px] font-extrabold px-2.5 py-0.5">
                   {availableCount} Available
                 </Badge>
+                <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-200 text-[11px] font-extrabold px-2.5 py-0.5">
+                  {blockedCount} Blocked
+                </Badge>
+              </div>
+            </div>
+
+            {/* ── Interactive Time Slot Bubbles & Quick Block Section ── */}
+            <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between gap-2 flex-wrap pb-2 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[#5e2be2]" />
+                  <h4 className="text-xs font-black text-slate-900 tracking-tight uppercase">
+                    Daily Time Slot Bubbles
+                  </h4>
+                </div>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold">
+                  <span className="flex items-center gap-1 text-purple-800 bg-purple-100/70 px-2 py-0.5 rounded-md border border-purple-200">
+                    <span className="w-2 h-2 rounded-full bg-[#5e2be2]" />
+                    Booked
+                  </span>
+                  <span className="flex items-center gap-1 text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded-md border border-emerald-200">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    Available
+                  </span>
+                  <span className="flex items-center gap-1 text-rose-800 bg-rose-100/70 px-2 py-0.5 rounded-md border border-rose-200">
+                    <span className="w-2 h-2 rounded-full bg-rose-500" />
+                    Blocked
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-slate-500 font-medium leading-tight">
+                Click an <span className="text-emerald-700 font-bold">Available bubble</span> to block it instantly, or a <span className="text-rose-700 font-bold">Blocked bubble</span> to unblock it.
+              </p>
+
+              <div className="flex flex-wrap gap-2 pt-1">
+                {daySessions.length === 0 ? (
+                  <span className="text-xs text-slate-400 font-medium italic">No time slot bubbles available for this day.</span>
+                ) : (
+                  daySessions.map((slot, index) => {
+                    const isBooked = slot.status === "booked" || (slot.client !== "Open Consultation Slot" && slot.status !== "blocked" && slot.client !== "Blocked Time Slot");
+                    const isBlocked = slot.status === "blocked" || slot.client === "Blocked Time Slot";
+                    const isAvailable = slot.status === "available" || (slot.client === "Open Consultation Slot" && !isBlocked);
+
+                    return (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => handleToggleBlockSlot(sessionKey, index)}
+                        title={
+                          isBooked
+                            ? `Booked by ${slot.client} (${slot.time})`
+                            : isBlocked
+                            ? `Click to Unblock ${slot.time}`
+                            : `Click to Block ${slot.time}`
+                        }
+                        className={cn(
+                          "group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border shadow-2xs active:scale-95",
+                          isBooked && "bg-purple-100 text-[#5e2be2] border-purple-300 hover:bg-purple-200 cursor-default",
+                          isAvailable && "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-400",
+                          isBlocked && "bg-rose-50 text-rose-800 border-rose-300 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-400"
+                        )}
+                      >
+                        {isBooked ? (
+                          <Users className="w-3.5 h-3.5 shrink-0 text-[#5e2be2]" />
+                        ) : isBlocked ? (
+                          <Lock className="w-3.5 h-3.5 shrink-0 text-rose-600 group-hover:text-emerald-600 transition-colors" />
+                        ) : (
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-600 group-hover:text-rose-600 transition-colors" />
+                        )}
+
+                        <span className="font-mono">{slot.time}</span>
+
+                        {!isBooked && (
+                          <span className="hidden group-hover:inline-block text-[9px] font-black ml-0.5 underline">
+                            {isBlocked ? "Unblock" : "Block"}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })
+                )}
               </div>
             </div>
 
@@ -396,23 +567,26 @@ export default function Calendar() {
             ) : (
               <div className="space-y-3">
                 {daySessions.map((s, i) => {
-                  const isBooked = s.status === "booked" || s.client !== "Open Consultation Slot";
+                  const isBooked = s.status === "booked" || (s.client !== "Open Consultation Slot" && s.status !== "blocked" && s.client !== "Blocked Time Slot");
+                  const isBlocked = s.status === "blocked" || s.client === "Blocked Time Slot";
+                  const isAvailable = s.status === "available" || (s.client === "Open Consultation Slot" && !isBlocked);
+
                   return (
                     <div
                       key={i}
                       className={cn(
                         "group flex items-center justify-between gap-3 rounded-2xl border p-3.5 transition-all bg-white shadow-2xs hover:shadow-md",
-                        isBooked
-                          ? "border-slate-200/80 hover:border-purple-200"
-                          : "border-dashed border-purple-300 bg-purple-50/20 hover:bg-purple-50/50"
+                        isBooked && "border-slate-200/80 hover:border-purple-200",
+                        isAvailable && "border-dashed border-emerald-300 bg-emerald-50/20 hover:bg-emerald-50/50",
+                        isBlocked && "border-dashed border-rose-300 bg-rose-50/20 hover:bg-rose-50/50"
                       )}
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className={cn(
                           "shrink-0 w-22 text-center py-2 rounded-xl text-xs font-black transition-all",
-                          isBooked
-                            ? "bg-slate-100 text-slate-800 group-hover:bg-purple-100 group-hover:text-[#5e2be2]"
-                            : "bg-purple-100/80 text-[#5e2be2] font-black border border-purple-200"
+                          isBooked && "bg-slate-100 text-slate-800 group-hover:bg-purple-100 group-hover:text-[#5e2be2]",
+                          isAvailable && "bg-emerald-100/80 text-emerald-800 font-black border border-emerald-200",
+                          isBlocked && "bg-rose-100/80 text-rose-800 font-black border border-rose-200"
                         )}>
                           {s.time}
                         </div>
@@ -421,7 +595,9 @@ export default function Calendar() {
                           <div className="flex items-center gap-2">
                             <span className={cn(
                               "font-extrabold text-xs sm:text-sm truncate",
-                              isBooked ? "text-slate-900" : "text-purple-900"
+                              isBooked && "text-slate-900",
+                              isAvailable && "text-emerald-900",
+                              isBlocked && "text-rose-900 line-through decoration-rose-400"
                             )}>
                               {s.client}
                             </span>
@@ -432,14 +608,38 @@ export default function Calendar() {
 
                       <div className="flex items-center gap-2 shrink-0">
                         {isBooked ? (
-                          <Badge className="bg-emerald-100 text-emerald-800 border-0 text-[10px] font-extrabold px-2.5 py-0.5">
+                          <Badge className="bg-purple-100 text-[#5e2be2] border-0 text-[10px] font-extrabold px-2.5 py-0.5">
                             Confirmed
                           </Badge>
+                        ) : isBlocked ? (
+                          <div className="flex items-center gap-1.5">
+                            <Badge className="bg-rose-100 text-rose-800 border-0 text-[10px] font-extrabold px-2.5 py-0.5 flex items-center gap-1">
+                              <Lock className="w-3 h-3 text-rose-600" />
+                              Blocked Slot
+                            </Badge>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => handleToggleBlockSlot(sessionKey, i)}
+                              className="bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-[11px] h-7 px-2.5 rounded-lg shadow-2xs cursor-pointer"
+                            >
+                              Unblock
+                            </Button>
+                          </div>
                         ) : (
                           <div className="flex items-center gap-1.5">
-                            <Badge className="bg-purple-100 text-[#5e2be2] border-0 text-[10px] font-extrabold px-2.5 py-0.5">
+                            <Badge className="bg-emerald-100 text-emerald-800 border-0 text-[10px] font-extrabold px-2.5 py-0.5">
                               Available Slot
                             </Badge>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => handleToggleBlockSlot(sessionKey, i)}
+                              variant="outline"
+                              className="border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-800 font-extrabold text-[11px] h-7 px-2.5 rounded-lg cursor-pointer"
+                            >
+                              Block
+                            </Button>
                             <Button
                               type="button"
                               size="sm"
@@ -631,6 +831,7 @@ export default function Calendar() {
         open={addEventOpen}
         onOpenChange={setAddEventOpen}
         defaultDate={`${year}-${String(month + 1).padStart(2, "0")}-${String(selectedDay).padStart(2, "0")}`}
+        onAddSlot={handleAddSlotFromDialog}
       />
     </div>
   );

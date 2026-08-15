@@ -39,6 +39,111 @@ export default function ClientDetail() {
 
   const [activeTab, setActiveTab] = useState("overview");
   const [showFullIntakeSummary, setShowFullIntakeSummary] = useState(false);
+  const [personalizedScale, setPersonalizedScale] = useState<string>(
+    clientId === 2 ? "PHQ-9" : clientId === 3 ? "PCL-5" : "GAD-7"
+  );
+
+  // WHO-5 Well-being Index 3-Week Milestone Trends (0-100%)
+  const WHO_WELLBEING_DATA: Record<number, { milestone: string; score: number }[]> = {
+    1: [
+      { milestone: "W0 Base", score: 32 },
+      { milestone: "Week 3", score: 48 },
+      { milestone: "Week 6", score: 62 },
+      { milestone: "Week 9", score: 74 },
+      { milestone: "Week 12", score: 84 },
+    ],
+    2: [
+      { milestone: "W0 Base", score: 28 },
+      { milestone: "Week 3", score: 40 },
+      { milestone: "Week 6", score: 55 },
+      { milestone: "Week 9", score: 68 },
+    ],
+    3: [
+      { milestone: "W0 Base", score: 35 },
+      { milestone: "Week 3", score: 50 },
+      { milestone: "Week 6", score: 64 },
+      { milestone: "Week 9", score: 72 },
+      { milestone: "Week 12", score: 78 },
+    ]
+  };
+
+  // PSS Perceived Stress Scale 3-Week Milestone Trends (0-40 pts)
+  const PSS_STRESS_DATA: Record<number, { milestone: string; score: number }[]> = {
+    1: [
+      { milestone: "W0 Base", score: 28 },
+      { milestone: "Week 3", score: 22 },
+      { milestone: "Week 6", score: 16 },
+      { milestone: "Week 9", score: 11 },
+      { milestone: "Week 12", score: 8 },
+    ],
+    2: [
+      { milestone: "W0 Base", score: 30 },
+      { milestone: "Week 3", score: 24 },
+      { milestone: "Week 6", score: 18 },
+      { milestone: "Week 9", score: 14 },
+    ],
+    3: [
+      { milestone: "W0 Base", score: 26 },
+      { milestone: "Week 3", score: 20 },
+      { milestone: "Week 6", score: 15 },
+      { milestone: "Week 9", score: 12 },
+      { milestone: "Week 12", score: 10 },
+    ]
+  };
+
+  // Therapist Allocated Personalized Outcome Datasets (3-Week Milestones)
+  const PERSONALIZED_INSTRUMENTS_DATA: Record<string, { maxScore: number; data: { milestone: string; score: number }[] }> = {
+    "GAD-7": {
+      maxScore: 21,
+      data: [
+        { milestone: "W0 Base", score: 18 },
+        { milestone: "Week 3", score: 14 },
+        { milestone: "Week 6", score: 9 },
+        { milestone: "Week 9", score: 7 },
+        { milestone: "Week 12", score: 6 },
+      ]
+    },
+    "PHQ-9": {
+      maxScore: 27,
+      data: [
+        { milestone: "W0 Base", score: 18 },
+        { milestone: "Week 3", score: 14 },
+        { milestone: "Week 6", score: 10 },
+        { milestone: "Week 9", score: 8 },
+        { milestone: "Week 12", score: 5 },
+      ]
+    },
+    "PCL-5": {
+      maxScore: 80,
+      data: [
+        { milestone: "W0 Base", score: 42 },
+        { milestone: "Week 3", score: 35 },
+        { milestone: "Week 6", score: 28 },
+        { milestone: "Week 9", score: 25 },
+        { milestone: "Week 12", score: 24 },
+      ]
+    },
+    "PSQI": {
+      maxScore: 21,
+      data: [
+        { milestone: "W0 Base", score: 16 },
+        { milestone: "Week 3", score: 12 },
+        { milestone: "Week 6", score: 8 },
+        { milestone: "Week 9", score: 6 },
+        { milestone: "Week 12", score: 4 },
+      ]
+    },
+    "PDSS": {
+      maxScore: 28,
+      data: [
+        { milestone: "W0 Base", score: 19 },
+        { milestone: "Week 3", score: 14 },
+        { milestone: "Week 6", score: 9 },
+        { milestone: "Week 9", score: 6 },
+        { milestone: "Week 12", score: 3 },
+      ]
+    }
+  };
 
   const FULL_INTAKE_SUMMARIES: Record<number, {
     background: string;
@@ -809,6 +914,203 @@ export default function ClientDetail() {
                 </div>
               </div>
             </div>
+
+            {/* ── 3-WEEK MILESTONE CLINICAL OUTCOME GRAPHS SECTION (Before Activity Completion) ── */}
+            {(() => {
+              const whoWellbeingData = WHO_WELLBEING_DATA[clientId] || WHO_WELLBEING_DATA[1];
+              const pssStressData = PSS_STRESS_DATA[clientId] || PSS_STRESS_DATA[1];
+              const personalizedInfo = PERSONALIZED_INSTRUMENTS_DATA[personalizedScale] || PERSONALIZED_INSTRUMENTS_DATA["GAD-7"];
+              const currentPersonalizedScore = personalizedInfo.data[personalizedInfo.data.length - 1].score;
+              const initialPersonalizedScore = personalizedInfo.data[0].score;
+              const personalizedDiff = currentPersonalizedScore - initialPersonalizedScore;
+              const personalizedChangeLabel = personalizedDiff <= 0 ? `${personalizedDiff} pts` : `+${personalizedDiff} pts`;
+              const maxPersonalizedScore = personalizedInfo.maxScore;
+
+              return (
+                <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-6">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-4 flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="p-2 rounded-xl bg-purple-100 text-[#5e2be2]">
+                        <Activity className="w-5 h-5" />
+                      </span>
+                      <div>
+                        <h3 className="text-base font-extrabold text-slate-900">3-Week Clinical Outcome Trajectories</h3>
+                        <p className="text-xs text-slate-500 font-medium">
+                          Outcome assessments performed by {client.name} after every 3 weeks of therapy sessions
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className="bg-purple-100 text-[#5e2be2] border-purple-200 text-xs font-bold px-3 py-1">
+                      3-Week Evaluation Cycle
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Graph 1: Overall Wellbeing (WHO-5 Index) */}
+                    <div className="p-5 rounded-2xl border border-emerald-100 bg-gradient-to-b from-emerald-50/40 via-white to-white space-y-3 shadow-2xs flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                          <Badge className="bg-emerald-100 text-emerald-800 border-0 text-[10px] font-black uppercase shrink-0">
+                            WHO-5 Well-Being Index
+                          </Badge>
+                          <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 shrink-0">
+                            +52% Wellbeing
+                          </span>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-extrabold text-slate-900">Overall Wellbeing Graph</h4>
+                          <p className="text-[11px] text-slate-500 font-medium">WHO assessment performed every 3 weeks</p>
+                        </div>
+                        <div className="flex items-baseline gap-2 pt-1 flex-wrap">
+                          <span className="text-2xl font-black text-slate-900 font-mono">84%</span>
+                          <span className="text-[11px] text-slate-400 font-medium">Baseline: 32% (Week 0)</span>
+                        </div>
+                      </div>
+
+                      <div className="h-48 w-full pt-2">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={whoWellbeingData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="whoGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
+                                <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <XAxis dataKey="milestone" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} dy={5} />
+                            <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} unit="%" />
+                            <Tooltip
+                              contentStyle={{ backgroundColor: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
+                              labelStyle={{ fontWeight: 'bold', color: '#0f172a', fontSize: '12px' }}
+                              formatter={(val: any) => [`${val}%`, 'Wellbeing Index']}
+                            />
+                            <Area type="monotone" dataKey="score" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#whoGradient)" dot={{ r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff' }} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-slate-600">
+                        <span>Status: <strong className="text-emerald-700 font-extrabold">Optimal Wellbeing</strong></span>
+                        <span className="text-slate-400">3-Week Intervals</span>
+                      </div>
+                    </div>
+
+                    {/* Graph 2: General Stress Graph (PSS Assessment) */}
+                    <div className="p-5 rounded-2xl border border-blue-100 bg-gradient-to-b from-blue-50/40 via-white to-white space-y-3 shadow-2xs flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                          <Badge className="bg-blue-100 text-blue-800 border-0 text-[10px] font-black uppercase shrink-0">
+                            PSS Perceived Stress Scale
+                          </Badge>
+                          <span className="text-[10px] font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200 shrink-0">
+                            -71% Stress Reduction
+                          </span>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-extrabold text-slate-900">General Stress Graph</h4>
+                          <p className="text-[11px] text-slate-500 font-medium">PSS assessment performed every 3 weeks</p>
+                        </div>
+                        <div className="flex items-baseline gap-2 pt-1 flex-wrap">
+                          <span className="text-2xl font-black text-slate-900 font-mono">8 <span className="text-xs text-slate-400 font-normal">/ 40</span></span>
+                          <span className="text-[11px] text-slate-400 font-medium">Baseline: 28/40 (High Stress)</span>
+                        </div>
+                      </div>
+
+                      <div className="h-48 w-full pt-2">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={pssStressData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="pssGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
+                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <XAxis dataKey="milestone" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} dy={5} />
+                            <YAxis domain={[0, 40]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                            <Tooltip
+                              contentStyle={{ backgroundColor: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
+                              labelStyle={{ fontWeight: 'bold', color: '#0f172a', fontSize: '12px' }}
+                              formatter={(val: any) => [`${val} pts`, 'Perceived Stress']}
+                            />
+                            <Area type="monotone" dataKey="score" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#pssGradient)" dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-slate-600">
+                        <span>Level: <strong className="text-blue-700 font-extrabold">Low Stress (Normal)</strong></span>
+                        <span className="text-slate-400">3-Week Intervals</span>
+                      </div>
+                    </div>
+
+                    {/* Graph 3: Personalised Graph (Allocated by Therapist) */}
+                    <div className="p-5 rounded-2xl border border-purple-200 bg-gradient-to-b from-purple-50/40 via-white to-white space-y-3 shadow-2xs flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                          <Badge className="bg-purple-100 text-[#5e2be2] border-0 text-[10px] font-black uppercase shrink-0">
+                            Personalized Instrument
+                          </Badge>
+                          <div className="w-32 shrink-0">
+                            <Select value={personalizedScale} onValueChange={setPersonalizedScale}>
+                              <SelectTrigger className="h-6 text-[10px] font-bold border-purple-200 bg-white rounded-lg px-2">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="GAD-7" className="text-xs font-medium">GAD-7 (Anxiety)</SelectItem>
+                                <SelectItem value="PHQ-9" className="text-xs font-medium">PHQ-9 (Depression)</SelectItem>
+                                <SelectItem value="PCL-5" className="text-xs font-medium">PCL-5 (PTSD / Trauma)</SelectItem>
+                                <SelectItem value="PSQI" className="text-xs font-medium">PSQI (Sleep Quality)</SelectItem>
+                                <SelectItem value="PDSS" className="text-xs font-medium">PDSS (Panic Severity)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-extrabold text-slate-900">Personalized Graph</h4>
+                          <p className="text-[11px] text-slate-500 font-medium">Allocated by therapist, evaluated every 3 weeks</p>
+                        </div>
+                        <div className="flex items-baseline gap-2 pt-1 flex-wrap">
+                          <span className="text-2xl font-black text-slate-900 font-mono">
+                            {currentPersonalizedScore} <span className="text-xs text-slate-400 font-normal">/ {maxPersonalizedScore}</span>
+                          </span>
+                          <span className="text-[10px] text-[#5e2be2] font-black bg-purple-100/70 px-2 py-0.5 rounded-full border border-purple-200 shrink-0">
+                            {personalizedChangeLabel}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="h-48 w-full pt-2">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={personalizedInfo.data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="personalizedGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#5e2be2" stopOpacity={0.4} />
+                                <stop offset="95%" stopColor="#5e2be2" stopOpacity={0.0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <XAxis dataKey="milestone" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} dy={5} />
+                            <YAxis domain={[0, maxPersonalizedScore]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                            <Tooltip
+                              contentStyle={{ backgroundColor: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
+                              labelStyle={{ fontWeight: 'bold', color: '#0f172a', fontSize: '12px' }}
+                              formatter={(val: any) => [`${val} / ${maxPersonalizedScore}`, personalizedScale]}
+                            />
+                            <Area type="monotone" dataKey="score" stroke="#5e2be2" strokeWidth={3} fillOpacity={1} fill="url(#personalizedGradient)" dot={{ r: 4, fill: '#5e2be2', strokeWidth: 2, stroke: '#fff' }} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-slate-600">
+                        <span>Assigned scale: <strong className="text-purple-700 font-extrabold">{personalizedScale}</strong></span>
+                        <span className="text-slate-400">Enabled at W3</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* MIDDLE SECTION: CHART (Exact Screenshot Match) */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

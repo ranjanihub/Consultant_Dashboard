@@ -46,9 +46,10 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultDate?: string; // e.g. "2026-07-27"
+  onAddSlot?: (slot: { date: string; time: string; title: string; client: string; type: string; duration: string; status: "booked" | "available" | "blocked" }) => void;
 }
 
-export default function AddEventDialog({ open, onOpenChange, defaultDate }: Props) {
+export default function AddEventDialog({ open, onOpenChange, defaultDate, onAddSlot }: Props) {
   const [saving, setSaving] = useState(false);
   const [saved,  setSaved]  = useState(false);
 
@@ -70,18 +71,36 @@ export default function AddEventDialog({ open, onOpenChange, defaultDate }: Prop
     onOpenChange(false);
     setTimeout(() => {
       setSaved(false);
-      setForm({ type: "session", client: "", date: defaultDate ?? new Date().toISOString().slice(0, 10), start: "10:00 AM", end: "10:50 AM", duration: "50 min", title: "" });
+      setForm({ type: "session", client: "Sarah Jenkins", date: defaultDate ?? new Date().toISOString().slice(0, 10), start: "10:00 AM", end: "10:50 AM", duration: "50 min", title: "CBT Follow-up Session" });
     }, 300);
   };
 
   const handleSave = async () => {
     setSaving(true);
-    await new Promise(r => setTimeout(r, 700));
+    await new Promise(r => setTimeout(r, 400));
+
+    if (onAddSlot) {
+      let status: "booked" | "available" | "blocked" = "available";
+      if (form.type === "session") status = "booked";
+      else if (form.type === "blocked") status = "blocked";
+      else status = "available";
+
+      onAddSlot({
+        date: form.date,
+        time: form.start,
+        title: form.title || (status === "blocked" ? "Blocked Time Slot" : "Open Consultation Slot"),
+        client: form.type === "session" ? (form.client || "Client") : status === "blocked" ? "Blocked Time Slot" : "Open Consultation Slot",
+        type: form.type === "session" ? "Individual CBT Therapy" : status === "blocked" ? "Unavailable / Blocked by Therapist" : "Available for Client Booking",
+        duration: form.duration || "50 min",
+        status,
+      });
+    }
+
     setSaving(false);
     setSaved(true);
     setTimeout(() => {
       handleClose();
-    }, 900);
+    }, 600);
   };
 
   const canSave = isSession
