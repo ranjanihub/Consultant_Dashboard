@@ -272,36 +272,33 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-border">
-          <CardHeader className="pb-4">
+        <Card className="shadow-sm border-border flex flex-col h-full">
+          <CardHeader className="pb-4 shrink-0">
             <div className="flex items-center justify-between mb-1">
-              <CardTitle className="text-xl">Pending reports</CardTitle>
-              <Badge variant="outline" className="bg-purple-50 text-[#5e2be2] border-purple-200">Action Required</Badge>
+              <CardTitle className="text-xl font-extrabold text-slate-900">Pending reports</CardTitle>
+              <Badge variant="outline" className="bg-purple-50 text-[#5e2be2] border-purple-200 font-extrabold">Action Required</Badge>
             </div>
-            <CardDescription>{stats?.pendingReports || 0} reports awaiting your review</CardDescription>
+            <CardDescription className="text-xs text-slate-500 font-medium">{stats?.pendingReports || 0} reports awaiting your review</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col h-[calc(100%-80px)]">
+          <CardContent className="flex flex-col flex-1 justify-between pt-0 gap-4">
             {reportsLoading ? (
-              <div className="space-y-4 flex-1">
-                {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
+              <div className="space-y-3 flex-1">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}
               </div>
             ) : (
-              <div className="space-y-4 flex-1">
+              <div className="space-y-3 flex-1 overflow-y-auto max-h-[300px] pr-1">
                 {reportList.map((report) => (
-                  <div key={report.sessionId} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 border border-transparent hover:border-border transition-colors">
+                  <div key={report.sessionId} className="flex items-center justify-between p-3 rounded-xl bg-slate-50/80 border border-slate-200/80 hover:border-purple-200 transition-all">
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-white text-muted-foreground text-xs">{report.clientInitials}</AvatarFallback>
-                      </Avatar>
                       <div className="flex flex-col">
-                        <span className="font-semibold text-sm">{report.clientName}</span>
-                        <span className="text-xs text-muted-foreground">{report.sessionDate}</span>
+                        <span className="font-bold text-slate-900 text-sm">{report.clientName}</span>
+                        <span className="text-xs text-slate-500 font-medium">{report.sessionDate}</span>
                       </div>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-primary hover:text-primary hover:bg-primary/10 h-8 px-3 rounded-lg"
+                      className="text-[#5e2be2] bg-purple-50 hover:bg-purple-100 border border-purple-200/60 font-extrabold h-8 px-3 rounded-lg text-xs transition-colors"
                       onClick={() => {
                         setReportSessionId(report.sessionId);
                         setReportClientName(report.clientName);
@@ -312,14 +309,14 @@ export default function Dashboard() {
                   </div>
                 ))}
                 {!reportList.length && (
-                  <div className="text-center py-8 text-muted-foreground text-sm">All caught up!</div>
+                  <div className="text-center py-8 text-slate-400 text-sm font-medium">All caught up! No pending reports.</div>
                 )}
               </div>
             )}
 
-            <div className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2 text-amber-800">
+            <div className="bg-amber-50/90 border border-amber-200 rounded-xl p-3 flex items-start gap-2.5 text-amber-800 shrink-0 mt-auto">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
-              <p className="text-xs font-medium leading-relaxed">Payment becomes eligible only after report submission.</p>
+              <p className="text-xs font-semibold leading-relaxed">Payment becomes eligible only after report submission.</p>
             </div>
           </CardContent>
         </Card>
