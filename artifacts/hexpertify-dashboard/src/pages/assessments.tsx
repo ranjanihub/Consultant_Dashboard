@@ -1212,8 +1212,8 @@ export default function Assessments() {
 
       {/* Page Header */}
       <PageHeader
-        title="Clinical Assessment Inventory & Psychometrics"
-        description="Monitor standardized scale responses (PHQ-9, GAD-7, PSS-10, PCL-5), track patient risk safety alerts, evaluate progress, and run test simulators."
+        title="Assessments"
+        description="Monitor standardized scale responses (PHQ-9, GAD-7, PSS-10, PCL-5), track patient risk safety alerts, and evaluate progress."
       />
 
 

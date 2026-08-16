@@ -721,74 +721,7 @@ export default function ClientDetail() {
               </div>
 
               <div className="space-y-6">
-                {/* 3-Session Outcome Calculation Workflow Card */}
-                {(() => {
-                  const currentSessions = client.sessionCount || 6;
-                  const lastMilestone = Math.floor(currentSessions / 3) * 3 || 3;
-                  const nextMilestone = lastMilestone + 3;
 
-                  let assessmentName = "Anxiety & Worry (GAD-7)";
-                  let prevScore = 18;
-                  let currScore = 6;
-                  let diffLabel = "-12 pts (-66.7%)";
-
-                  if (clientId === 2 || client.name.includes("Michael")) {
-                    assessmentName = "Mood & Wellbeing (PHQ-9)";
-                    prevScore = 18;
-                    currScore = 8;
-                    diffLabel = "-10 pts";
-                  } else if (clientId === 3 || client.name.includes("Emily")) {
-                    assessmentName = "Trauma & PTSD (PCL-5)";
-                    prevScore = 42;
-                    currScore = 24;
-                    diffLabel = "-18 pts";
-                  }
-
-                  return (
-                    <Card className="shadow-sm border-purple-200 bg-gradient-to-b from-purple-50/60 to-white">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-                            <Brain className="w-4 h-4 text-[#5e2be2]" />
-                            3-Session Outcome Workflow
-                          </CardTitle>
-                          <Badge className="bg-[#5e2be2] text-white border-none text-[10px] font-bold">
-                            Every 3 Sessions
-                          </Badge>
-                        </div>
-                        <CardDescription className="text-xs text-slate-500">
-                          Calculates score change &amp; alerts therapist automatically
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="p-3 rounded-xl bg-white border border-purple-100 space-y-2 text-xs">
-                          <div className="flex items-center justify-between text-slate-700">
-                            <span className="font-bold">Last Milestone:</span>
-                            <span className="font-bold text-[#5e2be2]">Session {lastMilestone} Completed</span>
-                          </div>
-                          <div className="flex items-center justify-between font-mono bg-slate-50 p-2 rounded-lg border border-slate-200">
-                            <span className="text-slate-600 font-sans truncate max-w-[140px]">{assessmentName}:</span>
-                            <span className="font-bold text-slate-900">{prevScore} → {currScore} ({diffLabel})</span>
-                          </div>
-                          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
-                            <span>Therapist Notified:</span>
-                            <span className="text-emerald-600 font-bold flex items-center gap-1">
-                              <Bell className="w-3 h-3" /> Delivered to Panel
-                            </span>
-                          </div>
-                        </div>
-
-                        <Button 
-                          onClick={() => setActiveTab("outcomes")}
-                          variant="outline" 
-                          className="w-full text-xs h-9 font-bold text-[#5e2be2] border-purple-200 hover:bg-purple-50 cursor-pointer"
-                        >
-                          View Clinical Outcomes Tab →
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  );
-                })()}
 
                 <Card className="shadow-sm border-border">
                   <CardHeader>
@@ -880,9 +813,16 @@ export default function ClientDetail() {
 
               const currentPersonalizedScore = personalizedInfo.data[personalizedInfo.data.length - 1].score;
               const initialPersonalizedScore = personalizedInfo.data[0].score;
-              const personalizedDiff = currentPersonalizedScore - initialPersonalizedScore;
-              const personalizedChangeLabel = personalizedDiff <= 0 ? `${personalizedDiff} pts` : `+${personalizedDiff} pts`;
               const maxPersonalizedScore = personalizedInfo.maxScore;
+
+              const personalizedCategoryMap: Record<string, string> = {
+                "GAD-7": "Anxiety",
+                "PHQ-9": "Depression",
+                "PCL-5": "PTSD",
+                "PSQI": "Sleep Quality",
+                "PDSS": "Panic Disorder",
+              };
+              const personalizedCategory = personalizedCategoryMap[personalizedScale] || "Anxiety";
 
               return (
                 <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-6">
@@ -892,14 +832,14 @@ export default function ClientDetail() {
                         <Activity className="w-5 h-5" />
                       </span>
                       <div>
-                        <h3 className="text-base font-extrabold text-slate-900">3-Session Clinical Outcome</h3>
+                        <h3 className="text-base font-extrabold text-slate-900">Clinical Outcome</h3>
                         <p className="text-xs text-slate-500 font-medium">
-                          Outcome assessments performed by {client.name} after every 3 sessions of therapy
+                          Outcome assessments performed by {client.name} after therapy sessions
                         </p>
                       </div>
                     </div>
                     <Badge className="bg-purple-100 text-[#5e2be2] border-purple-200 text-xs font-bold px-3 py-1">
-                      3-Session Evaluation Cycle
+                      Evaluation Cycle
                     </Badge>
                   </div>
 
@@ -910,11 +850,12 @@ export default function ClientDetail() {
 
                         <div>
                           <h4 className="text-sm font-extrabold text-slate-900">Overall Wellbeing</h4>
-                          <p className="text-[11px] text-slate-500 font-medium">WHO assessment performed every 3 sessions</p>
                         </div>
                         <div className="flex items-baseline gap-2 pt-1 flex-wrap">
-                          <span className="text-2xl font-black text-slate-900 font-mono">{currentWhoScore}%</span>
-                          <span className="text-[11px] text-slate-500 font-medium">Base Score: <strong className="text-slate-800 font-bold">{baseWhoScore}%</strong></span>
+                          <span className="text-2xl font-black text-slate-900 font-mono">
+                            {currentWhoScore} <span className="text-xs text-slate-400 font-normal">/ 100</span>
+                          </span>
+                          <span className="text-[11px] text-slate-500 font-medium">Base Score: <strong className="text-slate-800 font-bold">{baseWhoScore}/100</strong></span>
                         </div>
                       </div>
 
@@ -929,11 +870,11 @@ export default function ClientDetail() {
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                             <XAxis dataKey="milestone" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} dy={5} />
-                            <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} unit="%" />
+                            <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
                             <Tooltip
                               contentStyle={{ backgroundColor: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
                               labelStyle={{ fontWeight: 'bold', color: '#0f172a', fontSize: '12px' }}
-                              formatter={(val: any) => [`${val}%`, 'Wellbeing Index']}
+                              formatter={(val: any) => [`${val} / 100`, 'Wellbeing Index']}
                             />
                             <Area type="monotone" dataKey="score" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#whoGradient)" dot={{ r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff' }} />
                           </AreaChart>
@@ -941,7 +882,7 @@ export default function ClientDetail() {
                       </div>
 
                       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-slate-600">
-                        <span>Status: <strong className="text-emerald-700 font-extrabold">Optimal Wellbeing</strong></span>
+                        <span>Category: <strong className="text-emerald-700 font-extrabold">Wellbeing</strong></span>
                         <span className="text-slate-400">3-Session Intervals</span>
                       </div>
                     </div>
@@ -952,7 +893,6 @@ export default function ClientDetail() {
 
                         <div>
                           <h4 className="text-sm font-extrabold text-slate-900">General Stress</h4>
-                          <p className="text-[11px] text-slate-500 font-medium">PSS assessment performed every 3 sessions</p>
                         </div>
                         <div className="flex items-baseline gap-2 pt-1 flex-wrap">
                           <span className="text-2xl font-black text-slate-900 font-mono">{currentPssScore} <span className="text-xs text-slate-400 font-normal">/ 40</span></span>
@@ -983,7 +923,7 @@ export default function ClientDetail() {
                       </div>
 
                       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-slate-600">
-                        <span>Level: <strong className="text-blue-700 font-extrabold">Low Stress (Normal)</strong></span>
+                        <span>Category: <strong className="text-blue-700 font-extrabold">Stress</strong></span>
                         <span className="text-slate-400">3-Session Intervals</span>
                       </div>
                     </div>
@@ -994,16 +934,12 @@ export default function ClientDetail() {
 
                         <div>
                           <h4 className="text-sm font-extrabold text-slate-900">Personalized</h4>
-                          <p className="text-[11px] text-slate-500 font-medium">Allocated by therapist, evaluated every 3 sessions</p>
                         </div>
                         <div className="flex items-baseline gap-2 pt-1 flex-wrap">
                           <span className="text-2xl font-black text-slate-900 font-mono">
                             {currentPersonalizedScore} <span className="text-xs text-slate-400 font-normal">/ {maxPersonalizedScore}</span>
                           </span>
                           <span className="text-[11px] text-slate-500 font-medium">Base Score: <strong className="text-slate-800 font-bold">{initialPersonalizedScore}/{maxPersonalizedScore}</strong></span>
-                          <span className="text-[10px] text-[#5e2be2] font-black bg-purple-100/70 px-2 py-0.5 rounded-full border border-purple-200 shrink-0">
-                            {personalizedChangeLabel}
-                          </span>
                         </div>
                       </div>
 
@@ -1030,7 +966,7 @@ export default function ClientDetail() {
                       </div>
 
                       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-slate-600">
-                        <span>Assigned scale: <strong className="text-purple-700 font-extrabold">{personalizedScale}</strong></span>
+                        <span>Category: <strong className="text-purple-700 font-extrabold">{personalizedCategory}</strong></span>
                         <span className="text-slate-400">Enabled at Session 3</span>
                       </div>
                     </div>

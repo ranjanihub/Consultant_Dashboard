@@ -56,8 +56,8 @@ const DEFAULT_SCHEDULE: Schedule = {
   wednesday: { enabled: true,  slots: [{ start: "9:00 AM", end: "6:00 PM" }] },
   thursday:  { enabled: true,  slots: [{ start: "9:00 AM", end: "6:00 PM" }] },
   friday:    { enabled: true,  slots: [{ start: "9:00 AM", end: "5:00 PM" }] },
-  saturday:  { enabled: false, slots: [{ start: "10:00 AM", end: "2:00 PM" }] },
-  sunday:    { enabled: false, slots: [{ start: "10:00 AM", end: "2:00 PM" }] },
+  saturday:  { enabled: true,  slots: [{ start: "10:00 AM", end: "2:00 PM" }] },
+  sunday:    { enabled: true,  slots: [{ start: "10:00 AM", end: "2:00 PM" }] },
 };
 
 interface Props {
