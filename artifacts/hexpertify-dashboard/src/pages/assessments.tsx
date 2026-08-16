@@ -1892,14 +1892,14 @@ export default function Assessments() {
                     <div className="flex justify-between text-xs font-bold text-slate-500">
                       <span>Question {runnerCurrentStep + 1} of {activeRunnerModal.questions?.length || 1}</span>
                       <span>
-                        {Math.round(((runnerCurrentStep + 1) / (activeRunnerModal.questions?.length || 1)) * 100)}% Complete
+                        {Math.round((runnerCurrentStep / (activeRunnerModal.questions?.length || 1)) * 100)}% Complete
                       </span>
                     </div>
                     <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-[#5e2be2] transition-all duration-300"
                         style={{
-                          width: `${((runnerCurrentStep + 1) / (activeRunnerModal.questions?.length || 1)) * 100}%`
+                          width: `${(runnerCurrentStep / (activeRunnerModal.questions?.length || 1)) * 100}%`
                         }}
                       />
                     </div>
