@@ -204,7 +204,7 @@ export const mockAssessmentsData: ClinicalAssessment[] = [
       {
         id: 'q4',
         text: 'In the last month, how often have you felt confident about your ability to handle your personal problems?',
-        subtext: 'REVERSE SCORED ITEM',
+        subtext: 'REVERSE SCORED ITEM (0=4, 1=3, 2=2, 3=1, 4=0)',
         options: [
           { label: 'Never (0)', value: 0 },
           { label: 'Almost Never (1)', value: 1 },
@@ -216,7 +216,64 @@ export const mockAssessmentsData: ClinicalAssessment[] = [
       {
         id: 'q5',
         text: 'In the last month, how often have you felt that things were going your way?',
-        subtext: 'REVERSE SCORED ITEM',
+        subtext: 'REVERSE SCORED ITEM (0=4, 1=3, 2=2, 3=1, 4=0)',
+        options: [
+          { label: 'Never (0)', value: 0 },
+          { label: 'Almost Never (1)', value: 1 },
+          { label: 'Sometimes (2)', value: 2 },
+          { label: 'Fairly Often (3)', value: 3 },
+          { label: 'Very Often (4)', value: 4 }
+        ]
+      },
+      {
+        id: 'q6',
+        text: 'In the last month, how often have you found that you could not cope with all the things that you had to do?',
+        options: [
+          { label: 'Never (0)', value: 0 },
+          { label: 'Almost Never (1)', value: 1 },
+          { label: 'Sometimes (2)', value: 2 },
+          { label: 'Fairly Often (3)', value: 3 },
+          { label: 'Very Often (4)', value: 4 }
+        ]
+      },
+      {
+        id: 'q7',
+        text: 'In the last month, how often have you been able to control irritations in your life?',
+        subtext: 'REVERSE SCORED ITEM (0=4, 1=3, 2=2, 3=1, 4=0)',
+        options: [
+          { label: 'Never (0)', value: 0 },
+          { label: 'Almost Never (1)', value: 1 },
+          { label: 'Sometimes (2)', value: 2 },
+          { label: 'Fairly Often (3)', value: 3 },
+          { label: 'Very Often (4)', value: 4 }
+        ]
+      },
+      {
+        id: 'q8',
+        text: 'In the last month, how often have you felt that you were on top of things?',
+        subtext: 'REVERSE SCORED ITEM (0=4, 1=3, 2=2, 3=1, 4=0)',
+        options: [
+          { label: 'Never (0)', value: 0 },
+          { label: 'Almost Never (1)', value: 1 },
+          { label: 'Sometimes (2)', value: 2 },
+          { label: 'Fairly Often (3)', value: 3 },
+          { label: 'Very Often (4)', value: 4 }
+        ]
+      },
+      {
+        id: 'q9',
+        text: 'In the last month, how often have you been angered because of things that happened that were outside of your control?',
+        options: [
+          { label: 'Never (0)', value: 0 },
+          { label: 'Almost Never (1)', value: 1 },
+          { label: 'Sometimes (2)', value: 2 },
+          { label: 'Fairly Often (3)', value: 3 },
+          { label: 'Very Often (4)', value: 4 }
+        ]
+      },
+      {
+        id: 'q10',
+        text: 'In the last month, how often have you felt difficulties were piling up so high that you could not overcome them?',
         options: [
           { label: 'Never (0)', value: 0 },
           { label: 'Almost Never (1)', value: 1 },
@@ -229,27 +286,193 @@ export const mockAssessmentsData: ClinicalAssessment[] = [
   },
   {
     id: 'ASS-02',
+    title: 'WHO-5 Well-Being Index',
+    acronym: 'WHO-5',
+    questionCount: 5,
+    targetCondition: 'Subjective Well-Being',
+    category: 'Well-Being',
+    timesCompleted: 1560,
+    type: 'Standard',
+    description: 'Official World Health Organization 5-item rating scale measuring subjective psychological well-being over the past two weeks.',
+    estimatedMinutes: 3,
+    validityScore: "Cronbach's α = 0.91",
+    targetPopulation: 'General for all clients',
+    authorOrSource: 'World Health Organization (WHO 2024)',
+    status: 'Active',
+    assignedClientCount: 490,
+    createdAt: '2025-01-05',
+    severityRanges: [
+      { minScore: 13, maxScore: 25, label: 'Good Well-Being (50-100%)', color: 'bg-emerald-500', clinicalAction: 'Positive mental well-being. Maintain routine support.' },
+      { minScore: 7, maxScore: 12, label: 'Reduced Well-Being (28-48%)', color: 'bg-amber-500', clinicalAction: 'Monitoring indicated. Explore lifestyle and coping strategies.' },
+      { minScore: 0, maxScore: 6, label: 'Poor Well-Being (<25%)', color: 'bg-rose-600', clinicalAction: 'Screening for depression and formal clinical assessment strongly indicated.' }
+    ],
+    questions: [
+      {
+        id: 'w1',
+        text: 'I have felt cheerful and in good spirits',
+        options: [
+          { label: 'All of the time (5)', value: 5 },
+          { label: 'Most of the time (4)', value: 4 },
+          { label: 'More than half of the time (3)', value: 3 },
+          { label: 'Less than half of the time (2)', value: 2 },
+          { label: 'Some of the time (1)', value: 1 },
+          { label: 'At no time (0)', value: 0 }
+        ]
+      },
+      {
+        id: 'w2',
+        text: 'I have felt calm and relaxed',
+        options: [
+          { label: 'All of the time (5)', value: 5 },
+          { label: 'Most of the time (4)', value: 4 },
+          { label: 'More than half of the time (3)', value: 3 },
+          { label: 'Less than half of the time (2)', value: 2 },
+          { label: 'Some of the time (1)', value: 1 },
+          { label: 'At no time (0)', value: 0 }
+        ]
+      },
+      {
+        id: 'w3',
+        text: 'I have felt active and vigorous',
+        options: [
+          { label: 'All of the time (5)', value: 5 },
+          { label: 'Most of the time (4)', value: 4 },
+          { label: 'More than half of the time (3)', value: 3 },
+          { label: 'Less than half of the time (2)', value: 2 },
+          { label: 'Some of the time (1)', value: 1 },
+          { label: 'At no time (0)', value: 0 }
+        ]
+      },
+      {
+        id: 'w4',
+        text: 'I woke up feeling fresh and rested',
+        options: [
+          { label: 'All of the time (5)', value: 5 },
+          { label: 'Most of the time (4)', value: 4 },
+          { label: 'More than half of the time (3)', value: 3 },
+          { label: 'Less than half of the time (2)', value: 2 },
+          { label: 'Some of the time (1)', value: 1 },
+          { label: 'At no time (0)', value: 0 }
+        ]
+      },
+      {
+        id: 'w5',
+        text: 'My daily life has been filled with things that interest me',
+        options: [
+          { label: 'All of the time (5)', value: 5 },
+          { label: 'Most of the time (4)', value: 4 },
+          { label: 'More than half of the time (3)', value: 3 },
+          { label: 'Less than half of the time (2)', value: 2 },
+          { label: 'Some of the time (1)', value: 1 },
+          { label: 'At no time (0)', value: 0 }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'ASS-03',
+    title: 'Work and Social Adjustment Scale',
+    acronym: 'WSAS',
+    questionCount: 5,
+    targetCondition: 'Functional Impairment',
+    category: 'Well-Being',
+    timesCompleted: 940,
+    type: 'Standard',
+    description: 'Simple 5-item measure of impairment in functioning across work, home management, social leisure, private leisure, and relationships.',
+    estimatedMinutes: 3,
+    validityScore: "Cronbach's α = 0.86",
+    targetPopulation: 'General for all clients',
+    authorOrSource: 'Mundt, Marks, Shear & Greist (2002)',
+    status: 'Active',
+    assignedClientCount: 310,
+    createdAt: '2025-01-12',
+    severityRanges: [
+      { minScore: 0, maxScore: 9, label: 'Subclinical Population', color: 'bg-emerald-500', clinicalAction: 'Minimal functional impairment.' },
+      { minScore: 10, maxScore: 20, label: 'Significant Impairment', color: 'bg-amber-500', clinicalAction: 'Significant functional impairment with mild to moderate clinical symptomatology.' },
+      { minScore: 21, maxScore: 40, label: 'Severe Impairment', color: 'bg-rose-600', clinicalAction: 'Moderately severe or worse psychopathology indicating urgent functional rehabilitation.' }
+    ],
+    questions: [
+      {
+        id: 'ws1',
+        text: 'Because of my problem my ability to work is impaired',
+        subtext: '\'0\' means \'not at all impaired\' and \'8\' means very severely impaired to the point I can\'t work.',
+        options: [
+          { label: '0 - Not at all', value: 0 },
+          { label: '2 - Slightly', value: 2 },
+          { label: '4 - Definitely', value: 4 },
+          { label: '6 - Markedly', value: 6 },
+          { label: '8 - Very severely', value: 8 }
+        ]
+      },
+      {
+        id: 'ws2',
+        text: 'Because of my problem my home management (cleaning, tidying, shopping, cooking, looking after home/children, paying bills) is impaired',
+        options: [
+          { label: '0 - Not at all', value: 0 },
+          { label: '2 - Slightly', value: 2 },
+          { label: '4 - Definitely', value: 4 },
+          { label: '6 - Markedly', value: 6 },
+          { label: '8 - Very severely', value: 8 }
+        ]
+      },
+      {
+        id: 'ws3',
+        text: 'Because of my problem my social leisure activities (with other people e.g. parties, bars, clubs, outings, visits, dating) are impaired',
+        options: [
+          { label: '0 - Not at all', value: 0 },
+          { label: '2 - Slightly', value: 2 },
+          { label: '4 - Definitely', value: 4 },
+          { label: '6 - Markedly', value: 6 },
+          { label: '8 - Very severely', value: 8 }
+        ]
+      },
+      {
+        id: 'ws4',
+        text: 'Because of my problem, my private leisure activities (done alone, such as reading, gardening, collecting, sewing, walking alone) are impaired',
+        options: [
+          { label: '0 - Not at all', value: 0 },
+          { label: '2 - Slightly', value: 2 },
+          { label: '4 - Definitely', value: 4 },
+          { label: '6 - Markedly', value: 6 },
+          { label: '8 - Very severely', value: 8 }
+        ]
+      },
+      {
+        id: 'ws5',
+        text: 'Because of my problem, my ability to form and maintain close relationships with others, including those I live with, is impaired',
+        options: [
+          { label: '0 - Not at all', value: 0 },
+          { label: '2 - Slightly', value: 2 },
+          { label: '4 - Definitely', value: 4 },
+          { label: '6 - Markedly', value: 6 },
+          { label: '8 - Very severely', value: 8 }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'ASS-04',
     title: 'Patient Health Questionnaire-9',
     acronym: 'PHQ-9',
     questionCount: 9,
-    targetCondition: 'Major Depression',
+    targetCondition: 'Depression Severity',
     category: 'Depression',
-    timesCompleted: 3420,
+    timesCompleted: 2120,
     type: 'Standard',
-    description: 'Gold-standard 9-item depression screener incorporating DSM-5 criteria for depressive symptom severity and suicide risk screening.',
-    estimatedMinutes: 3,
-    validityScore: 'Sensitivity 88%, Specificity 88%',
-    targetPopulation: 'Adults & Adolescents (12+)',
+    description: 'Standardized 9-question instrument for screening, diagnosing, and tracking depression severity over time.',
+    estimatedMinutes: 4,
+    validityScore: "Cronbach's α = 0.89",
+    targetPopulation: 'Adults (18+)',
     authorOrSource: 'Kroenke, Spitzer & Williams (2001) / Pfizer',
     status: 'Active',
-    assignedClientCount: 950,
-    createdAt: '2025-01-05',
+    assignedClientCount: 620,
+    createdAt: '2025-01-01',
     severityRanges: [
-      { minScore: 0, maxScore: 4, label: 'Minimal Depression', color: 'bg-emerald-500', clinicalAction: 'No immediate treatment needed. Monitor.' },
-      { minScore: 5, maxScore: 9, label: 'Mild Depression', color: 'bg-emerald-600', clinicalAction: 'Watchful waiting; psychoeducation.' },
-      { minScore: 10, maxScore: 14, label: 'Moderate Depression', color: 'bg-amber-500', clinicalAction: 'Treatment plan (psychotherapy / pharmacotherapy).' },
-      { minScore: 15, maxScore: 19, label: 'Moderately Severe', color: 'bg-orange-500', clinicalAction: 'Active treatment with CBT or medication.' },
-      { minScore: 20, maxScore: 27, label: 'Severe Depression', color: 'bg-rose-600', clinicalAction: 'Immediate priority clinical assessment and specialist referral.' }
+      { minScore: 0, maxScore: 4, label: 'Minimal / None', color: 'bg-emerald-500', clinicalAction: 'No intervention required. Continue routine wellness tracking.' },
+      { minScore: 5, maxScore: 9, label: 'Mild Depression', color: 'bg-amber-500', clinicalAction: 'Watchful waiting; repeat PHQ-9 at follow-up. Psychoeducation recommended.' },
+      { minScore: 10, maxScore: 14, label: 'Moderate Depression', color: 'bg-orange-500', clinicalAction: 'Consider counseling, psychotherapy, or pharmacotherapy consult.' },
+      { minScore: 15, maxScore: 19, label: 'Moderately Severe', color: 'bg-rose-600', clinicalAction: 'Active psychotherapy and/or pharmacotherapy strongly indicated.' },
+      { minScore: 20, maxScore: 27, label: 'Severe Depression', color: 'bg-purple-600', clinicalAction: 'Immediate clinical evaluation and referral to specialty psychiatric care.' }
     ],
     questions: [
       {
@@ -283,8 +506,58 @@ export const mockAssessmentsData: ClinicalAssessment[] = [
         ]
       },
       {
+        id: 'q4',
+        text: 'Feeling tired or having little energy',
+        options: [
+          { label: 'Not at all (0)', value: 0 },
+          { label: 'Several days (1)', value: 1 },
+          { label: 'More than half the days (2)', value: 2 },
+          { label: 'Nearly every day (3)', value: 3 }
+        ]
+      },
+      {
+        id: 'q5',
+        text: 'Poor appetite or overeating',
+        options: [
+          { label: 'Not at all (0)', value: 0 },
+          { label: 'Several days (1)', value: 1 },
+          { label: 'More than half the days (2)', value: 2 },
+          { label: 'Nearly every day (3)', value: 3 }
+        ]
+      },
+      {
+        id: 'q6',
+        text: 'Feeling bad about yourself — or that you are a failure or have let yourself or your family down',
+        options: [
+          { label: 'Not at all (0)', value: 0 },
+          { label: 'Several days (1)', value: 1 },
+          { label: 'More than half the days (2)', value: 2 },
+          { label: 'Nearly every day (3)', value: 3 }
+        ]
+      },
+      {
+        id: 'q7',
+        text: 'Trouble concentrating on things, such as reading the newspaper or watching television',
+        options: [
+          { label: 'Not at all (0)', value: 0 },
+          { label: 'Several days (1)', value: 1 },
+          { label: 'More than half the days (2)', value: 2 },
+          { label: 'Nearly every day (3)', value: 3 }
+        ]
+      },
+      {
+        id: 'q8',
+        text: 'Moving or speaking so slowly that other people could have noticed? Or the opposite — being so fidgety or restless that you have been moving around a lot more than usual',
+        options: [
+          { label: 'Not at all (0)', value: 0 },
+          { label: 'Several days (1)', value: 1 },
+          { label: 'More than half the days (2)', value: 2 },
+          { label: 'Nearly every day (3)', value: 3 }
+        ]
+      },
+      {
         id: 'q9',
-        text: 'Thoughts that you would be better off dead, or of hurting yourself in some way',
+        text: 'Thoughts that you would be better off dead or of hurting yourself in some way',
         subtext: 'CRITICAL SAFETY RISK TRIGGER QUESTION',
         isRiskTrigger: true,
         options: [
@@ -297,27 +570,27 @@ export const mockAssessmentsData: ClinicalAssessment[] = [
     ]
   },
   {
-    id: 'ASS-03',
+    id: 'ASS-05',
     title: 'Generalized Anxiety Disorder-7',
     acronym: 'GAD-7',
     questionCount: 7,
-    targetCondition: 'Generalized Anxiety',
+    targetCondition: 'Anxiety Severity',
     category: 'Anxiety',
-    timesCompleted: 2890,
+    timesCompleted: 1890,
     type: 'Standard',
-    description: 'Validated 7-item scale designed to screen for and measure the severity of Generalized Anxiety Disorder in clinical practice.',
-    estimatedMinutes: 3,
-    validityScore: 'Sensitivity 89%, Specificity 82%',
-    targetPopulation: 'Adults (18+)',
-    authorOrSource: 'Spitzer et al. (2006)',
+    description: '7-item self-report questionnaire measuring generalized anxiety disorder symptoms over the past 14 days.',
+    estimatedMinutes: 4,
+    validityScore: "Cronbach's α = 0.92",
+    targetPopulation: 'Adults & Adolescents (12+)',
+    authorOrSource: 'Spitzer, Kroenke, Williams et al. (2006)',
     status: 'Active',
-    assignedClientCount: 810,
-    createdAt: '2025-01-08',
+    assignedClientCount: 520,
+    createdAt: '2025-01-10',
     severityRanges: [
-      { minScore: 0, maxScore: 4, label: 'Minimal Anxiety', color: 'bg-emerald-500', clinicalAction: 'Normal baseline. Re-evaluate as needed.' },
-      { minScore: 5, maxScore: 9, label: 'Mild Anxiety', color: 'bg-amber-500', clinicalAction: 'Relaxation training & anxiety psychoeducation.' },
-      { minScore: 10, maxScore: 14, label: 'Moderate Anxiety', color: 'bg-orange-500', clinicalAction: 'CBT exposure & cognitive restructuring indicated.' },
-      { minScore: 15, maxScore: 21, label: 'Severe Anxiety', color: 'bg-rose-600', clinicalAction: 'Immediate clinical review and panic/anxiety protocol.' }
+      { minScore: 0, maxScore: 4, label: 'Minimal Anxiety', color: 'bg-emerald-500', clinicalAction: 'No treatment indicated.' },
+      { minScore: 5, maxScore: 9, label: 'Mild Anxiety', color: 'bg-amber-500', clinicalAction: 'Monitor symptoms; introduce breathing & relaxation techniques.' },
+      { minScore: 10, maxScore: 14, label: 'Moderate Anxiety', color: 'bg-orange-500', clinicalAction: 'CBT protocol recommended; assess impact on daily functioning.' },
+      { minScore: 15, maxScore: 21, label: 'Severe Anxiety', color: 'bg-rose-600', clinicalAction: 'Active clinical intervention and medical/psychiatric evaluation.' }
     ],
     questions: [
       {
@@ -349,79 +622,185 @@ export const mockAssessmentsData: ClinicalAssessment[] = [
           { label: 'More than half the days (2)', value: 2 },
           { label: 'Nearly every day (3)', value: 3 }
         ]
+      },
+      {
+        id: 'g4',
+        text: 'Trouble relaxing',
+        options: [
+          { label: 'Not at all (0)', value: 0 },
+          { label: 'Several days (1)', value: 1 },
+          { label: 'More than half the days (2)', value: 2 },
+          { label: 'Nearly every day (3)', value: 3 }
+        ]
+      },
+      {
+        id: 'g5',
+        text: 'Being so restless that it is hard to sit still',
+        options: [
+          { label: 'Not at all (0)', value: 0 },
+          { label: 'Several days (1)', value: 1 },
+          { label: 'More than half the days (2)', value: 2 },
+          { label: 'Nearly every day (3)', value: 3 }
+        ]
+      },
+      {
+        id: 'g6',
+        text: 'Becoming easily annoyed or irritable',
+        options: [
+          { label: 'Not at all (0)', value: 0 },
+          { label: 'Several days (1)', value: 1 },
+          { label: 'More than half the days (2)', value: 2 },
+          { label: 'Nearly every day (3)', value: 3 }
+        ]
+      },
+      {
+        id: 'g7',
+        text: 'Feeling afraid as if something awful might happen',
+        options: [
+          { label: 'Not at all (0)', value: 0 },
+          { label: 'Several days (1)', value: 1 },
+          { label: 'More than half the days (2)', value: 2 },
+          { label: 'Nearly every day (3)', value: 3 }
+        ]
       }
     ]
   },
   {
-    id: 'ASS-04',
+    id: 'ASS-06',
     title: 'PTSD Checklist for DSM-5',
     acronym: 'PCL-5',
     questionCount: 20,
-    targetCondition: 'Trauma & Stressor-Related',
-    category: 'Trauma',
-    timesCompleted: 640,
+    targetCondition: 'PTSD Severity',
+    category: 'PTSD & Trauma',
+    timesCompleted: 780,
     type: 'Standard',
-    description: 'Self-report rating scale for assessing the 20 DSM-5 symptoms of posttraumatic stress disorder.',
+    description: '20-item self-report measure assessing the 20 DSM-5 symptoms of PTSD. Cutoff score of 33 for provisional diagnosis.',
     estimatedMinutes: 8,
     validityScore: "Cronbach's α = 0.94",
-    targetPopulation: 'Adult Trauma Survivors',
-    authorOrSource: 'Weathers et al. (2013) / National Center for PTSD',
+    targetPopulation: 'Trauma Survivors & Adults',
+    authorOrSource: 'Weathers et al. (2013) / VA National Center for PTSD',
     status: 'Active',
-    assignedClientCount: 210,
-    createdAt: '2025-01-15',
+    assignedClientCount: 240,
+    createdAt: '2025-01-20',
     severityRanges: [
-      { minScore: 0, maxScore: 30, label: 'Sub-Clinical Trauma', color: 'bg-emerald-500', clinicalAction: 'Below clinical cut-off (31-33).' },
-      { minScore: 31, maxScore: 50, label: 'Moderate PTSD Symptoms', color: 'bg-amber-500', clinicalAction: 'EMDR or Trauma-Focused CBT indicated.' },
-      { minScore: 51, maxScore: 80, label: 'Severe PTSD Symptoms', color: 'bg-rose-600', clinicalAction: 'Comprehensive trauma protocol & clinical priority.' }
+      { minScore: 0, maxScore: 32, label: 'Subclinical Symptoms', color: 'bg-emerald-500', clinicalAction: 'Does not meet provisional cut-point threshold.' },
+      { minScore: 33, maxScore: 45, label: 'Moderate PTSD (Provisional Diagnosis)', color: 'bg-amber-500', clinicalAction: 'Meets provisional diagnosis cutoff. Structured CAPS-5 clinical evaluation indicated.' },
+      { minScore: 46, maxScore: 80, label: 'Severe PTSD Symptoms', color: 'bg-rose-600', clinicalAction: 'High symptom burden. Trauma-focused psychotherapy (EMDR / CPT) indicated.' }
+    ],
+    questions: [
+      { id: 'p1', text: 'Repeated, disturbing, and unwanted memories of the stressful experience?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p2', text: 'Repeated, disturbing dreams of the stressful experience?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p3', text: 'Suddenly feeling or acting as if the stressful experience were actually happening again?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p4', text: 'Feeling very upset when something reminded you of the stressful experience?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p5', text: 'Having strong physical reactions when something reminded you of the stressful experience?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p6', text: 'Avoiding memories, thoughts, or feelings related to the stressful experience?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p7', text: 'Avoiding external reminders of the stressful experience (people, places, conversations)?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p8', text: 'Trouble remembering important parts of the stressful experience?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p9', text: 'Having strong negative beliefs about yourself, other people, or the world?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p10', text: 'Blaming yourself or someone else for the stressful experience or what happened after it?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p11', text: 'Having strong negative feelings such as fear, horror, anger, guilt, or shame?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p12', text: 'Loss of interest in activities that you used to enjoy?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p13', text: 'Feeling distant or cut off from other people?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p14', text: 'Trouble experiencing positive feelings (unable to feel happiness or loving feelings)?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p15', text: 'Irritable behavior, angry outbursts, or acting aggressively?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p16', text: 'Taking too many risks or doing things that could cause you harm?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p17', text: 'Being \'super alert\' or watchful or on guard?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p18', text: 'Feeling jumpy or easily startled?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p19', text: 'Having difficulty concentrating?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'p20', text: 'Trouble falling or staying asleep?', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little bit (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'Quite a bit (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] }
     ]
   },
   {
-    id: 'ASS-05',
-    title: 'WHO-5 Well-Being Index',
-    acronym: 'WHO-5',
-    questionCount: 5,
-    targetCondition: 'Subjective Well-Being',
-    category: 'Wellness',
-    timesCompleted: 1520,
+    id: 'ASS-07',
+    title: 'Obsessive-Compulsive Inventory - Revised',
+    acronym: 'OCI-R',
+    questionCount: 18,
+    targetCondition: 'OCD Symptoms',
+    category: 'OCD',
+    timesCompleted: 640,
     type: 'Standard',
-    description: 'Short 5-item questionnaire covering subjective emotional well-being over the past two weeks.',
-    estimatedMinutes: 2,
-    validityScore: 'High Construct Validity',
-    targetPopulation: 'General Population',
-    authorOrSource: 'World Health Organization (1998)',
-    status: 'Active',
-    assignedClientCount: 420,
-    createdAt: '2025-02-01',
-    severityRanges: [
-      { minScore: 0, maxScore: 50, label: 'Reduced Well-Being / Depression Risk', color: 'bg-rose-600', clinicalAction: 'Screen for depression using PHQ-9.' },
-      { minScore: 51, maxScore: 75, label: 'Moderate Well-Being', color: 'bg-amber-500', clinicalAction: 'Positive psychology & lifestyle interventions.' },
-      { minScore: 76, maxScore: 100, label: 'Optimal Well-Being', color: 'bg-emerald-500', clinicalAction: 'Maintain current positive routine.' }
-    ]
-  },
-  {
-    id: 'ASS-06',
-    title: 'AUDIT-C Alcohol Screener',
-    acronym: 'AUDIT-C',
-    questionCount: 3,
-    targetCondition: 'Substance Use Risk',
-    category: 'Substance',
-    timesCompleted: 980,
-    type: 'Standard',
-    description: 'Brief 3-item alcohol screening tool that reliably identifies hazardous drinking or active alcohol use disorders.',
-    estimatedMinutes: 2,
-    validityScore: 'Sensitivity 86%',
+    description: '18-item self-report scale assessing symptoms of Obsessive-Compulsive Disorder across 6 subscales. Recommended cutoff score is 21.',
+    estimatedMinutes: 6,
+    validityScore: "Cronbach's α = 0.90",
     targetPopulation: 'Adults (18+)',
-    authorOrSource: 'Bush et al. (1998) / World Health Organization',
+    authorOrSource: 'Foa, Huppert, Leiberg et al. (2002)',
+    status: 'Active',
+    assignedClientCount: 195,
+    createdAt: '2025-01-25',
+    severityRanges: [
+      { minScore: 0, maxScore: 20, label: 'Subclinical OCD Symptoms', color: 'bg-emerald-500', clinicalAction: 'Does not exceed recommended cutoff threshold.' },
+      { minScore: 21, maxScore: 40, label: 'Clinical OCD Elevation', color: 'bg-amber-500', clinicalAction: 'Exceeds recommended cutoff (≥21). Clinical interview for OCD indicated.' },
+      { minScore: 41, maxScore: 72, label: 'Severe OCD Impairment', color: 'bg-rose-600', clinicalAction: 'High symptom severity. Exposure and Response Prevention (ERP) protocol recommended.' }
+    ],
+    questions: [
+      { id: 'o1', text: 'I have saved up so many things that they get in the way.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o2', text: 'I check things more often than necessary.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o3', text: 'I get upset if objects are not arranged properly.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o4', text: 'I feel compelled to count while I am doing things.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o5', text: 'I find it difficult to touch an object when I know it has been touched by strangers or certain people.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o6', text: 'I find it difficult to control my own thoughts.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o7', text: 'I collect things I don\'t need.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o8', text: 'I repeatedly check doors, windows, drawers, etc.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o9', text: 'I get upset if others change the way I have arranged things.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o10', text: 'I feel I have to repeat certain numbers.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o11', text: 'I sometimes have to wash or clean myself simply because I feel contaminated.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o12', text: 'I am upset by unpleasant thoughts that come into my mind against my will.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o13', text: 'I avoid throwing things away because I am afraid I might need them later.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o14', text: 'I repeatedly check gas and water taps and light switches after turning them off.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o15', text: 'I need things to be arranged in a particular way.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o16', text: 'I feel that there are good and bad numbers.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o17', text: 'I wash my hands more often and longer than necessary.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] },
+      { id: 'o18', text: 'I frequently get nasty thoughts and have difficulty in getting rid of them.', options: [{ label: 'Not at all (0)', value: 0 }, { label: 'A little (1)', value: 1 }, { label: 'Moderately (2)', value: 2 }, { label: 'A lot (3)', value: 3 }, { label: 'Extremely (4)', value: 4 }] }
+    ]
+  },
+  {
+    id: 'ASS-08',
+    title: 'Adult ADHD Self-Report Scale v1.1',
+    acronym: 'ASRS v1.1',
+    questionCount: 18,
+    targetCondition: 'Adult ADHD',
+    category: 'ADHD',
+    timesCompleted: 870,
+    type: 'Standard',
+    description: '18-question self-report scale developed with WHO assessing symptoms of Adult ADHD. Part A (Q1–6) serves as primary screener.',
+    estimatedMinutes: 6,
+    validityScore: "Cronbach's α = 0.89",
+    targetPopulation: 'Adults (18+)',
+    authorOrSource: 'Kessler, Adler et al. (2005) / WHO',
     status: 'Active',
     assignedClientCount: 310,
-    createdAt: '2025-02-05'
+    createdAt: '2025-01-30',
+    severityRanges: [
+      { minScore: 0, maxScore: 3, label: 'Unlikely ADHD', color: 'bg-emerald-500', clinicalAction: 'Symptoms not consistent with Adult ADHD threshold.' },
+      { minScore: 4, maxScore: 6, label: 'Likely Adult ADHD (Part A Criterion Met)', color: 'bg-rose-600', clinicalAction: 'Part A screening criterion met (≥4 shaded items). Comprehensive ADHD clinical evaluation recommended.' }
+    ],
+    questions: [
+      { id: 'a1', text: 'Part A - How often do you have trouble wrapping up the final details of a project, once the challenging parts have been done?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (1)', value: 1 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a2', text: 'How often do you have difficulty getting things in order when you have to do a task that requires organisation?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (1)', value: 1 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a3', text: 'How often do you have problems remembering appointments or obligations?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (1)', value: 1 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a4', text: 'When you have a task that requires a lot of thought, how often do you avoid or delay getting started?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (0)', value: 0 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a5', text: 'How often do you fidget or squirm with your hands or feet when you have to sit down for a long time?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (0)', value: 0 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a6', text: 'How often do you feel overly active and compelled to do things, like you were driven by a motor?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (0)', value: 0 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a7', text: 'Part B - How often do you make careless mistakes when you have to work on a boring or difficult project?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (0)', value: 0 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a8', text: 'How often do you have difficulty keeping your attention when you are doing boring or repetitive work?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (0)', value: 0 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a9', text: 'How often do you have difficulty concentrating on what people say to you, even when they are speaking to you directly?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (1)', value: 1 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a10', text: 'How often do you misplace or have difficulty finding things at home or at work?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (0)', value: 0 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a11', text: 'How often are you distracted by activity or noise around you?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (0)', value: 0 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a12', text: 'How often do you leave your seat in meetings or other situations in which you are expected to remain seated?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (1)', value: 1 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a13', text: 'How often do you feel restless or fidgety?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (0)', value: 0 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a14', text: 'How often do you have difficulty unwinding and relaxing when you have time to yourself?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (0)', value: 0 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a15', text: 'How often do you find yourself talking too much when you are in social situations?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (0)', value: 0 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a16', text: 'When you\'re in a conversation, how often do you find yourself finishing the sentences of the people you are talking to?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (1)', value: 1 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a17', text: 'How often do you have difficulty waiting your turn in situations when turn taking is required?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (0)', value: 0 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] },
+      { id: 'a18', text: 'How often do you interrupt others when they are busy?', options: [{ label: 'Never (0)', value: 0 }, { label: 'Rarely (0)', value: 0 }, { label: 'Sometimes (1)', value: 1 }, { label: 'Often (1)', value: 1 }, { label: 'Very Often (1)', value: 1 }] }
+    ]
   }
 ];
 
 export const mockSubmissionsData: AssessmentSubmission[] = [
   {
     id: 'SUB-901',
-    assessmentId: 'ASS-02',
+    assessmentId: 'ASS-04',
     assessmentAcronym: 'PHQ-9',
     assessmentTitle: 'Patient Health Questionnaire-9',
     clientId: 'CL-101',
@@ -442,7 +821,7 @@ export const mockSubmissionsData: AssessmentSubmission[] = [
   },
   {
     id: 'SUB-902',
-    assessmentId: 'ASS-03',
+    assessmentId: 'ASS-05',
     assessmentAcronym: 'GAD-7',
     assessmentTitle: 'Generalized Anxiety Disorder-7',
     clientId: 'CL-102',
@@ -462,7 +841,7 @@ export const mockSubmissionsData: AssessmentSubmission[] = [
   },
   {
     id: 'SUB-903',
-    assessmentId: 'ASS-02',
+    assessmentId: 'ASS-04',
     assessmentAcronym: 'PHQ-9',
     assessmentTitle: 'Patient Health Questionnaire-9',
     clientId: 'CL-104',
@@ -478,7 +857,7 @@ export const mockSubmissionsData: AssessmentSubmission[] = [
   },
   {
     id: 'SUB-904',
-    assessmentId: 'ASS-04',
+    assessmentId: 'ASS-06',
     assessmentAcronym: 'PCL-5',
     assessmentTitle: 'PTSD Checklist for DSM-5',
     clientId: 'CL-103',
@@ -494,7 +873,7 @@ export const mockSubmissionsData: AssessmentSubmission[] = [
   },
   {
     id: 'SUB-905',
-    assessmentId: 'ASS-03',
+    assessmentId: 'ASS-05',
     assessmentAcronym: 'GAD-7',
     assessmentTitle: 'Generalized Anxiety Disorder-7',
     clientId: 'CL-105',
@@ -513,7 +892,7 @@ export const mockSubmissionsData: AssessmentSubmission[] = [
 export const mockAssignmentsData: AssessmentAssignment[] = [
   {
     id: 'ASN-301',
-    assessmentId: 'ASS-02',
+    assessmentId: 'ASS-04',
     assessmentAcronym: 'PHQ-9',
     assessmentTitle: 'Patient Health Questionnaire-9',
     clientId: 'CL-101',
@@ -526,7 +905,7 @@ export const mockAssignmentsData: AssessmentAssignment[] = [
   },
   {
     id: 'ASN-302',
-    assessmentId: 'ASS-03',
+    assessmentId: 'ASS-05',
     assessmentAcronym: 'GAD-7',
     assessmentTitle: 'Generalized Anxiety Disorder-7',
     clientId: 'CL-102',
@@ -539,7 +918,7 @@ export const mockAssignmentsData: AssessmentAssignment[] = [
   },
   {
     id: 'ASN-303',
-    assessmentId: 'ASS-04',
+    assessmentId: 'ASS-06',
     assessmentAcronym: 'PCL-5',
     assessmentTitle: 'PTSD Checklist for DSM-5',
     clientId: 'CL-103',
@@ -552,7 +931,7 @@ export const mockAssignmentsData: AssessmentAssignment[] = [
   },
   {
     id: 'ASN-304',
-    assessmentId: 'ASS-03',
+    assessmentId: 'ASS-05',
     assessmentAcronym: 'GAD-7',
     assessmentTitle: 'Generalized Anxiety Disorder-7',
     clientId: 'CL-104',
@@ -951,21 +1330,34 @@ export default function Assessments() {
                       </span>
                     </div>
 
-                    <h3 className="font-extrabold text-slate-900 text-base group-hover:text-[#5e2be2] transition-colors">
+                    <h3
+                      onClick={() => setActiveProtocolModal(ass)}
+                      className="font-extrabold text-slate-900 text-base group-hover:text-[#5e2be2] transition-colors cursor-pointer"
+                    >
                       {ass.title}
                     </h3>
                     <p className="text-xs text-slate-500 mt-1.5 line-clamp-2 leading-relaxed">
                       {ass.description}
                     </p>
 
-
+                    {/* Quick Metadata Pill Badges */}
+                    <div className="flex flex-wrap items-center gap-2 mt-3 text-[11px] font-semibold text-slate-500">
+                      <span className="px-2 py-0.5 bg-slate-100 rounded-md">
+                        Condition: <strong className="text-slate-800">{ass.targetCondition}</strong>
+                      </span>
+                      {ass.validityScore && (
+                        <span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded-md">
+                          {ass.validityScore}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
                     <button
                       type="button"
                       onClick={() => handleOpenRunner(ass)}
-                      className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs rounded-xl flex items-center gap-1 transition-colors"
+                      className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs rounded-xl flex items-center gap-1 transition-colors cursor-pointer"
                     >
                       <Play className="w-3 h-3 fill-emerald-700" />
                       <span>Run</span>
@@ -973,7 +1365,7 @@ export default function Assessments() {
                     <button
                       type="button"
                       onClick={() => openAssignModal(ass)}
-                      className="px-3 py-1.5 bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold text-xs rounded-xl flex items-center gap-1 transition-colors"
+                      className="px-3 py-1.5 bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold text-xs rounded-xl flex items-center gap-1 transition-colors cursor-pointer"
                     >
                       <Send className="w-3 h-3" />
                       <span>Assign</span>
@@ -1189,52 +1581,121 @@ export default function Assessments() {
       )}
 
       {/* Protocol Details Modal */}
-      {activeProtocolModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-7 max-w-xl w-full shadow-2xl space-y-5 animate-in fade-in-0 zoom-in-95 border border-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <span className="px-2.5 py-0.5 bg-purple-50 text-[#5e2be2] font-black text-xs rounded-md border border-purple-100">
+      {activeProtocolModal && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh] my-auto">
+            <div className="p-6 bg-slate-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="px-3 py-1 bg-[#5e2be2] text-white font-mono font-extrabold text-xs rounded-lg">
                   {activeProtocolModal.acronym}
                 </span>
-                <h3 className="text-lg font-black text-slate-900 mt-1">{activeProtocolModal.title}</h3>
+                <div>
+                  <h3 className="font-extrabold text-lg">{activeProtocolModal.title}</h3>
+                  <p className="text-xs text-slate-400">Clinical Protocol &amp; Scoring Rules</p>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveProtocolModal(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"
+                className="p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-300 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              {activeProtocolModal.description}
-            </p>
+            <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700">
+              {/* Meta Box */}
+              <div className="grid grid-cols-3 gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+                <div>
+                  <span className="text-slate-400 block font-semibold">Target Condition</span>
+                  <span className="font-extrabold text-slate-900 text-sm">{activeProtocolModal.targetCondition}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-semibold">Validation Norms</span>
+                  <span className="font-extrabold text-purple-700 text-sm">{activeProtocolModal.validityScore || "Standardized"}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-semibold">Source / Author</span>
+                  <span className="font-extrabold text-slate-800">{activeProtocolModal.authorOrSource || "Clinical Literature"}</span>
+                </div>
+              </div>
 
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-slate-400 font-bold">Target Condition:</span>
-                <span className="font-extrabold text-slate-800">{activeProtocolModal.targetCondition}</span>
+              {/* Description */}
+              <div>
+                <h4 className="font-extrabold text-sm text-slate-900 mb-1">Clinical Scope &amp; Guidelines</h4>
+                <p className="text-slate-600 leading-relaxed font-medium">{activeProtocolModal.description}</p>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400 font-bold">Item Count:</span>
-                <span className="font-extrabold text-slate-800">{activeProtocolModal.questionCount} Questions</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400 font-bold">Psychometric Reliability:</span>
-                <span className="font-extrabold text-slate-800">{activeProtocolModal.validityScore || 'Validated Scale'}</span>
-              </div>
+
+              {/* Severity Cutoff Table */}
+              {activeProtocolModal.severityRanges && activeProtocolModal.severityRanges.length > 0 && (
+                <div>
+                  <h4 className="font-extrabold text-sm text-slate-900 mb-2">Diagnostic Score Thresholds &amp; Cutoffs</h4>
+                  <div className="border border-slate-200/90 rounded-2xl overflow-hidden shadow-2xs">
+                    <table className="w-full text-left">
+                      <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
+                        <tr>
+                          <th className="p-3">Score Range</th>
+                          <th className="p-3">Severity Level</th>
+                          <th className="p-3">Clinical Action Plan</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {activeProtocolModal.severityRanges.map((range, i) => (
+                          <tr key={i} className="hover:bg-slate-50/50">
+                            <td className="p-3 font-mono font-extrabold text-slate-900">
+                              {range.minScore} - {range.maxScore} pts
+                            </td>
+                            <td className="p-3">
+                              <span className={`px-2.5 py-1 rounded-full text-white font-extrabold text-[10px] ${range.color}`}>
+                                {range.label}
+                              </span>
+                            </td>
+                            <td className="p-3 text-slate-600 font-semibold">{range.clinicalAction}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Itemized Questions & Response Options List */}
+              {activeProtocolModal.questions && activeProtocolModal.questions.length > 0 && (
+                <div>
+                  <h4 className="font-extrabold text-sm text-slate-900 mb-2">
+                    Standardized Assessment Questions ({activeProtocolModal.questions.length} Items)
+                  </h4>
+                  <div className="space-y-3">
+                    {activeProtocolModal.questions.map((q, idx) => (
+                      <div key={q.id || idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="font-extrabold text-slate-900 text-xs leading-snug">
+                            {idx + 1}. {q.text}
+                          </span>
+                          {q.isRiskTrigger && (
+                            <span className="px-2 py-0.5 bg-rose-100 text-rose-700 font-extrabold text-[10px] rounded-md shrink-0 border border-rose-200 flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3" /> Safety Trigger
+                            </span>
+                          )}
+                        </div>
+                        {q.subtext && (
+                          <p className="text-[11px] text-[#5e2be2] font-semibold">{q.subtext}</p>
+                        )}
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {q.options.map((opt, oIdx) => (
+                            <span key={oIdx} className="px-2.5 py-1 bg-white border border-slate-200 text-slate-700 rounded-lg text-[11px] font-medium shadow-2xs">
+                              {opt.label}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setActiveProtocolModal(null)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl"
-              >
-                Close
-              </button>
+            <div className="p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => {
@@ -1242,103 +1703,208 @@ export default function Assessments() {
                   setActiveProtocolModal(null);
                   handleOpenRunner(target);
                 }}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl"
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-sm"
               >
-                Run Test Simulator
+                <Play className="w-4 h-4 fill-white" />
+                <span>Launch Live Simulator</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveProtocolModal(null)}
+                className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold text-xs rounded-xl cursor-pointer transition-colors"
+              >
+                Close Protocol
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Test Simulator Runner Modal */}
-      {activeRunnerModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-7 max-w-2xl w-full shadow-2xl space-y-6 border border-slate-200 animate-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 font-black text-xs rounded-md">
-                  SIMULATOR MODE · {activeRunnerModal.acronym}
+      {activeRunnerModal && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-2xl bg-white rounded-2xl sm:rounded-[32px] shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh] my-auto">
+            {/* Modal Header */}
+            <div className="p-6 bg-gradient-to-r from-[#4f28d9] to-[#5e2be2] text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-white font-mono font-extrabold text-xs rounded-lg border border-white/20">
+                  {activeRunnerModal.acronym}
                 </span>
-                <h3 className="text-lg font-black text-slate-900 mt-1">{activeRunnerModal.title}</h3>
+                <div>
+                  <h3 className="font-extrabold text-lg leading-tight">{activeRunnerModal.title}</h3>
+                  <p className="text-xs text-purple-200 mt-0.5">Interactive Test Simulator &amp; Real-time Scoring</p>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveRunnerModal(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"
+                className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {!runnerCompletedReport ? (
-              <div className="space-y-5">
-                {activeRunnerModal.questions && activeRunnerModal.questions.length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-2">
-                      <span>Question {runnerCurrentStep + 1} of {activeRunnerModal.questions.length}</span>
-                      <span>Progress {Math.round(((runnerCurrentStep + 1) / activeRunnerModal.questions.length) * 100)}%</span>
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+              {!runnerCompletedReport ? (
+                <>
+                  {/* Progress Indicator */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs font-bold text-slate-500">
+                      <span>Question {runnerCurrentStep + 1} of {activeRunnerModal.questions?.length || 1}</span>
+                      <span>
+                        {Math.round(((runnerCurrentStep + 1) / (activeRunnerModal.questions?.length || 1)) * 100)}% Complete
+                      </span>
                     </div>
-
-                    <h4 className="text-base font-extrabold text-slate-900 mb-1">
-                      {activeRunnerModal.questions[runnerCurrentStep].text}
-                    </h4>
-                    {activeRunnerModal.questions[runnerCurrentStep].subtext && (
-                      <p className="text-xs text-slate-400 font-medium mb-4">
-                        {activeRunnerModal.questions[runnerCurrentStep].subtext}
-                      </p>
-                    )}
-
-                    <div className="space-y-2 mt-4">
-                      {activeRunnerModal.questions[runnerCurrentStep].options.map((opt) => (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() => handleRunnerSelectAnswer(activeRunnerModal.questions![runnerCurrentStep].id, opt.value)}
-                          className={`w-full p-3.5 rounded-2xl border text-left text-xs font-bold transition-all flex items-center justify-between ${
-                            runnerAnswers[activeRunnerModal.questions![runnerCurrentStep].id] === opt.value
-                              ? 'bg-[#5e2be2] text-white border-[#5e2be2] shadow-md'
-                              : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                          }`}
-                        >
-                          <span>{opt.label}</span>
-                          {runnerAnswers[activeRunnerModal.questions![runnerCurrentStep].id] === opt.value && (
-                            <Check className="w-4 h-4 text-white" />
-                          )}
-                        </button>
-                      ))}
+                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[#5e2be2] transition-all duration-300"
+                        style={{
+                          width: `${((runnerCurrentStep + 1) / (activeRunnerModal.questions?.length || 1)) * 100}%`
+                        }}
+                      />
                     </div>
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-5">
-                <div className="p-5 bg-purple-50 rounded-2xl border border-purple-200 text-center space-y-2">
-                  <span className="text-xs font-bold text-purple-600 uppercase tracking-wide">Simulator Evaluation Results</span>
-                  <div className="text-3xl font-black text-slate-900">
-                    {runnerCompletedReport.score} / {runnerCompletedReport.maxScore} Points
+
+                  {/* Active Question Card */}
+                  {activeRunnerModal.questions && activeRunnerModal.questions[runnerCurrentStep] && (
+                    <div className="space-y-4">
+                      <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2">
+                        {activeRunnerModal.questions[runnerCurrentStep].isRiskTrigger && (
+                          <span className="px-2.5 py-0.5 bg-rose-100 text-rose-700 font-extrabold text-[10px] rounded-md flex items-center gap-1 w-fit border border-rose-200">
+                            <AlertTriangle className="w-3 h-3" /> Safety Trigger Question
+                          </span>
+                        )}
+                        <h4 className="font-extrabold text-slate-900 text-base leading-snug">
+                          {activeRunnerModal.questions[runnerCurrentStep].text}
+                        </h4>
+                        {activeRunnerModal.questions[runnerCurrentStep].subtext && (
+                          <p className="text-xs text-slate-500 font-medium">
+                            {activeRunnerModal.questions[runnerCurrentStep].subtext}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Options Radio List */}
+                      <div className="space-y-2.5">
+                        {activeRunnerModal.questions[runnerCurrentStep].options.map((opt) => {
+                          const currentQId = activeRunnerModal.questions![runnerCurrentStep].id;
+                          const isSelected = runnerAnswers[currentQId] === opt.value;
+                          return (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => {
+                                const updated = { ...runnerAnswers, [currentQId]: opt.value };
+                                setRunnerAnswers(updated);
+                              }}
+                              className={`w-full p-4 rounded-2xl border text-left font-bold text-xs flex items-center justify-between transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-purple-50 border-[#5e2be2] text-[#5e2be2] shadow-xs'
+                                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                              }`}
+                            >
+                              <span>{opt.label}</span>
+                              <div
+                                className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${
+                                  isSelected ? 'border-[#5e2be2] bg-[#5e2be2] text-white' : 'border-slate-300'
+                                }`}
+                              >
+                                {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* Completed Report */
+                <div className="space-y-6 animate-fade-in">
+                  <div className="bg-slate-900 text-white rounded-3xl p-6 space-y-4 text-center">
+                    <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-extrabold text-purple-300">
+                      Calculated Diagnostic Outcome
+                    </span>
+                    <div className="space-y-1">
+                      <div className="text-4xl font-extrabold">
+                        {runnerCompletedReport.score}{' '}
+                        <span className="text-xl text-slate-400 font-normal">/ {runnerCompletedReport.maxScore}</span>
+                      </div>
+                      <span
+                        className={`inline-block px-4 py-1.5 rounded-full font-extrabold text-xs text-white ${
+                          runnerCompletedReport.severity?.color || 'bg-purple-600'
+                        }`}
+                      >
+                        {runnerCompletedReport.severity?.label}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
+                      <strong>Recommended Clinical Action:</strong> {runnerCompletedReport.severity?.clinicalAction}
+                    </p>
                   </div>
-                  <span className={`inline-block px-3 py-1 rounded-md text-xs font-extrabold ${runnerCompletedReport.severity?.color || 'bg-purple-600'} text-white`}>
-                    {runnerCompletedReport.severity?.label}
-                  </span>
-                  <p className="text-xs text-slate-600 mt-2 font-medium">
-                    Clinical Action: <strong>{runnerCompletedReport.severity?.clinicalAction}</strong>
-                  </p>
+                  {runnerCompletedReport.flagged && (
+                    <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3 text-rose-900 text-xs font-semibold">
+                      <ShieldAlert className="w-5 h-5 text-rose-600 shrink-0" />
+                      <span>
+                        <strong>Safety Trigger Alert:</strong> One or more high-risk safety items were flagged during this assessment. Immediate safety evaluation is recommended.
+                      </span>
+                    </div>
+                  )}
                 </div>
+              )}
+            </div>
 
-                <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+            {/* Footer Controls */}
+            <div className="p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+              {!runnerCompletedReport ? (
+                <>
                   <button
                     type="button"
-                    onClick={() => setActiveRunnerModal(null)}
-                    className="px-5 py-2.5 bg-[#5e2be2] text-white font-extrabold text-xs rounded-xl shadow-md"
+                    disabled={runnerCurrentStep === 0}
+                    onClick={() => setRunnerCurrentStep((prev) => Math.max(0, prev - 1))}
+                    className="px-4 py-2 bg-slate-200 hover:bg-slate-300 disabled:opacity-40 disabled:hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer disabled:cursor-not-allowed"
                   >
-                    Finish Test Simulation
+                    Back
                   </button>
-                </div>
-              </div>
-            )}
+                  <button
+                    type="button"
+                    disabled={
+                      !activeRunnerModal.questions ||
+                      runnerAnswers[activeRunnerModal.questions[runnerCurrentStep]?.id] === undefined
+                    }
+                    onClick={() => {
+                      if (!activeRunnerModal.questions) return;
+                      if (runnerCurrentStep < activeRunnerModal.questions.length - 1) {
+                        setRunnerCurrentStep((prev) => prev + 1);
+                      } else {
+                        calculateResultsWithAnswers(runnerAnswers);
+                      }
+                    }}
+                    className="px-6 py-2 bg-[#5e2be2] hover:bg-[#4f28d9] disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <span>
+                      {activeRunnerModal.questions && runnerCurrentStep === activeRunnerModal.questions.length - 1
+                        ? 'Finish & Score'
+                        : 'Next Item'}
+                    </span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setActiveRunnerModal(null)}
+                  className="w-full py-2.5 bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer text-center"
+                >
+                  Close Simulator
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Assign Assessment & Select Frequency Multi-Step Modal */}

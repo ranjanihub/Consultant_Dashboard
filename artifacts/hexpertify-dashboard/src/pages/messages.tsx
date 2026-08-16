@@ -154,17 +154,19 @@ export default function Messages() {
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline mb-1">
                     <h4 className="font-semibold text-sm truncate text-foreground">{chat.name}</h4>
-                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">{chat.time}</span>
+                    <span className="text-[10px] text-muted-foreground whitespace-nowrap ml-1">{chat.time}</span>
                   </div>
-                  <p className={`text-xs truncate ${chat.unreadCount > 0 ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
-                    {chat.lastMessage}
-                  </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className={`text-xs truncate ${chat.unreadCount > 0 ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
+                      {chat.lastMessage}
+                    </p>
+                    {chat.unreadCount > 0 && (
+                      <span className="flex h-5 min-w-5 px-1.5 items-center justify-center rounded-full bg-[#5e2be2] text-[10px] font-bold text-white shrink-0">
+                        {chat.unreadCount}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                {chat.unreadCount > 0 && (
-                  <span className="absolute right-4 bottom-4 flex h-5 min-w-5 px-1 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                    {chat.unreadCount}
-                  </span>
-                )}
               </div>
             );
           })}
