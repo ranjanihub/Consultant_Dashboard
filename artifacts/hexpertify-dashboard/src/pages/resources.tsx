@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FolderOpen, Search, Plus, ExternalLink, Download, FileText, Headphones, Video, BookOpen, Clock, Tag, Globe, Lock, Bookmark, Star, ArrowRight, Info } from "lucide-react";
+import { FolderOpen, Search, Plus, ExternalLink, Download, FileText, Headphones, Video, BookOpen, Clock, Tag, Globe, Lock, Bookmark, Star, ArrowRight, Info, Upload, Link as LinkIcon, FileUp, ChevronDown, Check, X } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -149,6 +149,15 @@ Write down the triggering situation, your automatic thought, the cognitive disto
 
 const CATEGORIES = ["All Resources", "Saved", "Articles", "Videos", "Worksheets", "Meditations", "PDFs"];
 
+const MOCK_CONTEXT_OPTIONS = [
+  { id: "c-1", name: "Jaswanth 2050", type: "Client" },
+  { id: "c-2", name: "Sarah Jenkins", type: "Client" },
+  { id: "c-3", name: "Michael Chen", type: "Client" },
+  { id: "c-4", name: "Emily Rodriguez", type: "Client" },
+  { id: "g-1", name: "Anxiety Support Group", type: "Group" },
+  { id: "g-2", name: "CBT Skills Group", type: "Group" },
+];
+
 export default function Resources() {
   const [resources, setResources] = useState<ResourceItem[]>(INITIAL_RESOURCES);
   const [selectedCategory, setSelectedCategory] = useState<string>("All Resources");
@@ -158,14 +167,19 @@ export default function Resources() {
 
   // Add Resource Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
-  const [newType, setNewType] = useState<"article" | "worksheet" | "meditation" | "video" | "pdf">("article");
-  const [newDuration, setNewDuration] = useState("5 min read");
-  const [newDescription, setNewDescription] = useState("");
-  const [newContent, setNewContent] = useState("");
-  const [newImageUrl, setNewImageUrl] = useState("");
-  const [newIsPublic, setNewIsPublic] = useState(false);
-  const [newTags, setNewTags] = useState("");
+  const [resourceTab, setResourceTab] = useState<"file" | "link">("file");
+
+  // File tab fields
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // Link tab fields
+  const [linkLabel, setLinkLabel] = useState("");
+  const [linkUrl, setLinkUrl] = useState("https://");
+
+  // Context field
+  const [selectedContexts, setSelectedContexts] = useState<string[]>([]);
+  const [contextSearch, setContextSearch] = useState("");
+  const [isContextDropdownOpen, setIsContextDropdownOpen] = useState(false);
 
   const toggleBookmark = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -176,58 +190,42 @@ export default function Resources() {
 
   const handleAddResource = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle.trim() || !newDescription.trim()) return;
+    if (resourceTab === "file" && !selectedFile) return;
+    if (resourceTab === "link" && (!linkLabel.trim() || !linkUrl.trim())) return;
 
-    const categoryMap: Record<string, string> = {
-      article: "Articles",
-      worksheet: "Worksheets",
-      meditation: "Meditations",
-      video: "Videos",
-      pdf: "PDFs",
-    };
-
-    const typeLabelMap: Record<string, string> = {
-      article: "ARTICLE",
-      worksheet: "WORKSHEET",
-      meditation: "MEDITATION",
-      video: "VIDEO",
-      pdf: "PDF",
-    };
-
-    const defaultImages: Record<string, string> = {
-      article: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80",
-      worksheet: "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80",
-      meditation: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80",
-      video: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=800&q=80",
-      pdf: "https://images.unsplash.com/photo-1511295742362-92c96b124e52?auto=format&fit=crop&w=800&q=80",
-    };
+    const title = resourceTab === "file" ? (selectedFile?.name || "Uploaded Resource") : linkLabel.trim();
+    const contextLabel = selectedContexts.length > 0 ? selectedContexts.join(", ") : "General";
 
     const newResource: ResourceItem = {
       id: `res-${Date.now()}`,
-      type: newType,
-      typeLabel: typeLabelMap[newType],
-      category: categoryMap[newType],
-      isPublic: newIsPublic,
-      title: newTitle.trim(),
-      description: newDescription.trim(),
-      fullContent: newContent.trim() || newDescription.trim(),
-      duration: newDuration.trim() || "5 min read",
-      imageUrl: newImageUrl.trim() || defaultImages[newType],
-      tags: newTags
-        ? newTags.split(",").map((t) => t.trim()).filter(Boolean)
-        : ["General", typeLabelMap[newType]],
+      type: resourceTab === "file" ? "pdf" : "article",
+      typeLabel: resourceTab === "file" ? "FILE" : "LINK",
+      category: resourceTab === "file" ? "PDFs" : "Articles",
+      isPublic: false,
+      title: title,
+      description: resourceTab === "file"
+        ? `File resource shared with ${contextLabel}`
+        : `Link resource: ${linkUrl.trim()} (Shared with ${contextLabel})`,
+      fullContent: resourceTab === "file"
+        ? `Uploaded file: ${selectedFile?.name} (${selectedFile ? (selectedFile.size / (1024 * 1024)).toFixed(2) : 0} MB)`
+        : `URL: ${linkUrl.trim()}\nLabel: ${linkLabel.trim()}`,
+      duration: resourceTab === "file" ? "Document" : "Web Link",
+      imageUrl: resourceTab === "file"
+        ? "https://images.unsplash.com/photo-1511295742362-92c96b124e52?auto=format&fit=crop&w=800&q=80"
+        : "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80",
+      tags: selectedContexts.length > 0 ? selectedContexts : ["Resource"],
     };
 
     setResources((prev) => [newResource, ...prev]);
     setIsAddModalOpen(false);
 
     // Reset Form
-    setNewTitle("");
-    setNewDescription("");
-    setNewContent("");
-    setNewTags("");
-    setNewImageUrl("");
-    setNewIsPublic(false);
+    setSelectedFile(null);
+    setLinkLabel("");
+    setLinkUrl("https://");
+    setSelectedContexts([]);
+    setContextSearch("");
+    setIsContextDropdownOpen(false);
   };
 
   const filteredResources = resources.filter((res) => {
@@ -507,128 +505,251 @@ export default function Resources() {
 
       {/* Add Resource Modal */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-lg p-6 rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Add New Resource</DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground">
-              Create a new clinical article, worksheet, meditation, video, or PDF resource for your library.
+        <DialogContent className="max-w-lg p-6 rounded-2xl sm:rounded-3xl border-0 shadow-2xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-xl font-extrabold text-slate-900">Add a resource</DialogTitle>
+            <DialogDescription className="text-xs text-slate-500 leading-relaxed">
+              You can add a file or a link as a resource. Choose the type of the resource that you want to add below.
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleAddResource} className="space-y-4 mt-4">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                Title *
-              </label>
-              <Input
-                type="text"
-                placeholder="e.g. Grounding Exercises for Acute Anxiety"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                required
-                className="rounded-lg"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                  Resource Type
-                </label>
-                <select
-                  value={newType}
-                  onChange={(e) => setNewType(e.target.value as any)}
-                  className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="article">Article</option>
-                  <option value="worksheet">Worksheet</option>
-                  <option value="meditation">Meditation</option>
-                  <option value="video">Video</option>
-                  <option value="pdf">PDF</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                  Duration / Read Time
-                </label>
-                <Input
-                  type="text"
-                  placeholder="e.g. 8 min read"
-                  value={newDuration}
-                  onChange={(e) => setNewDuration(e.target.value)}
-                  className="rounded-lg"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                Short Summary *
-              </label>
-              <textarea
-                rows={2}
-                placeholder="Brief 1-2 sentence overview of the resource content..."
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-                required
-                className="w-full rounded-lg border border-input bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                Full Content / Detailed Guide (Optional)
-              </label>
-              <textarea
-                rows={4}
-                placeholder="Detailed steps, exercise instructions, or full article text..."
-                value={newContent}
-                onChange={(e) => setNewContent(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                Cover Image URL (Optional)
-              </label>
-              <Input
-                type="url"
-                placeholder="https://images.unsplash.com/..."
-                value={newImageUrl}
-                onChange={(e) => setNewImageUrl(e.target.value)}
-                className="rounded-lg"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                Tags (Comma separated)
-              </label>
-              <Input
-                type="text"
-                placeholder="e.g. Anxiety, Grounding, Mindfulness"
-                value={newTags}
-                onChange={(e) => setNewTags(e.target.value)}
-                className="rounded-lg"
-              />
-            </div>
-
-
-
-            <DialogFooter className="pt-4 border-t border-border gap-2">
-              <Button
+          {/* Type Selector (File / Link Tabs) */}
+          <div className="flex justify-center my-2">
+            <div className="inline-flex items-center bg-purple-50/80 p-1 rounded-xl border border-purple-100/80 gap-1">
+              <button
                 type="button"
-                variant="outline"
+                onClick={() => setResourceTab("file")}
+                className={`px-4 py-1.5 rounded-lg text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  resourceTab === "file"
+                    ? "bg-white text-[#5e2be2] shadow-xs border border-purple-100"
+                    : "text-slate-500 hover:text-slate-800 font-semibold"
+                }`}
+              >
+                <FileUp className="w-3.5 h-3.5" />
+                <span>File</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setResourceTab("link")}
+                className={`px-4 py-1.5 rounded-lg text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  resourceTab === "link"
+                    ? "bg-white text-[#5e2be2] shadow-xs border border-purple-100"
+                    : "text-slate-500 hover:text-slate-800 font-semibold"
+                }`}
+              >
+                <LinkIcon className="w-3.5 h-3.5" />
+                <span>Link</span>
+              </button>
+            </div>
+          </div>
+
+          <form onSubmit={handleAddResource} className="space-y-4 mt-2">
+            {/* FILE TAB */}
+            {resourceTab === "file" && (
+              <div className="space-y-1">
+                <label className="block text-xs font-extrabold text-slate-800">
+                  File <span className="text-rose-500">*</span>
+                </label>
+                <p className="text-[11px] text-slate-500 mb-2">
+                  You can add a file to the client's resources
+                </p>
+
+                <label
+                  htmlFor="file-upload-input"
+                  className="border border-dashed border-slate-300 hover:border-[#5e2be2] bg-slate-50/50 hover:bg-purple-50/20 rounded-2xl p-6 text-center flex flex-col items-center justify-center cursor-pointer transition-all space-y-2 group"
+                >
+                  <input
+                    id="file-upload-input"
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setSelectedFile(e.target.files[0]);
+                      }
+                    }}
+                  />
+                  {selectedFile ? (
+                    <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm w-full max-w-sm">
+                      <FileText className="w-7 h-7 text-[#5e2be2] shrink-0" />
+                      <div className="text-left overflow-hidden flex-1">
+                        <p className="text-xs font-bold text-slate-800 truncate">{selectedFile.name}</p>
+                        <p className="text-[10px] text-slate-400">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedFile(null);
+                        }}
+                        className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-purple-100 text-slate-600 group-hover:text-[#5e2be2] flex items-center justify-center transition-colors">
+                        <Upload className="w-5 h-5" />
+                      </div>
+                      <div className="text-xs font-medium text-slate-700">
+                        <span className="text-[#5e2be2] font-bold">Upload a file</span> or drag and drop
+                      </div>
+                    </>
+                  )}
+                </label>
+                <div className="text-right text-[11px] text-slate-400 font-medium pt-0.5">
+                  up to 25MB
+                </div>
+              </div>
+            )}
+
+            {/* LINK TAB */}
+            {resourceTab === "link" && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-extrabold text-slate-800">
+                    Label <span className="text-rose-500">*</span>
+                  </label>
+                  <p className="text-[11px] text-slate-500 mb-1.5">
+                    A label for the link
+                  </p>
+                  <Input
+                    type="text"
+                    placeholder=""
+                    value={linkLabel}
+                    onChange={(e) => setLinkLabel(e.target.value)}
+                    className="rounded-xl border-slate-200 h-10 text-xs focus-visible:ring-[#5e2be2]"
+                    required={resourceTab === "link"}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-extrabold text-slate-800">
+                    URL <span className="text-rose-500">*</span>
+                  </label>
+                  <p className="text-[11px] text-slate-500 mb-1.5">
+                    The url for the link
+                  </p>
+                  <Input
+                    type="text"
+                    placeholder="https://"
+                    value={linkUrl}
+                    onChange={(e) => setLinkUrl(e.target.value)}
+                    className="rounded-xl border-slate-200 h-10 text-xs focus-visible:ring-[#5e2be2]"
+                    required={resourceTab === "link"}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* CONTEXT FIELD (SHARED) */}
+            <div className="space-y-1 pt-1">
+              <label className="block text-xs font-extrabold text-slate-800">
+                Context
+              </label>
+              <p className="text-[11px] text-slate-500 mb-1.5 leading-snug">
+                Select the clients or groups this resource is associated with. Use the sharing toggle to control whether they have access to it.
+              </p>
+
+              <div className="relative">
+                <div className="relative">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    type="text"
+                    placeholder="Find a client or group by name"
+                    value={contextSearch}
+                    onFocus={() => setIsContextDropdownOpen(true)}
+                    onChange={(e) => {
+                      setContextSearch(e.target.value);
+                      setIsContextDropdownOpen(true);
+                    }}
+                    className="pl-10 pr-10 rounded-xl border-slate-200 h-10 text-xs focus-visible:ring-[#5e2be2]"
+                  />
+                  <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                </div>
+
+                {isContextDropdownOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setIsContextDropdownOpen(false)}
+                    />
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-20 max-h-48 overflow-y-auto p-1 space-y-0.5 animate-in fade-in-50 zoom-in-95">
+                      {MOCK_CONTEXT_OPTIONS.filter((opt) =>
+                        opt.name.toLowerCase().includes(contextSearch.toLowerCase())
+                      ).map((opt) => {
+                        const isSelected = selectedContexts.includes(opt.name);
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => {
+                              if (isSelected) {
+                                setSelectedContexts((prev) => prev.filter((n) => n !== opt.name));
+                              } else {
+                                setSelectedContexts((prev) => [...prev, opt.name]);
+                              }
+                            }}
+                            className={`w-full px-3 py-2 text-left rounded-lg text-xs flex items-center justify-between transition-colors cursor-pointer ${
+                              isSelected
+                                ? "bg-purple-50 text-[#5e2be2] font-bold"
+                                : "hover:bg-slate-50 text-slate-700 font-medium"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>{opt.name}</span>
+                              <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded font-normal">
+                                {opt.type}
+                              </span>
+                            </div>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-[#5e2be2]" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="mt-2 min-h-[20px]">
+                {selectedContexts.length === 0 ? (
+                  <p className="text-xs text-slate-400 font-medium">No clients or groups selected yet</p>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {selectedContexts.map((name) => (
+                      <span
+                        key={name}
+                        className="inline-flex items-center gap-1.5 bg-purple-50 border border-purple-100 text-[#5e2be2] font-semibold text-xs px-2.5 py-1 rounded-full"
+                      >
+                        <span>{name}</span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedContexts((prev) => prev.filter((n) => n !== name))}
+                          className="hover:bg-purple-200/50 rounded-full p-0.5 cursor-pointer"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <DialogFooter className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+              <button
+                type="button"
                 onClick={() => setIsAddModalOpen(false)}
-                className="rounded-full"
+                className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 transition-all cursor-pointer"
               >
                 Cancel
-              </Button>
-              <Button type="submit" className="rounded-full bg-primary hover:bg-primary/90 font-bold px-6">
-                Create Resource
-              </Button>
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer"
+              >
+                Save
+              </button>
             </DialogFooter>
           </form>
         </DialogContent>
