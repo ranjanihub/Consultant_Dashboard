@@ -367,12 +367,6 @@ export default function Resources() {
                 {/* Card Body */}
                 <div className="p-5 flex-1 flex flex-col justify-between">
                   <div>
-                    {res.isRecommended && (
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-primary mb-2">
-                        <Star className="w-3.5 h-3.5 fill-primary text-primary" />
-                        <span>Recommended by Therapist</span>
-                      </div>
-                    )}
 
                     <h3 className="text-lg font-bold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2 mb-2">
                       {res.title}
@@ -441,12 +435,6 @@ export default function Resources() {
               </div>
 
               <div className="absolute bottom-4 left-4 right-4 text-white">
-                {selectedResource.isRecommended && (
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300 mb-1">
-                    <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-                    <span>Recommended by Therapist</span>
-                  </div>
-                )}
                 <h2 className="text-xl sm:text-2xl font-bold leading-tight">
                   {selectedResource.title}
                 </h2>

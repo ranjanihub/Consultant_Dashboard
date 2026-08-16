@@ -234,11 +234,6 @@ export default function Dashboard() {
                 {sessionList.map((session) => (
                   <div key={session.id} className="flex items-center justify-between p-4 rounded-xl border border-border hover:border-border/80 hover:bg-secondary/30 transition-colors group">
                     <div className="flex items-center gap-4">
-                      <Avatar className="h-10 w-10 border border-border">
-                        <AvatarFallback className={cn("text-primary font-medium", session.isNext ? "bg-primary/20" : "bg-muted")}>
-                          {session.clientInitials}
-                        </AvatarFallback>
-                      </Avatar>
                       <div>
                         <div className="font-semibold text-[15px]">{session.clientName}</div>
                         <div className="flex items-center gap-3 text-sm mt-1">

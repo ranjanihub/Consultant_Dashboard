@@ -1339,18 +1339,6 @@ export default function Assessments() {
                     <p className="text-xs text-slate-500 mt-1.5 line-clamp-2 leading-relaxed">
                       {ass.description}
                     </p>
-
-                    {/* Quick Metadata Pill Badges */}
-                    <div className="flex flex-wrap items-center gap-2 mt-3 text-[11px] font-semibold text-slate-500">
-                      <span className="px-2 py-0.5 bg-slate-100 rounded-md">
-                        Condition: <strong className="text-slate-800">{ass.targetCondition}</strong>
-                      </span>
-                      {ass.validityScore && (
-                        <span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded-md">
-                          {ass.validityScore}
-                        </span>
-                      )}
-                    </div>
                   </div>
 
                   <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
