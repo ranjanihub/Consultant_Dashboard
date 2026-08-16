@@ -248,10 +248,10 @@ export default function Clients() {
 
         <div className="space-y-2 relative z-10">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            Client Medical Records &amp; Intake Hub
+            Client Records
           </h1>
           <p className="text-xs sm:text-sm text-purple-100/90 max-w-2xl font-medium leading-relaxed">
-            Access complete client medical details, AI intake surveys, clinical assessment scores, mood tracking, and session notes.
+            Access complete client details, AI intake surveys, assessment scores and session notes.
           </p>
         </div>
 

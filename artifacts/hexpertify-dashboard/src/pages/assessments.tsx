@@ -63,11 +63,16 @@ const TIME_OPTIONS = [
 ];
 
 // Types
+export interface AssessmentOption {
+  label: string;
+  value: number;
+}
+
 export interface AssessmentQuestion {
   id: string;
   text: string;
   subtext?: string;
-  options: { label: string; value: number }[];
+  options: AssessmentOption[];
   isRiskTrigger?: boolean;
 }
 
@@ -963,6 +968,142 @@ export default function Assessments() {
   const [activeProtocolModal, setActiveProtocolModal] = useState<ClinicalAssessment | null>(null);
   const [activeRunnerModal, setActiveRunnerModal] = useState<ClinicalAssessment | null>(null);
   const [selectedSubmissionModal, setSelectedSubmissionModal] = useState<AssessmentSubmission | null>(null);
+  const [isCreateAssessmentOpen, setIsCreateAssessmentOpen] = useState(false);
+
+  // New Assessment Form State
+  const [newTitle, setNewTitle] = useState('');
+  const [newAcronym, setNewAcronym] = useState('');
+  const [newCategory, setNewCategory] = useState('Anxiety');
+  const [newCondition, setNewCondition] = useState('');
+  const [newDescription, setNewDescription] = useState('');
+  const [newEstimatedMinutes, setNewEstimatedMinutes] = useState(5);
+  const [newAuthor, setNewAuthor] = useState('Dr. Alex Harrison');
+  const [newQuestions, setNewQuestions] = useState<string[]>([
+    'Feeling nervous, anxious, or on edge over the past week',
+    'Difficulty controlling or stopping intrusive thoughts',
+    'Worrying too much about different things',
+  ]);
+  const [optionScalePreset, setOptionScalePreset] = useState<string>('0-3');
+  const [customOptions, setCustomOptions] = useState<string[]>([
+    'Not at all',
+    'Several days',
+    'Over half the days',
+    'Nearly every day',
+  ]);
+
+  const addQuestionField = () => {
+    setNewQuestions([...newQuestions, '']);
+  };
+
+  const updateQuestionField = (index: number, text: string) => {
+    const updated = [...newQuestions];
+    updated[index] = text;
+    setNewQuestions(updated);
+  };
+
+  const removeQuestionField = (index: number) => {
+    if (newQuestions.length <= 1) return;
+    setNewQuestions(newQuestions.filter((_, i) => i !== index));
+  };
+
+  const addCustomOption = () => {
+    setCustomOptions([...customOptions, `Option ${customOptions.length}`]);
+  };
+
+  const updateCustomOption = (idx: number, val: string) => {
+    const next = [...customOptions];
+    next[idx] = val;
+    setCustomOptions(next);
+  };
+
+  const removeCustomOption = (idx: number) => {
+    if (customOptions.length <= 2) return;
+    setCustomOptions(customOptions.filter((_, i) => i !== idx));
+  };
+
+  const getOptionsForQuestions = (): AssessmentOption[] => {
+    if (optionScalePreset === '0-3') {
+      return [
+        { label: 'Not at all (0)', value: 0 },
+        { label: 'Several days (1)', value: 1 },
+        { label: 'Over half the days (2)', value: 2 },
+        { label: 'Nearly every day (3)', value: 3 },
+      ];
+    }
+    if (optionScalePreset === '0-4') {
+      return [
+        { label: 'Never (0)', value: 0 },
+        { label: 'Almost Never (1)', value: 1 },
+        { label: 'Sometimes (2)', value: 2 },
+        { label: 'Fairly Often (3)', value: 3 },
+        { label: 'Very Often (4)', value: 4 },
+      ];
+    }
+    if (optionScalePreset === 'yes-no') {
+      return [
+        { label: 'No (0)', value: 0 },
+        { label: 'Yes (1)', value: 1 },
+      ];
+    }
+    return customOptions.map((optLabel, i) => ({
+      label: `${optLabel} (${i})`,
+      value: i,
+    }));
+  };
+
+  const handleCreateAssessment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim()) return;
+
+    const acronym = newAcronym.trim() || newTitle.slice(0, 4).toUpperCase();
+    const validQuestions = newQuestions.filter((q) => q.trim().length > 0);
+    const optionsToUse = getOptionsForQuestions();
+    
+    const questionsList: AssessmentQuestion[] = validQuestions.map((qText, idx) => ({
+      id: `q${idx + 1}`,
+      text: qText.trim(),
+      options: optionsToUse,
+    }));
+
+    const created: ClinicalAssessment = {
+      id: `ASS-${(assessments.length + 1).toString().padStart(2, '0')}`,
+      title: newTitle.trim(),
+      acronym,
+      questionCount: questionsList.length || 1,
+      targetCondition: newCondition.trim() || newCategory,
+      category: newCategory,
+      timesCompleted: 0,
+      type: 'Standard',
+      description: newDescription.trim() || `Therapist custom protocol for evaluating ${newTitle.trim()}.`,
+      estimatedMinutes: Number(newEstimatedMinutes) || 5,
+      validityScore: "Cronbach's α = 0.88",
+      targetPopulation: 'Assigned clients',
+      authorOrSource: newAuthor.trim() || 'Dr. Alex Harrison',
+      status: 'Active',
+      assignedClientCount: 0,
+      createdAt: new Date().toISOString().split('T')[0],
+      severityRanges: [
+        { minScore: 0, maxScore: 4, label: 'Minimal Symptoms', color: 'bg-emerald-500', clinicalAction: 'Routine monitoring indicated.' },
+        { minScore: 5, maxScore: 9, label: 'Mild Symptoms', color: 'bg-amber-500', clinicalAction: 'Review at next follow-up.' },
+        { minScore: 10, maxScore: 14, label: 'Moderate Symptoms', color: 'bg-orange-500', clinicalAction: 'Targeted CBT intervention recommended.' },
+        { minScore: 15, maxScore: 21, label: 'Severe Elevation', color: 'bg-rose-600', clinicalAction: 'Immediate priority clinical assessment.' },
+      ],
+      questions: questionsList,
+    };
+
+    setAssessments([created, ...assessments]);
+    setIsCreateAssessmentOpen(false);
+    setNewTitle('');
+    setNewAcronym('');
+    setNewCondition('');
+    setNewDescription('');
+    setNewQuestions([
+      'Feeling nervous, anxious, or on edge over the past week',
+      'Difficulty controlling or stopping intrusive thoughts',
+      'Worrying too much about different things',
+    ]);
+    showToast(`New assessment "${acronym} - ${newTitle}" created successfully!`);
+  };
 
   // Runner Simulator Internal State
   const [runnerCurrentStep, setRunnerCurrentStep] = useState(0);
@@ -1214,7 +1355,16 @@ export default function Assessments() {
       <PageHeader
         title="Assessments"
         description="Monitor standardized scale responses (PHQ-9, GAD-7, PSS-10, PCL-5), track patient risk safety alerts, and evaluate progress."
-      />
+      >
+        <button
+          type="button"
+          onClick={() => setIsCreateAssessmentOpen(true)}
+          className="px-4 py-2.5 bg-white text-[#5e2be2] hover:bg-purple-50 font-bold text-xs rounded-xl shadow-md flex items-center gap-2 transition-all cursor-pointer border border-purple-200 shrink-0"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Create Assessment</span>
+        </button>
+      </PageHeader>
 
 
 
@@ -1276,7 +1426,7 @@ export default function Assessments() {
             }`}
           >
             <Layers className="w-4 h-4" />
-            <span>Screener Library ({assessments.length})</span>
+            <span>Assessment Library ({assessments.length})</span>
           </button>
 
           <button
@@ -1289,7 +1439,7 @@ export default function Assessments() {
             }`}
           >
             <BarChart3 className="w-4 h-4" />
-            <span>Patient Submissions & Risk Alerts</span>
+            <span>Client Submissions & Risk Alerts</span>
             <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping absolute top-2 right-2" />
           </button>
 
@@ -2164,6 +2314,223 @@ export default function Assessments() {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Create Assessment Modal */}
+      {isCreateAssessmentOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-xl w-full max-h-[85vh] overflow-y-auto shadow-2xl space-y-5 border border-slate-200 animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-purple-100 text-[#5e2be2] flex items-center justify-center font-bold">
+                  <Plus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-extrabold text-slate-900">Create New Assessment</h3>
+                  <p className="text-xs text-slate-500 font-medium">Build a custom clinical rating scale or assessment protocol</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCreateAssessmentOpen(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateAssessment} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="text-xs font-bold text-slate-700">Assessment Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    placeholder="e.g. Generalized Anxiety Disorder Scale"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none focus:bg-white focus:border-[#5e2be2]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700">Acronym *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newAcronym}
+                    onChange={(e) => setNewAcronym(e.target.value)}
+                    placeholder="e.g. GAD-7"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none focus:bg-white focus:border-[#5e2be2]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700">Clinical Category</label>
+                  <select
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none focus:bg-white focus:border-[#5e2be2]"
+                  >
+                    <option value="Anxiety">Anxiety</option>
+                    <option value="Depression">Depression</option>
+                    <option value="Stress">Stress</option>
+                    <option value="Well-Being">Well-Being</option>
+                    <option value="PTSD & Trauma">PTSD & Trauma</option>
+                    <option value="Sleep">Sleep</option>
+                    <option value="General Mental Health">General Mental Health</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700">Target Condition</label>
+                  <input
+                    type="text"
+                    value={newCondition}
+                    onChange={(e) => setNewCondition(e.target.value)}
+                    placeholder="e.g. Anxiety Severity"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none focus:bg-white focus:border-[#5e2be2]"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Description</label>
+                <textarea
+                  rows={3}
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  placeholder="Provide a brief clinical summary and scoring criteria..."
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none focus:bg-white focus:border-[#5e2be2] resize-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Est. Duration (minutes)</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={60}
+                  value={newEstimatedMinutes}
+                  onChange={(e) => setNewEstimatedMinutes(Number(e.target.value))}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none focus:bg-white focus:border-[#5e2be2]"
+                />
+              </div>
+
+              {/* Answer Choices / Rating Scale Section */}
+              <div className="space-y-2.5 pt-3 border-t border-slate-100">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-700">Answer Choices & Rating Scale</label>
+                </div>
+                <select
+                  value={optionScalePreset}
+                  onChange={(e) => setOptionScalePreset(e.target.value)}
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none focus:bg-white focus:border-[#5e2be2]"
+                >
+                  <option value="0-3">0 – 3 Rating Scale (Not at all → Nearly every day)</option>
+                  <option value="0-4">0 – 4 Frequency Scale (Never → Very Often)</option>
+                  <option value="yes-no">0 – 1 Binary Scale (No / Yes)</option>
+                  <option value="custom">Custom Answer Choices (Define your own options)</option>
+                </select>
+
+                {optionScalePreset === 'custom' && (
+                  <div className="space-y-2 pt-1 pl-2 border-l-2 border-purple-300 bg-purple-50/40 p-3 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-[#5e2be2]">Custom Option Labels</span>
+                      <button
+                        type="button"
+                        onClick={addCustomOption}
+                        className="text-[11px] text-[#5e2be2] font-extrabold flex items-center gap-1 cursor-pointer"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>Add Option</span>
+                      </button>
+                    </div>
+                    {customOptions.map((optVal, oIdx) => (
+                      <div key={oIdx} className="flex items-center gap-2">
+                        <span className="text-xs font-mono font-bold text-slate-400 w-8 text-right">Val {oIdx}:</span>
+                        <input
+                          type="text"
+                          required
+                          value={optVal}
+                          onChange={(e) => updateCustomOption(oIdx, e.target.value)}
+                          placeholder={`Option ${oIdx} label`}
+                          className="flex-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-800 outline-none focus:border-[#5e2be2]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeCustomOption(oIdx)}
+                          disabled={customOptions.length <= 2}
+                          className="p-1 text-slate-400 hover:text-rose-600 disabled:opacity-30 rounded hover:bg-rose-50 cursor-pointer"
+                        >
+                          <Minus className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Questions Builder Section */}
+              <div className="space-y-2.5 pt-3 border-t border-slate-100">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-700">
+                    Assessment Question Items ({newQuestions.length})
+                  </label>
+                  <button
+                    type="button"
+                    onClick={addQuestionField}
+                    className="text-xs text-[#5e2be2] hover:text-[#431bb5] font-extrabold flex items-center gap-1 cursor-pointer bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Question Item</span>
+                  </button>
+                </div>
+
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {newQuestions.map((qText, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-400 w-6 shrink-0 text-right">Q{idx + 1}.</span>
+                      <input
+                        type="text"
+                        required
+                        value={qText}
+                        onChange={(e) => updateQuestionField(idx, e.target.value)}
+                        placeholder={`Enter question item #${idx + 1}...`}
+                        className="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none focus:bg-white focus:border-[#5e2be2]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeQuestionField(idx)}
+                        disabled={newQuestions.length <= 1}
+                        className="p-2 text-slate-400 hover:text-rose-600 disabled:opacity-30 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                        title="Remove question"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateAssessmentOpen(false)}
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 stroke-[3]" />
+                  <span>Create Assessment</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -615,27 +615,7 @@ export default function Resources() {
               />
             </div>
 
-            <div className="space-y-2 pt-2">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="make-public-check"
-                  checked={newIsPublic}
-                  onChange={(e) => setNewIsPublic(e.target.checked)}
-                  className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 cursor-pointer"
-                />
-                <label htmlFor="make-public-check" className="text-xs font-semibold text-foreground cursor-pointer select-none">
-                  Make As Public
-                </label>
-              </div>
 
-              {newIsPublic && (
-                <div className="flex items-center gap-2 text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200/80 px-3 py-2 rounded-lg transition-all animate-in fade-in duration-200">
-                  <Info className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>Note: Submitted resource will go live after admin review.</span>
-                </div>
-              )}
-            </div>
 
             <DialogFooter className="pt-4 border-t border-border gap-2">
               <Button

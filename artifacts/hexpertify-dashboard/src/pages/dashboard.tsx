@@ -4,20 +4,36 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Video, Clock, TrendingUp, Users, FileText, BookOpen, AlertCircle, ArrowRight, TrendingDown, Minus } from "lucide-react";
+import { Calendar, Video, Clock, TrendingUp, Users, FileText, BookOpen, AlertCircle, ArrowRight, TrendingDown, Minus, ShieldCheck } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, LineChart, Line, AreaChart, Area } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 import { SessionReportDialog } from "@/components/session-report-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 export default function Dashboard() {
+  const { toast } = useToast();
   const { data: statsData, isLoading: statsLoading, refetch: refetchStats } = useGetDashboardStats();
   const { data: sessionsData, isLoading: sessionsLoading } = useGetUpcomingSessions();
   const { data: reportsData, isLoading: reportsLoading, refetch: refetchReports } = useGetPendingReports();
 
   const [reportSessionId, setReportSessionId] = useState<number | null>(null);
   const [reportClientName, setReportClientName] = useState<string>("");
+  const [scheduleTab, setScheduleTab] = useState<'today' | 'week' | 'month'>('today');
+
+  // Cancellation Policy & Modal Flow State
+  const [cancelledSessionIds, setCancelledSessionIds] = useState<number[]>([]);
+  const [cancelModalSession, setCancelModalSession] = useState<{
+    id: number;
+    clientName: string;
+    startTime: string;
+    hoursUntilSession?: number;
+  } | null>(null);
+  const [cancelStep, setCancelStep] = useState<'confirm' | 'reason'>('confirm');
+  const [cancellationReason, setCancellationReason] = useState<string>("Therapist Schedule Overlap & Conflict");
+  const [policyBlockedModal, setPolicyBlockedModal] = useState<{ clientName: string; startTime: string } | null>(null);
 
   const stats = {
     sessionsToday: statsData?.sessionsToday ?? 6,
@@ -36,47 +52,175 @@ export default function Dashboard() {
     therapyHoursToday: statsData?.therapyHoursToday || "5h 45m",
   };
 
-  const sessionList = (Array.isArray(sessionsData) && sessionsData.length > 0) ? sessionsData : [
-    {
-      id: 1,
-      clientName: "Sarah Jenkins",
-      clientInitials: "SJ",
-      sessionType: "CBT",
-      sessionSubtype: "Cognitive Restructuring",
-      startTime: "09:00 AM",
-      endTime: "10:00 AM",
-      durationMinutes: 60,
-      countdownLabel: "in 12 min",
-      sessionNumber: 12,
-      isNext: true,
+  const SESSIONS_DATA = {
+    today: {
+      title: "Today's schedule",
+      countLabel: `${stats?.sessionsToday || 6} sessions`,
+      list: (Array.isArray(sessionsData) && sessionsData.length > 0) ? sessionsData : [
+        {
+          id: 1,
+          clientName: "Sarah Jenkins",
+          clientInitials: "SJ",
+          sessionType: "CBT",
+          sessionSubtype: "Cognitive Restructuring",
+          startTime: "09:00 AM",
+          endTime: "10:00 AM",
+          durationMinutes: 60,
+          countdownLabel: "in 12 min",
+          hoursUntilSession: 0.2,
+          sessionNumber: 12,
+          isNext: true,
+        },
+        {
+          id: 2,
+          clientName: "Michael Chen",
+          clientInitials: "MC",
+          sessionType: "ACT",
+          sessionSubtype: "Values Clarification",
+          startTime: "10:30 AM",
+          endTime: "11:30 AM",
+          durationMinutes: 60,
+          countdownLabel: "in 1h 42m",
+          hoursUntilSession: 1.7,
+          sessionNumber: 8,
+          isNext: false,
+        },
+        {
+          id: 3,
+          clientName: "David Kim",
+          clientInitials: "DK",
+          sessionType: "CBT",
+          sessionSubtype: "Exposure Hierarchy",
+          startTime: "02:00 PM",
+          endTime: "03:00 PM",
+          durationMinutes: 60,
+          countdownLabel: "in 4h 15m",
+          hoursUntilSession: 4.25,
+          sessionNumber: 2,
+          isNext: false,
+        },
+      ],
     },
-    {
-      id: 2,
-      clientName: "Michael Chen",
-      clientInitials: "MC",
-      sessionType: "ACT",
-      sessionSubtype: "Values Clarification",
-      startTime: "10:30 AM",
-      endTime: "11:30 AM",
-      durationMinutes: 60,
-      countdownLabel: "in 1h 42m",
-      sessionNumber: 8,
-      isNext: false,
+    week: {
+      title: "This Week's schedule",
+      countLabel: "24 sessions",
+      list: [
+        {
+          id: 1,
+          clientName: "Sarah Jenkins",
+          clientInitials: "SJ",
+          sessionType: "CBT",
+          sessionSubtype: "Cognitive Restructuring",
+          startTime: "Today · 09:00 AM",
+          endTime: "10:00 AM",
+          durationMinutes: 60,
+          countdownLabel: "in 12 min",
+          sessionNumber: 12,
+          isNext: true,
+        },
+        {
+          id: 2,
+          clientName: "Michael Chen",
+          clientInitials: "MC",
+          sessionType: "ACT",
+          sessionSubtype: "Values Clarification",
+          startTime: "Today · 10:30 AM",
+          endTime: "11:30 AM",
+          durationMinutes: 60,
+          countdownLabel: "Today",
+          sessionNumber: 8,
+          isNext: false,
+        },
+        {
+          id: 4,
+          clientName: "Emily Rodriguez",
+          clientInitials: "ER",
+          sessionType: "DBT Skills",
+          sessionSubtype: "Emotion Regulation",
+          startTime: "Tomorrow · 11:00 AM",
+          endTime: "12:00 PM",
+          durationMinutes: 60,
+          countdownLabel: "Tomorrow",
+          sessionNumber: 16,
+          isNext: false,
+        },
+        {
+          id: 5,
+          clientName: "James Wilson",
+          clientInitials: "JW",
+          sessionType: "Mindfulness",
+          sessionSubtype: "Grounding Exercise",
+          startTime: "Thu, Jul 9 · 03:30 PM",
+          endTime: "04:30 PM",
+          durationMinutes: 60,
+          countdownLabel: "Thu, Jul 9",
+          sessionNumber: 5,
+          isNext: false,
+        },
+      ],
     },
-    {
-      id: 3,
-      clientName: "David Kim",
-      clientInitials: "DK",
-      sessionType: "CBT",
-      sessionSubtype: "Exposure Hierarchy",
-      startTime: "02:00 PM",
-      endTime: "03:00 PM",
-      durationMinutes: 60,
-      countdownLabel: "in 4h 15m",
-      sessionNumber: 2,
-      isNext: false,
-    }
-  ];
+    month: {
+      title: "This Month's schedule",
+      countLabel: "82 sessions",
+      list: [
+        {
+          id: 1,
+          clientName: "Sarah Jenkins",
+          clientInitials: "SJ",
+          sessionType: "CBT",
+          sessionSubtype: "Weekly Progress Check",
+          startTime: "Jul 7 · 09:00 AM",
+          endTime: "10:00 AM",
+          durationMinutes: 60,
+          countdownLabel: "Jul 7",
+          sessionNumber: 12,
+          isNext: true,
+        },
+        {
+          id: 4,
+          clientName: "Emily Rodriguez",
+          clientInitials: "ER",
+          sessionType: "DBT Skills",
+          sessionSubtype: "Mindfulness Practice",
+          startTime: "Jul 15 · 11:00 AM",
+          endTime: "12:00 PM",
+          durationMinutes: 60,
+          countdownLabel: "Jul 15",
+          sessionNumber: 17,
+          isNext: false,
+        },
+        {
+          id: 7,
+          clientName: "Robert Fox",
+          clientInitials: "RF",
+          sessionType: "Psychodynamic",
+          sessionSubtype: "Core Beliefs Review",
+          startTime: "Jul 21 · 01:00 PM",
+          endTime: "02:00 PM",
+          durationMinutes: 60,
+          countdownLabel: "Jul 21",
+          sessionNumber: 4,
+          isNext: false,
+        },
+        {
+          id: 8,
+          clientName: "Amanda Martinez",
+          clientInitials: "AM",
+          sessionType: "CBT",
+          sessionSubtype: "Relapse Prevention",
+          startTime: "Jul 28 · 04:00 PM",
+          endTime: "05:00 PM",
+          durationMinutes: 60,
+          countdownLabel: "Jul 28",
+          sessionNumber: 20,
+          isNext: false,
+        },
+      ],
+    },
+  };
+
+  const currentSchedule = SESSIONS_DATA[scheduleTab];
+  const activeSessionList = currentSchedule.list.filter((s) => !cancelledSessionIds.includes(s.id));
 
   const reportList = (Array.isArray(reportsData) && reportsData.length > 0) ? reportsData : [
     {
@@ -99,7 +243,7 @@ export default function Dashboard() {
     }
   ];
 
-  const nextSession = sessionList.find((s) => s.isNext) || sessionList[0];
+  const nextSession = SESSIONS_DATA.today.list.find((s: any) => s.isNext) || SESSIONS_DATA.today.list[0];
 
   return (
     <div className="space-y-6">
@@ -211,12 +355,12 @@ export default function Dashboard() {
         <Card className="lg:col-span-2 shadow-sm border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <div>
-              <CardTitle className="text-xl">Today's schedule</CardTitle>
+              <CardTitle className="text-xl">{currentSchedule.title}</CardTitle>
               <CardDescription>
-                {stats?.sessionsToday || 0} sessions
+                {activeSessionList.length} sessions
               </CardDescription>
             </div>
-            <Tabs defaultValue="today" className="w-[200px]">
+            <Tabs value={scheduleTab} onValueChange={(val) => setScheduleTab(val as 'today' | 'week' | 'month')} className="w-[200px]">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="today">Today</TabsTrigger>
                 <TabsTrigger value="week">Week</TabsTrigger>
@@ -231,7 +375,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="space-y-4">
-                {sessionList.map((session) => (
+                {activeSessionList.map((session) => (
                   <div key={session.id} className="flex items-center justify-between p-4 rounded-xl border border-border hover:border-border/80 hover:bg-secondary/30 transition-colors group">
                     <div className="flex items-center gap-4">
                       <div>
@@ -249,18 +393,36 @@ export default function Dashboard() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" className="text-muted-foreground">View</Button>
-                      <Button variant="outline" className="border-border">Reschedule</Button>
-                      <Button className="bg-primary text-primary-foreground">
-                        <Video className="w-4 h-4 mr-2" />
-                        Join
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <Button
+                        variant="outline"
+                        className="border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-slate-700 font-bold text-xs h-9 px-3.5 rounded-xl transition-colors cursor-pointer"
+                        onClick={() => {
+                          const hoursLeft = (session as any).hoursUntilSession ?? (session.isNext ? 0.2 : 4);
+                          if (hoursLeft < 3) {
+                            setPolicyBlockedModal({ clientName: session.clientName, startTime: session.startTime });
+                          } else {
+                            setCancelStep('confirm');
+                            setCancelModalSession({
+                              id: session.id,
+                              clientName: session.clientName,
+                              startTime: session.startTime,
+                              hoursUntilSession: hoursLeft,
+                            });
+                          }
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button className="bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-extrabold text-xs h-9 px-4 rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer">
+                        <Video className="w-3.5 h-3.5" />
+                        <span>Join</span>
                       </Button>
                     </div>
                   </div>
                 ))}
-                {!sessionList.length && (
-                  <div className="text-center py-8 text-muted-foreground">No sessions scheduled for today.</div>
+                {!activeSessionList.length && (
+                  <div className="text-center py-8 text-muted-foreground">No active sessions scheduled for this period.</div>
                 )}
               </div>
             )}
@@ -328,6 +490,172 @@ export default function Dashboard() {
           refetchStats();
         }}
       />
+
+      {/* Policy Blocked Modal (< 3 hours) */}
+      {policyBlockedModal && (
+        <Dialog open={!!policyBlockedModal} onOpenChange={(open) => !open && setPolicyBlockedModal(null)}>
+          <DialogContent className="max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-200">
+            <DialogHeader className="space-y-1.5 pb-2">
+              <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold mb-1">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <DialogTitle className="text-lg font-extrabold text-slate-900">
+                Cancellation Policy Restriction
+              </DialogTitle>
+              <DialogDescription className="text-xs text-slate-500 font-medium">
+                Cancellations must be made at least 3 hours before session start time.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3 py-2">
+              <div className="p-3.5 bg-amber-50 border border-amber-200/80 rounded-2xl space-y-1.5 text-xs text-amber-900">
+                <span className="font-extrabold block">Policy Notice:</span>
+                <p className="font-medium text-[11px] leading-relaxed">
+                  Session with <strong>{policyBlockedModal.clientName}</strong> ({policyBlockedModal.startTime}) is scheduled in less than 3 hours. Platform policy locks online cancellations within 3 hours of session time.
+                </p>
+              </div>
+              <p className="text-xs text-slate-600 font-medium">
+                For urgent emergencies, please contact Hexpertify clinical support or notify your client directly via message.
+              </p>
+            </div>
+
+            <DialogFooter className="pt-2 border-t border-slate-100">
+              <Button
+                type="button"
+                onClick={() => setPolicyBlockedModal(null)}
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs h-10 rounded-xl cursor-pointer"
+              >
+                Understand &amp; Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Two-Step Cancellation Modal Flow (Step 1: Are you sure? -> Step 2: Reason & Policy) */}
+      {cancelModalSession && (
+        <Dialog open={!!cancelModalSession} onOpenChange={(open) => !open && setCancelModalSession(null)}>
+          <DialogContent className="max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-200 animate-in zoom-in-95">
+            {cancelStep === 'confirm' ? (
+              /* STEP 1: ARE YOU SURE POPUP */
+              <div className="space-y-5">
+                <DialogHeader className="space-y-1.5 pb-1">
+                  <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold mb-1">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <DialogTitle className="text-lg font-extrabold text-slate-900">
+                    Are you sure you want to cancel?
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-slate-500 font-medium">
+                    Please confirm if you wish to proceed with session cancellation.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                  <div className="text-xs font-bold text-slate-800">
+                    Session details:
+                  </div>
+                  <div className="text-xs text-slate-700 font-medium space-y-0.5">
+                    <p>Client: <strong className="text-slate-900">{cancelModalSession.clientName}</strong></p>
+                    <p>Time: <span className="text-slate-800">{cancelModalSession.startTime}</span></p>
+                    <p className="text-[11px] text-emerald-700 font-bold pt-1">✓ Eligible for cancellation (More than 3 hours before start time)</p>
+                  </div>
+                </div>
+
+                <DialogFooter className="pt-2 border-t border-slate-100 flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setCancelModalSession(null)}
+                    className="flex-1 border-slate-200 text-slate-700 font-bold text-xs h-10 rounded-xl cursor-pointer"
+                  >
+                    No, Keep Session
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => setCancelStep('reason')}
+                    className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs h-10 rounded-xl shadow-sm cursor-pointer"
+                  >
+                    Yes, Proceed →
+                  </Button>
+                </DialogFooter>
+              </div>
+            ) : (
+              /* STEP 2: REASON & POLICY FORM */
+              <div className="space-y-4">
+                <DialogHeader className="space-y-1 pb-1">
+                  <div className="w-10 h-10 rounded-2xl bg-purple-100 text-[#5e2be2] flex items-center justify-center font-bold mb-1">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <DialogTitle className="text-lg font-extrabold text-slate-900">
+                    Cancellation Reason &amp; Policy
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-slate-500 font-medium">
+                    Select a reason to finalize session cancellation for {cancelModalSession.clientName}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-3 py-1">
+                  {/* Policy Guidelines Banner */}
+                  <div className="p-3 bg-purple-50/80 border border-purple-200/80 rounded-2xl space-y-1.5">
+                    <div className="flex items-center gap-1.5 text-xs font-extrabold text-[#5e2be2]">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#5e2be2] shrink-0" />
+                      <span>Platform Cancellation Policy</span>
+                    </div>
+                    <ul className="text-[11px] text-purple-900/90 font-medium space-y-1 pl-4 list-disc leading-relaxed">
+                      <li>Client will receive automatic SMS &amp; Email notification.</li>
+                      <li>An automated rescheduling link will be dispatched to <strong>{cancelModalSession.clientName}</strong>.</li>
+                    </ul>
+                  </div>
+
+                  {/* Reason Dropdown */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 block">Select Cancellation Reason *</label>
+                    <select
+                      value={cancellationReason}
+                      onChange={(e) => setCancellationReason(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none focus:bg-white focus:border-[#5e2be2]"
+                    >
+                      <option value="Therapist Schedule Overlap & Conflict">Therapist Schedule Overlap &amp; Conflict</option>
+                      <option value="Therapist Medical / Health Emergency">Therapist Medical / Health Emergency</option>
+                      <option value="Therapist Unforeseen Personal Leave">Therapist Unforeseen Personal Leave</option>
+                      <option value="Therapist Technical & Connection Issue">Therapist Technical &amp; Connection Issue</option>
+                      <option value="Therapist Clinical Re-assignment">Therapist Clinical Re-assignment</option>
+                    </select>
+                  </div>
+                </div>
+
+                <DialogFooter className="pt-2 border-t border-slate-100 flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setCancelStep('confirm')}
+                    className="text-slate-600 font-bold text-xs h-10 px-4 rounded-xl hover:bg-slate-100 cursor-pointer"
+                  >
+                    ← Back
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (cancelModalSession) {
+                        setCancelledSessionIds((prev) => [...prev, cancelModalSession.id]);
+                        toast({
+                          title: "Session Cancelled Under Policy",
+                          description: `Cancelled session with ${cancelModalSession.clientName}. Reschedule invite sent.`,
+                        });
+                        setCancelModalSession(null);
+                      }
+                    }}
+                    className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs h-10 rounded-xl shadow-sm cursor-pointer"
+                  >
+                    Confirm Cancellation
+                  </Button>
+                </DialogFooter>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

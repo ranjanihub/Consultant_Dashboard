@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useParams, Link } from "wouter";
-import { 
-  useGetClient, 
-  useGetClientAssessments, 
-  useGetClientMood, 
-  useGetClientHomework, 
-  useGetClientSessionHistory 
+import {
+  useGetClient,
+  useGetClientAssessments,
+  useGetClientMood,
+  useGetClientHomework,
+  useGetClientSessionHistory
 } from "@workspace/api-client-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,11 +17,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  ArrowLeft, Clock, Calendar, Video, FileText, CheckCircle2, TrendingUp, TrendingDown, 
+import {
+  ArrowLeft, Clock, Calendar, Video, FileText, CheckCircle2, TrendingUp, TrendingDown,
   Activity, AlertCircle, FilePlus, Plus, HelpCircle, User, MessageSquare, Bell, Brain,
   Calculator, Send, Sparkles, ChevronDown, ChevronUp, ClipboardCheck, ArrowUpRight, Check,
-  Target, RefreshCw, Eye, ShieldCheck, FileSpreadsheet, Scale, Layers, AlertTriangle, ArrowRight, Minus,
+  Target, RefreshCw, Eye, ShieldCheck, FileSpreadsheet, Scale, Layers, AlertTriangle, ArrowRight, Minus, Lock, Edit3,
   LineChart as LineChartIcon, Trophy, Flame, Heart, BarChart2, Gamepad2
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
@@ -42,6 +42,18 @@ export default function ClientDetail() {
   const [personalizedScale, setPersonalizedScale] = useState<string>(
     clientId === 2 ? "PHQ-9" : clientId === 3 ? "PCL-5" : "GAD-7"
   );
+
+  // Personal Therapist Notes State
+  const [personalNotesStore, setPersonalNotesStore] = useState<Record<number, string>>({
+    1: "Prefers direct feedback on homework adherence. Responds well to 5-4-3-2-1 grounding exercises. Sensitive regarding supervisor feedback at work; approach cognitive restructuring topics gently.",
+    2: "Reports fatigue in late afternoon sessions. High compliance with behavioral activation worksheets.",
+    3: "EMDR preparation protocols proceeding smoothly. High motivation and homework completion.",
+  });
+  const [noteInputText, setNoteInputText] = useState<string>(
+    personalNotesStore[clientId] || "Client responds well to structured CBT exercises and goal tracking. Note any private clinical observations here."
+  );
+  const [isNoteSavedFeedback, setIsNoteSavedFeedback] = useState(false);
+  const [isEditingNote, setIsEditingNote] = useState(false);
 
   // WHO-5 Well-being Index 3-Session Milestone Trends (0-100%)
   const WHO_WELLBEING_DATA: Record<number, { milestone: string; score: number }[]> = {
@@ -583,10 +595,10 @@ export default function ClientDetail() {
             Overview
           </TabsTrigger>
           <TabsTrigger value="outcomes" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">
-            Clinical Outcomes
+            Progress
           </TabsTrigger>
           <TabsTrigger value="assessments" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">
-            Diagnostic Assessments
+            Assessments
           </TabsTrigger>
           <TabsTrigger value="homework" className="rounded-lg h-11 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-medium text-muted-foreground">
             Activities &amp; Homework
@@ -617,21 +629,13 @@ export default function ClientDetail() {
                         ))}
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-6 pt-4 border-t border-border">
+                    <div className="pt-4 border-t border-border">
                       <div>
                         <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">Presenting Problems</h4>
                         <div className="flex flex-wrap gap-2">
                           {(Array.isArray(client.presentingProblems) ? client.presentingProblems : []).map((prob: string, i: number) => (
                             <Badge key={i} variant="secondary" className="bg-muted text-muted-foreground hover:bg-muted font-normal">{prob}</Badge>
                           ))}
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">Preferences</h4>
-                        <div className="text-sm space-y-1">
-                          <p><span className="text-muted-foreground">Language:</span> {client.preferredLanguage}</p>
-                          <p><span className="text-muted-foreground">Comm:</span> {client.communicationPreference}</p>
-                          <p><span className="text-muted-foreground">Timeline:</span> {client.therapyTimeline}</p>
                         </div>
                       </div>
                     </div>
@@ -721,7 +725,97 @@ export default function ClientDetail() {
               </div>
 
               <div className="space-y-6">
+                {/* Personal Notes Box UI (Therapist Reference) */}
+                <div className="bg-white rounded-3xl border border-purple-200/80 p-6 shadow-sm space-y-4 hover:shadow-md transition-all">
+                  <div className="flex items-center justify-between border-b border-purple-50 pb-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className="p-2 rounded-2xl bg-purple-100/80 text-[#5e2be2]">
+                        <Edit3 className="w-4 h-4" />
+                      </span>
+                      <div>
+                        <h3 className="text-base font-extrabold text-slate-900 leading-tight">Personal Notes</h3>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-1 bg-purple-50 text-[#5e2be2] border border-purple-100 rounded-full text-[10px] font-extrabold flex items-center gap-1 shrink-0">
+                      <Lock className="w-3 h-3 text-amber-500" />
+                      Therapist Only
+                    </span>
+                  </div>
 
+                  {isEditingNote ? (
+                    <div className="space-y-3">
+                      <textarea
+                        autoFocus
+                        value={noteInputText}
+                        onChange={(e) => {
+                          setNoteInputText(e.target.value);
+                          setIsNoteSavedFeedback(false);
+                        }}
+                        rows={4}
+                        placeholder="Type personal reference notes about this client..."
+                        className="w-full p-4 bg-white border border-[#5e2be2] rounded-2xl text-xs font-medium text-slate-800 outline-none focus:ring-2 focus:ring-purple-100 leading-relaxed resize-none transition-all shadow-sm"
+                      />
+                      <div className="flex items-center justify-between pt-0.5">
+                        <span className="text-[11px] text-slate-400 font-medium">Click Save when finished</span>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => {
+                              setNoteInputText(personalNotesStore[clientId] || "");
+                              setIsEditingNote(false);
+                            }}
+                            className="text-xs font-bold text-slate-500 h-8 px-3 rounded-xl hover:bg-slate-100 cursor-pointer"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              setPersonalNotesStore((prev) => ({ ...prev, [clientId]: noteInputText }));
+                              setIsNoteSavedFeedback(true);
+                              setIsEditingNote(false);
+                              toast({
+                                title: "Personal Note Saved",
+                                description: "Therapist reference note updated for this client.",
+                              });
+                            }}
+                            className="bg-[#5e2be2] hover:bg-[#4d22be] text-white font-extrabold text-xs h-8 px-4 rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            <span>Save Note</span>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-slate-50/70 border border-slate-200/90 rounded-2xl min-h-[90px] flex flex-col justify-between space-y-3">
+                      <p className="text-xs font-medium text-slate-800 leading-relaxed whitespace-pre-wrap">
+                        {noteInputText.trim() ? (
+                          noteInputText
+                        ) : (
+                          <span className="text-slate-400 italic">No personal notes added yet. Click "Edit Note" to add reference notes for this client...</span>
+                        )}
+                      </p>
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                        <div className="flex items-center gap-1.5">
+                          {isNoteSavedFeedback && (
+                            <span className="text-emerald-700 font-extrabold flex items-center gap-1 text-[11px]">
+                              <Check className="w-3.5 h-3.5 stroke-[3]" /> Saved to record
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsEditingNote(true)}
+                          className="text-[11px] font-extrabold text-[#5e2be2] flex items-center gap-1 bg-purple-100/70 hover:bg-purple-100 px-2.5 py-1 rounded-lg border border-purple-200/60 transition-all cursor-pointer"
+                        >
+                          <Edit3 className="w-3 h-3" /> Edit Note
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 <Card className="shadow-sm border-border">
                   <CardHeader>
@@ -742,9 +836,9 @@ export default function ClientDetail() {
                               </div>
                             </div>
                             <div className="flex items-center justify-between text-xs">
-                              <span className={cn("font-medium", 
-                                assessment.severity === 'Severe' ? 'text-red-600' : 
-                                assessment.severity === 'Moderate' ? 'text-amber-600' : 'text-green-600'
+                              <span className={cn("font-medium",
+                                assessment.severity === 'Severe' ? 'text-red-600' :
+                                  assessment.severity === 'Moderate' ? 'text-amber-600' : 'text-green-600'
                               )}>
                                 {assessment.severity}
                               </span>
@@ -752,9 +846,9 @@ export default function ClientDetail() {
                             </div>
                           </div>
                         ))}
-                        <Button 
-                          variant="outline" 
-                          className="w-full text-sm h-9 cursor-pointer font-bold text-[#5e2be2]" 
+                        <Button
+                          variant="outline"
+                          className="w-full text-sm h-9 cursor-pointer font-bold text-[#5e2be2]"
                           onClick={() => setActiveTab("assessments")}
                         >
                           View Diagnostic Assessments →
@@ -763,7 +857,7 @@ export default function ClientDetail() {
                     )}
                   </CardContent>
                 </Card>
-                
+
                 <Card className="shadow-sm border-border bg-primary/5 border-primary/10">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg text-primary">Next Session</CardTitle>
@@ -804,7 +898,7 @@ export default function ClientDetail() {
               const whoWellbeingData = WHO_WELLBEING_DATA[clientId] || WHO_WELLBEING_DATA[1];
               const pssStressData = PSS_STRESS_DATA[clientId] || PSS_STRESS_DATA[1];
               const personalizedInfo = PERSONALIZED_INSTRUMENTS_DATA[personalizedScale] || PERSONALIZED_INSTRUMENTS_DATA["GAD-7"];
-              
+
               const baseWhoScore = whoWellbeingData[0]?.score || 32;
               const currentWhoScore = whoWellbeingData[whoWellbeingData.length - 1]?.score || 84;
 
@@ -1008,7 +1102,7 @@ export default function ClientDetail() {
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                       <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} dy={10} />
                       <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{ backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
                         labelStyle={{ fontWeight: 'bold', color: '#0f172a' }}
                       />
@@ -1046,9 +1140,9 @@ export default function ClientDetail() {
                       <span className="text-[#5e2be2] font-mono font-extrabold">{goal.current} / {goal.total}</span>
                     </div>
                     <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/60">
-                      <div 
-                        className="h-full bg-[#5e2be2] rounded-full transition-all duration-500" 
-                        style={{ width: `${goal.progress}%` }} 
+                      <div
+                        className="h-full bg-[#5e2be2] rounded-full transition-all duration-500"
+                        style={{ width: `${goal.progress}%` }}
                       />
                     </div>
                   </div>
@@ -1097,8 +1191,8 @@ export default function ClientDetail() {
                         </div>
                         <div className={cn(
                           "text-xs font-bold px-2.5 py-0.5 rounded-full inline-block mt-1",
-                          assessment.severity === 'Severe' || assessment.severity === 'Severe Anxiety' ? 'bg-red-100 text-red-700' : 
-                          assessment.severity === 'Moderate' || assessment.severity === 'Mild Anxiety' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                          assessment.severity === 'Severe' || assessment.severity === 'Severe Anxiety' ? 'bg-red-100 text-red-700' :
+                            assessment.severity === 'Moderate' || assessment.severity === 'Mild Anxiety' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
                         )}>
                           {assessment.severity}
                         </div>
@@ -1117,7 +1211,7 @@ export default function ClientDetail() {
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                             <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} dy={10} tickFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
                             <YAxis domain={[0, assessment.maxScore]} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6B7280' }} />
-                            <Tooltip 
+                            <Tooltip
                               contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
                               labelFormatter={(label) => formatDate(label as string)}
                             />
@@ -1130,9 +1224,9 @@ export default function ClientDetail() {
                         <div className="text-xs text-slate-500">
                           Baseline: <span className="font-bold text-slate-900">{assessment.previousScore || (assessment.currentScore + 8)}</span> → Latest: <span className="font-bold text-[#5e2be2]">{assessment.currentScore}</span>
                         </div>
-                        <Button 
+                        <Button
                           onClick={() => setItemDetailsScale(assessment)}
-                          variant="outline" 
+                          variant="outline"
                           size="sm"
                           className="text-xs font-bold text-[#5e2be2] border-purple-200 hover:bg-purple-50 h-8 cursor-pointer"
                         >
@@ -1150,7 +1244,7 @@ export default function ClientDetail() {
           {/* TAB 4: ACTIVITIES & HOMEWORK */}
           <TabsContent value="homework" className="space-y-6 outline-none">
             <div className="flex justify-end mb-4">
-              <Button 
+              <Button
                 onClick={() => setAssignActivityModalOpen(true)}
                 className="bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer"
               >
@@ -1169,8 +1263,8 @@ export default function ClientDetail() {
                           <Badge variant="outline" className={cn(
                             "uppercase text-[10px] tracking-wider font-bold",
                             item.status === 'completed' ? "bg-green-50 text-green-700 border-green-200" :
-                            item.status === 'pending' ? "bg-blue-50 text-blue-700 border-blue-200" :
-                            "bg-red-50 text-red-700 border-red-200"
+                              item.status === 'pending' ? "bg-blue-50 text-blue-700 border-blue-200" :
+                                "bg-red-50 text-red-700 border-red-200"
                           )}>
                             {item.status}
                           </Badge>
@@ -1180,7 +1274,7 @@ export default function ClientDetail() {
                         </div>
                       </div>
                       <p className="text-muted-foreground text-sm mb-4">{item.instructions}</p>
-                      
+
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="font-medium text-slate-700">Completion ({item.frequency})</span>
@@ -1209,7 +1303,7 @@ export default function ClientDetail() {
               {history?.map((session, i) => (
                 <div key={session.id} className="relative">
                   <div className="absolute -left-[41px] top-1 w-5 h-5 rounded-full border-4 border-white bg-primary shadow-sm" />
-                  
+
                   <Card className="shadow-sm border-border hover:shadow-md transition-shadow">
                     <CardHeader className="pb-3 bg-secondary/30">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -1232,7 +1326,7 @@ export default function ClientDetail() {
                         <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Clinical Summary</h4>
                         <p className="text-sm text-slate-700 leading-relaxed">{session.summary}</p>
                       </div>
-                      
+
                       {session.therapistNotes && (
                         <div className="bg-amber-50/50 border border-amber-100 rounded-lg p-3">
                           <h4 className="text-xs font-semibold text-amber-800 uppercase tracking-wider mb-1 flex items-center gap-1.5">
@@ -1241,7 +1335,7 @@ export default function ClientDetail() {
                           <p className="text-sm text-amber-900/80">{session.therapistNotes}</p>
                         </div>
                       )}
-                      
+
                       {session.homeworkAssigned && (
                         <div className="bg-primary/5 border border-primary/10 rounded-lg p-3">
                           <h4 className="text-xs font-semibold text-primary uppercase tracking-wider mb-1 flex items-center gap-1.5">
@@ -1289,17 +1383,17 @@ export default function ClientDetail() {
 
             <div className="space-y-1.5">
               <label className="text-xs font-extrabold text-slate-600 uppercase">Due Date</label>
-              <Input 
-                type="date" 
-                value={assignDueDate} 
-                onChange={(e) => setAssignDueDate(e.target.value)} 
+              <Input
+                type="date"
+                value={assignDueDate}
+                onChange={(e) => setAssignDueDate(e.target.value)}
                 className="w-full text-xs"
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-extrabold text-slate-600 uppercase">Therapist Instructions (Optional)</label>
-              <Input 
+              <Input
                 placeholder="e.g. Please complete prior to our Session #13 discussion."
                 value={assignNote}
                 onChange={(e) => setAssignNote(e.target.value)}
@@ -1363,18 +1457,18 @@ export default function ClientDetail() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-extrabold text-slate-600 uppercase">Previous / Baseline Score</label>
-                <Input 
-                  type="number" 
-                  value={calcPrevScore} 
+                <Input
+                  type="number"
+                  value={calcPrevScore}
                   onChange={(e) => setCalcPrevScore(e.target.value)}
                   className="font-mono font-bold"
                 />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-extrabold text-slate-600 uppercase">New Milestone Score</label>
-                <Input 
-                  type="number" 
-                  value={calcCurrScore} 
+                <Input
+                  type="number"
+                  value={calcCurrScore}
                   onChange={(e) => setCalcCurrScore(e.target.value)}
                   className="font-mono font-bold"
                 />
@@ -1458,9 +1552,9 @@ export default function ClientDetail() {
           <form onSubmit={handleAssignActivitySubmit} className="space-y-4 pt-2">
             <div className="space-y-1.5">
               <label className="text-xs font-extrabold text-slate-600 uppercase">Activity Title</label>
-              <Input 
-                value={activityTitle} 
-                onChange={(e) => setActivityTitle(e.target.value)} 
+              <Input
+                value={activityTitle}
+                onChange={(e) => setActivityTitle(e.target.value)}
                 placeholder="e.g. Zen Breath & Focus Chamber"
                 className="w-full text-xs font-bold"
               />
@@ -1500,19 +1594,19 @@ export default function ClientDetail() {
 
             <div className="space-y-1.5">
               <label className="text-xs font-extrabold text-slate-600 uppercase">Due Date</label>
-              <Input 
-                type="date" 
-                value={activityDueDate} 
-                onChange={(e) => setActivityDueDate(e.target.value)} 
+              <Input
+                type="date"
+                value={activityDueDate}
+                onChange={(e) => setActivityDueDate(e.target.value)}
                 className="w-full text-xs"
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-extrabold text-slate-600 uppercase">Therapist Instructions</label>
-              <Input 
-                value={activityInstructions} 
-                onChange={(e) => setActivityInstructions(e.target.value)} 
+              <Input
+                value={activityInstructions}
+                onChange={(e) => setActivityInstructions(e.target.value)}
                 placeholder="Practice guidelines..."
                 className="w-full text-xs"
               />
@@ -1533,8 +1627,8 @@ export default function ClientDetail() {
 function SparklesIcon(props: React.ComponentProps<"svg">) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
-      <path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/>
+      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+      <path d="M5 3v4" /><path d="M19 17v4" /><path d="M3 5h4" /><path d="M17 19h4" />
     </svg>
   )
 }
@@ -1542,7 +1636,7 @@ function SparklesIcon(props: React.ComponentProps<"svg">) {
 function MessageSquareIcon(props: React.ComponentProps<"svg">) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   )
 }
@@ -1550,7 +1644,7 @@ function MessageSquareIcon(props: React.ComponentProps<"svg">) {
 function BookOpenIcon(props: React.ComponentProps<"svg">) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
     </svg>
   )
 }
