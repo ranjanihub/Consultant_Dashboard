@@ -318,59 +318,105 @@ export default function Clients() {
           <p className="text-xs text-slate-500 mt-1">Try adjusting your search query or status filter.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50/70 border-b border-slate-100 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider whitespace-nowrap">
-                  <th className="py-4 px-6">Client Name</th>
-                  <th className="py-4 px-6">Service Modality</th>
-                  <th className="py-4 px-6">Last Session</th>
-                  <th className="py-4 px-6">Next Session</th>
-                  <th className="py-4 px-6">Status</th>
-                  <th className="py-4 px-6 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
-                {filteredClients.map((clientItem: any) => (
-                  <tr key={clientItem.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-4 px-6 whitespace-nowrap">
-                      <div className="font-extrabold text-slate-900 text-sm">
-                        {clientItem.name}
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 font-medium text-slate-600 whitespace-nowrap">
-                      {clientItem.modality || 'Individual Therapy'}
-                    </td>
-                    <td className="py-4 px-6 font-medium text-slate-500 font-mono whitespace-nowrap">
-                      {clientItem.lastSession || '2026-07-28'}
-                    </td>
-                    <td className="py-4 px-6 font-bold text-[#5e2be2] font-mono whitespace-nowrap">
-                      {clientItem.nextSession ? (
-                        <div>
-                          <span className="block">{clientItem.nextSession}</span>
-                          <span className="block text-[11px] font-normal text-slate-500">{clientItem.nextSessionTime || '(09:00 AM)'}</span>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 font-normal">-</span>
-                      )}
-                    </td>
-                    <td className="py-4 px-6 whitespace-nowrap">
-                      {getStatusBadge(clientItem.status)}
-                    </td>
-                    <td className="py-4 px-6 text-right whitespace-nowrap">
-                      <Link href={`/clients/${clientItem.id}`}>
-                        <Button className="bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-sm transition-all cursor-pointer whitespace-nowrap">
-                          View Full Record
-                        </Button>
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <>
+          {/* Mobile Card List View (Visible on mobile viewports < 768px) */}
+          <div className="space-y-3.5 md:hidden">
+            {filteredClients.map((clientItem: any) => (
+              <div key={clientItem.id} className="bg-white p-4.5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                  <div>
+                    <h3 className="font-extrabold text-slate-900 text-sm leading-tight">{clientItem.name}</h3>
+                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">{clientItem.modality || 'Individual Therapy'}</p>
+                  </div>
+                  <div>
+                    {getStatusBadge(clientItem.status)}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Last Session</span>
+                    <span className="font-mono font-semibold text-slate-700 text-xs mt-0.5 block">{clientItem.lastSession || '2026-07-28'}</span>
+                  </div>
+
+                  <div className="bg-purple-50/60 p-2.5 rounded-xl border border-purple-100">
+                    <span className="text-[10px] font-bold text-[#5e2be2] uppercase tracking-wider block">Next Session</span>
+                    {clientItem.nextSession ? (
+                      <span className="font-mono font-extrabold text-[#5e2be2] text-xs mt-0.5 block">
+                        {clientItem.nextSession} <span className="text-[10px] font-normal text-slate-500">{clientItem.nextSessionTime}</span>
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 font-normal text-xs block">-</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-1">
+                  <Link href={`/clients/${clientItem.id}`} className="block w-full">
+                    <Button className="w-full bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-extrabold text-xs h-10 rounded-xl shadow-sm cursor-pointer">
+                      View Full Record
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+
+          {/* Desktop Table View (Visible on desktop viewports >= 768px) */}
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden hidden md:block">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/70 border-b border-slate-100 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                    <th className="py-4 px-6">Client Name</th>
+                    <th className="py-4 px-6">Service Modality</th>
+                    <th className="py-4 px-6">Last Session</th>
+                    <th className="py-4 px-6">Next Session</th>
+                    <th className="py-4 px-6">Status</th>
+                    <th className="py-4 px-6 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {filteredClients.map((clientItem: any) => (
+                    <tr key={clientItem.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-4 px-6 whitespace-nowrap">
+                        <div className="font-extrabold text-slate-900 text-sm">
+                          {clientItem.name}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 font-medium text-slate-600 whitespace-nowrap">
+                        {clientItem.modality || 'Individual Therapy'}
+                      </td>
+                      <td className="py-4 px-6 font-medium text-slate-500 font-mono whitespace-nowrap">
+                        {clientItem.lastSession || '2026-07-28'}
+                      </td>
+                      <td className="py-4 px-6 font-bold text-[#5e2be2] font-mono whitespace-nowrap">
+                        {clientItem.nextSession ? (
+                          <div>
+                            <span className="block">{clientItem.nextSession}</span>
+                            <span className="block text-[11px] font-normal text-slate-500">{clientItem.nextSessionTime || '(09:00 AM)'}</span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 font-normal">-</span>
+                        )}
+                      </td>
+                      <td className="py-4 px-6 whitespace-nowrap">
+                        {getStatusBadge(clientItem.status)}
+                      </td>
+                      <td className="py-4 px-6 text-right whitespace-nowrap">
+                        <Link href={`/clients/${clientItem.id}`}>
+                          <Button className="bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-sm transition-all cursor-pointer whitespace-nowrap">
+                            View Full Record
+                          </Button>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
       )}
 
       <Dialog open={!!selectedRecordClient} onOpenChange={() => setSelectedRecordClient(null)}>

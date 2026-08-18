@@ -1414,8 +1414,8 @@ export default function Assessments() {
       </div>
 
       {/* Main Navigation Tabs */}
-      <div className="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 overflow-x-auto p-1">
+      <div className="bg-white rounded-2xl p-2 border border-slate-200/80 shadow-sm overflow-x-auto hide-scrollbar max-w-full">
+        <div className="flex items-center gap-2 min-w-max p-1">
           <button
             type="button"
             onClick={() => setActiveTab('library')}
@@ -1609,7 +1609,53 @@ export default function Assessments() {
             </span>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+          {/* Mobile View Evaluation Cards */}
+          <div className="space-y-3.5 md:hidden">
+            {filteredSubmissions.map((sub) => (
+              <div key={sub.id} className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                  <div>
+                    <h3 className="font-extrabold text-slate-900 text-sm">{sub.clientName}</h3>
+                    <span className="text-[11px] text-slate-500">{sub.completedAt}</span>
+                  </div>
+                  <span className="px-2.5 py-1 bg-slate-100 text-slate-800 font-extrabold text-xs rounded-md border border-slate-200">
+                    {sub.assessmentAcronym}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs pt-1">
+                  <div>
+                    <span className="text-slate-400 font-medium block text-[10px] uppercase">Score &amp; Severity</span>
+                    <span className="font-black text-slate-900 text-base">{sub.totalScore}/{sub.maxScore}</span>
+                  </div>
+                  <div>
+                    {sub.flaggedRisk ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-rose-100 text-rose-800 rounded-md font-black text-xs">
+                        <AlertTriangle className="w-3.5 h-3.5 text-rose-600" /> High Risk Alert
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md font-bold text-xs">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Normal
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSubmissionModal(sub)}
+                    className="w-full py-2 bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                  >
+                    View Answers
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-x-auto hide-scrollbar hidden md:block">
             <table className="w-full text-left text-sm border-collapse min-w-[800px]">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
@@ -1667,7 +1713,52 @@ export default function Assessments() {
       {/* TAB 3: CLIENT ASSIGNMENTS */}
       {activeTab === 'assignments' && (
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+          {/* Mobile View Assignment Cards */}
+          <div className="space-y-3.5 md:hidden">
+            {assignments.map((asn) => (
+              <div key={asn.id} className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                  <div>
+                    <h3 className="font-extrabold text-slate-900 text-sm">{asn.clientName}</h3>
+                    <span className="text-[11px] text-slate-500 font-medium">Due: {asn.dueDate}</span>
+                  </div>
+                  <span className={`px-2.5 py-0.5 rounded-md text-xs font-extrabold ${
+                    asn.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                  }`}>
+                    {asn.status}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs pt-1">
+                  <div>
+                    <span className="text-slate-400 font-medium block text-[10px] uppercase">Assigned Screener</span>
+                    <span className="px-2.5 py-0.5 bg-purple-50 text-[#5e2be2] font-black text-xs rounded-md border border-purple-100 inline-block mt-0.5">
+                      {asn.assessmentAcronym}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-slate-400 font-medium block text-[10px] uppercase">Frequency</span>
+                    <span className="font-semibold text-slate-700 text-xs">{asn.frequency}</span>
+                  </div>
+                </div>
+
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      showToast(`Reminder sent to ${asn.clientName}!`);
+                    }}
+                    className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                  >
+                    Send Reminder
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-x-auto hide-scrollbar hidden md:block">
             <table className="w-full text-left text-sm border-collapse min-w-[800px]">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">

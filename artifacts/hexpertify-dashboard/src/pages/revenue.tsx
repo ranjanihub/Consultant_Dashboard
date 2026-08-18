@@ -172,42 +172,75 @@ export default function Revenue() {
         <CardHeader>
           <CardTitle className="text-lg">Recent Transactions</CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader className="bg-secondary/50">
-              <TableRow>
-                <TableHead className="pl-6">Invoice / ID</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right pr-6">Amount</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactionsLoading ? (
-                <TableRow><TableCell colSpan={5} className="h-24 text-center"><Skeleton className="h-6 w-32 mx-auto" /></TableCell></TableRow>
-              ) : (
-                transactions.map((tx: any) => (
-                  <TableRow key={tx.id}>
-                    <TableCell className="pl-6 font-medium font-mono text-xs">{tx.invoiceNumber}</TableCell>
-                    <TableCell className="text-muted-foreground">{formatDate(tx.date)}</TableCell>
-                    <TableCell>{tx.clientName}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={cn(
-                        "uppercase text-[10px] tracking-wider font-bold",
-                        tx.status === 'paid' ? "bg-green-50 text-green-700 border-green-200" :
-                        tx.status === 'pending' ? "bg-amber-50 text-amber-700 border-amber-200" :
-                        "bg-red-50 text-red-700 border-red-200"
-                      )}>
-                        {tx.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right pr-6 font-bold">₹{(tx.amount || 0).toFixed(2)}</TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+        <CardContent className="p-4 sm:p-6 md:p-0">
+          {/* Mobile View Card List */}
+          <div className="space-y-3 md:hidden">
+            {transactionsLoading ? (
+              <Skeleton className="h-20 w-full rounded-2xl" />
+            ) : (
+              transactions.map((tx: any) => (
+                <div key={tx.id} className="p-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/50 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-bold text-slate-900">{tx.invoiceNumber}</span>
+                    <Badge variant="outline" className={cn(
+                      "uppercase text-[10px] tracking-wider font-bold",
+                      tx.status === 'paid' ? "bg-green-50 text-green-700 border-green-200" :
+                      tx.status === 'pending' ? "bg-amber-50 text-amber-700 border-amber-200" :
+                      "bg-red-50 text-red-700 border-red-200"
+                    )}>
+                      {tx.status}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200/60">
+                    <div>
+                      <span className="font-bold text-slate-800 block">{tx.clientName}</span>
+                      <span className="text-[11px] text-slate-500">{formatDate(tx.date)}</span>
+                    </div>
+                    <span className="font-extrabold text-sm text-slate-900 font-mono">₹{(tx.amount || 0).toFixed(2)}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader className="bg-secondary/50">
+                <TableRow>
+                  <TableHead className="pl-6">Invoice / ID</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right pr-6">Amount</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {transactionsLoading ? (
+                  <TableRow><TableCell colSpan={5} className="h-24 text-center"><Skeleton className="h-6 w-32 mx-auto" /></TableCell></TableRow>
+                ) : (
+                  transactions.map((tx: any) => (
+                    <TableRow key={tx.id}>
+                      <TableCell className="pl-6 font-medium font-mono text-xs">{tx.invoiceNumber}</TableCell>
+                      <TableCell className="text-muted-foreground">{formatDate(tx.date)}</TableCell>
+                      <TableCell>{tx.clientName}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={cn(
+                          "uppercase text-[10px] tracking-wider font-bold",
+                          tx.status === 'paid' ? "bg-green-50 text-green-700 border-green-200" :
+                          tx.status === 'pending' ? "bg-amber-50 text-amber-700 border-amber-200" :
+                          "bg-red-50 text-red-700 border-red-200"
+                        )}>
+                          {tx.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right pr-6 font-bold">₹{(tx.amount || 0).toFixed(2)}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
