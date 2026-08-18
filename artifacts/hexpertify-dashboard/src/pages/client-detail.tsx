@@ -1355,7 +1355,7 @@ export default function ClientDetail() {
 
       {/* DIALOG 1: ASSIGN ASSESSMENT SCALE */}
       <Dialog open={assignModalOpen} onOpenChange={setAssignModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-md max-h-[92vh] overflow-y-auto p-4 sm:p-6 rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2 text-slate-900">
               <Send className="w-5 h-5 text-[#5e2be2]" />
@@ -1411,7 +1411,7 @@ export default function ClientDetail() {
 
       {/* DIALOG 2: CALCULATE 3-SESSION OUTCOME */}
       <Dialog open={calcModalOpen} onOpenChange={setCalcModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-md max-h-[92vh] overflow-y-auto p-4 sm:p-6 rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2 text-slate-900">
               <Calculator className="w-5 h-5 text-[#5e2be2]" />
@@ -1492,7 +1492,7 @@ export default function ClientDetail() {
 
       {/* DIALOG 3: ITEM RESPONSE BREAKDOWN */}
       <Dialog open={!!itemDetailsScale} onOpenChange={() => setItemDetailsScale(null)}>
-        <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2 text-slate-900">
               <Eye className="w-5 h-5 text-[#5e2be2]" />
@@ -1539,7 +1539,7 @@ export default function ClientDetail() {
 
       {/* DIALOG 4: ASSIGN THERAPEUTIC ACTIVITY */}
       <Dialog open={assignActivityModalOpen} onOpenChange={setAssignActivityModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-md max-h-[92vh] overflow-y-auto p-4 sm:p-6 rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2 text-slate-900">
               <Gamepad2 className="w-5 h-5 text-[#5e2be2]" />

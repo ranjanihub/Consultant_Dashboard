@@ -80,9 +80,9 @@ export default function Revenue() {
         </div>
       </PageHeader>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="shadow-sm border-border bg-gradient-to-br from-primary/5 to-white border-primary/10">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex justify-between items-start mb-4">
               <div className="p-2 bg-primary/10 rounded-lg text-primary"><IndianRupee className="w-5 h-5" /></div>
               {summary && (

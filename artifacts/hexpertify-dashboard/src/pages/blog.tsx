@@ -1130,7 +1130,7 @@ export default function Blog() {
 
       {/* PREVIEW MODAL */}
       <Dialog open={!!previewPost} onOpenChange={(open) => !open && setPreviewPost(null)}>
-        <DialogContent className="max-w-2xl w-full p-6 sm:p-8 rounded-2xl bg-white max-h-[85vh] overflow-y-auto">
+        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl p-4 sm:p-8 rounded-2xl bg-white max-h-[92vh] overflow-y-auto">
           {previewPost && (
             <div className="space-y-6">
               {previewPost.featuredImage && (

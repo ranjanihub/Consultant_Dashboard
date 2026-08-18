@@ -374,7 +374,7 @@ export default function Clients() {
       )}
 
       <Dialog open={!!selectedRecordClient} onOpenChange={() => setSelectedRecordClient(null)}>
-        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-0 rounded-3xl border-0 shadow-2xl">
+        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-3xl max-h-[92vh] flex flex-col p-0 overflow-y-auto rounded-3xl border-0 shadow-2xl">
           {selectedRecordClient && (
             <div className="p-6 space-y-6">
               <div className="flex items-start justify-between pb-4 border-b border-slate-100">

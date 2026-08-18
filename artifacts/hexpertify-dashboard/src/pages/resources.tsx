@@ -414,10 +414,10 @@ export default function Resources() {
         </div>
       )}
 
-      {/* Resource Detail Modal */}
+      {/* View Resource Article / Worksheet Details Dialog */}
       <Dialog open={!!selectedResource} onOpenChange={() => setSelectedResource(null)}>
         {selectedResource && (
-          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto p-0 rounded-2xl gap-0">
+          <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[92vh] flex flex-col overflow-y-auto p-0 rounded-2xl gap-0">
             {/* Header Image */}
             <div className="relative h-56 w-full overflow-hidden bg-slate-100">
               <img
@@ -503,9 +503,9 @@ export default function Resources() {
         )}
       </Dialog>
 
-      {/* Add Resource Modal */}
+      {/* Add New Resource / File Modal */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-lg p-6 rounded-2xl sm:rounded-3xl border-0 shadow-2xl">
+        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-lg p-4 sm:p-6 rounded-2xl sm:rounded-3xl border-0 shadow-2xl max-h-[92vh] overflow-y-auto">
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-xl font-extrabold text-slate-900">Add a resource</DialogTitle>
             <DialogDescription className="text-xs text-slate-500 leading-relaxed">

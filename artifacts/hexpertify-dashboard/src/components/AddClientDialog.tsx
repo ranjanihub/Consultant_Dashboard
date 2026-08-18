@@ -126,18 +126,18 @@ export default function AddClientDialog({ open, onOpenChange }: AddClientDialogP
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden rounded-2xl">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl">
         {/* Purple header */}
-        <div className="bg-primary px-8 pt-8 pb-6 text-white">
+        <div className="bg-primary px-4 sm:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6 text-white shrink-0">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-white">Add New Client</DialogTitle>
-            <DialogDescription className="text-white/70 mt-1">
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-white">Add New Client</DialogTitle>
+            <DialogDescription className="text-white/70 text-xs sm:text-sm mt-1">
               Complete the intake form to create a new client profile.
             </DialogDescription>
           </DialogHeader>
 
           {/* Step indicators */}
-          <div className="flex items-center gap-2 mt-6">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2 mt-4 sm:mt-6">
             {STEPS.map((s, i) => {
               const Icon = s.icon;
               const active = step === s.id;
@@ -166,10 +166,10 @@ export default function AddClientDialog({ open, onOpenChange }: AddClientDialogP
         </div>
 
         {/* Step content */}
-        <div className="px-8 py-7 space-y-5 min-h-[320px]">
+        <div className="px-4 sm:px-8 py-5 sm:py-7 space-y-5 flex-1 overflow-y-auto max-h-[60vh]">
           {step === 1 && (
             <>
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                 <div className="col-span-2 space-y-1.5">
                   <Label>Full Name <span className="text-destructive">*</span></Label>
                   <Input
@@ -347,7 +347,7 @@ export default function AddClientDialog({ open, onOpenChange }: AddClientDialogP
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-8 py-5 border-t border-border bg-secondary/30">
+        <div className="flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5 border-t border-border bg-secondary/30 shrink-0">
           <Button
             variant="ghost"
             onClick={step === 1 ? handleClose : () => setStep(step - 1)}

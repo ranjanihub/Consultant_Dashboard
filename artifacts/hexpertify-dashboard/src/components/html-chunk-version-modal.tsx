@@ -65,7 +65,7 @@ export function HtmlChunkVersionModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end animate-in fade-in duration-200">
-      <div className="w-full max-w-xl bg-white h-full shadow-2xl flex flex-col border-l border-border animate-in slide-in-from-right duration-300">
+      <div className="w-full sm:max-w-xl bg-white h-full shadow-2xl flex flex-col border-l border-border animate-in slide-in-from-right duration-300">
         {/* Header */}
         <div className="p-6 border-b border-border flex items-center justify-between bg-secondary/30">
           <div className="flex items-center gap-3">

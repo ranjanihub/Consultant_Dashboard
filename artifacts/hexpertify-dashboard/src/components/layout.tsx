@@ -28,6 +28,7 @@ import {
   Minus,
   X,
   FileText,
+  Menu,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useOutcomeStore, OutcomeRecord } from "@/lib/outcome-store";
@@ -81,7 +82,12 @@ const CONTENT_ITEMS = [
   { name: "Blog", href: "/blog", icon: PenTool },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onCloseMobile?: () => void;
+}
+
+export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const [location, setLocation] = useLocation();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -119,193 +125,230 @@ export function Sidebar() {
     return location === href || location.startsWith(href + '/');
   };
 
+  const navContent = (
+    <div className="flex flex-col h-full bg-white border-r border-[#eef1f6]">
+      {/* Brand Header */}
+      <div className="h-20 md:h-24 px-4 flex items-center justify-between border-b border-[#f1f5f9] overflow-hidden shrink-0">
+        <Link href="/" onClick={onCloseMobile} className="inline-flex items-center select-none cursor-pointer">
+          <img
+            src="/hexpertify-logo.png"
+            alt="HEXPERTIFY ANYTIME,ANYWHERE"
+            className="h-14 md:h-20 max-w-full w-auto object-contain transition-transform hover:scale-[1.02]"
+          />
+        </Link>
+        {onCloseMobile && (
+          <button
+            onClick={onCloseMobile}
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 md:hidden cursor-pointer"
+            aria-label="Close menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+
+      {/* Navigation Links */}
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+        {/* Workspace Section */}
+        <div>
+          <div className="px-3 mb-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase">
+            WORKSPACE
+          </div>
+          <nav className="space-y-1">
+            {workspaceItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = isItemActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onCloseMobile}
+                  className={cn(
+                    "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-150 group",
+                    isActive
+                      ? "bg-[#5e2be2] text-white shadow-md shadow-[#5e2be2]/25"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon
+                      className={cn(
+                        "w-4 h-4",
+                        isActive ? "text-white" : "text-slate-400 group-hover:text-slate-600"
+                      )}
+                    />
+                    <span>{item.name}</span>
+                  </div>
+                  {item.badge && (
+                    <span
+                      className={cn(
+                        "text-xs px-2 py-0.5 rounded-full font-bold",
+                        isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
+                      )}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Content Section */}
+        <div>
+          <div className="px-3 mb-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase">
+            CONTENT
+          </div>
+          <nav className="space-y-1">
+            {CONTENT_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const isActive = isItemActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onCloseMobile}
+                  className={cn(
+                    "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-150 group",
+                    isActive
+                      ? "bg-[#5e2be2] text-white shadow-md shadow-[#5e2be2]/25"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon
+                      className={cn(
+                        "w-4 h-4",
+                        isActive ? "text-white" : "text-slate-400 group-hover:text-slate-600"
+                      )}
+                    />
+                    <span>{item.name}</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
+
+      {/* Admin Quick Profile Footer */}
+      <div className="relative border-t border-[#f1f5f9] bg-slate-50/50 shrink-0">
+        {showProfileMenu && (
+          <>
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 z-30" 
+              onClick={() => setShowProfileMenu(false)} 
+            />
+
+            {/* Options Popover Menu */}
+            <div className="absolute bottom-full left-3 right-3 mb-2 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-40 animate-in fade-in-0 slide-in-from-bottom-2">
+              <div className="p-3 border-b border-slate-100 mb-1">
+                <p className="text-xs font-bold text-slate-900">{user?.name || "Dr. Alex Harrison, PsyD"}</p>
+                <p className="text-[11px] text-slate-500 font-medium truncate">{user?.email || "alex.harrison@hexpertify.com"}</p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  onCloseMobile?.();
+                  setLocation("/profile");
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer text-left"
+              >
+                <User className="w-4 h-4 text-slate-400" />
+                <span>View Profile</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  onCloseMobile?.();
+                  setLocation("/activities");
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer text-left"
+              >
+                <Activity className="w-4 h-4 text-slate-400" />
+                <span>Activity Log</span>
+              </button>
+
+              <div className="my-1 border-t border-slate-100" />
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  onCloseMobile?.();
+                  setShowSignOutDialog(true);
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer text-left"
+              >
+                <LogOut className="w-4 h-4 text-red-600" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </>
+        )}
+
+        <div
+          onClick={() => setShowProfileMenu(!showProfileMenu)}
+          className="p-4 cursor-pointer hover:bg-slate-100/70 transition-colors select-none"
+          title="Click for options"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <img
+                  src={user?.photoUrl || "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80"}
+                  alt="Admin Avatar"
+                  className="w-9 h-9 rounded-full object-cover ring-2 ring-[#5e2be2]/20"
+                />
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white" />
+              </div>
+              <div className="leading-tight">
+                <p className="text-xs font-bold text-slate-900">{user?.name || "Dr. Alex Harrison, PsyD"}</p>
+                <p className="text-[11px] text-slate-500 font-medium">{user?.title || "Licensed Clinical Psychologist"}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <>
+      {/* Desktop Sidebar */}
       <aside
-        className="fixed left-0 top-0 bottom-0 z-30 w-64 bg-white border-r border-[#eef1f6] flex flex-col shadow-sm"
+        className="fixed left-0 top-0 bottom-0 z-30 w-64 bg-white border-r border-[#eef1f6] flex-col shadow-sm hidden md:flex"
         style={{ boxShadow: '2px 0 16px rgba(0, 0, 0, 0.02)' }}
       >
-        {/* Brand Header */}
-        <div className="h-24 px-4 flex items-center justify-start border-b border-[#f1f5f9] overflow-hidden shrink-0">
-          <Link href="/" className="inline-flex items-center select-none cursor-pointer">
-            <img
-              src="/hexpertify-logo.png"
-              alt="HEXPERTIFY ANYTIME,ANYWHERE"
-              className="h-16 md:h-20 max-w-full w-auto object-contain transition-transform hover:scale-[1.02]"
-            />
-          </Link>
-        </div>
+        {navContent}
+      </aside>
 
-        {/* Navigation Links */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
-          {/* Workspace Section */}
-          <div>
-            <div className="px-3 mb-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase">
-              WORKSPACE
-            </div>
-            <nav className="space-y-1">
-              {workspaceItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = isItemActive(item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-150 group",
-                      isActive
-                        ? "bg-[#5e2be2] text-white shadow-md shadow-[#5e2be2]/25"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Icon
-                        className={cn(
-                          "w-4 h-4",
-                          isActive ? "text-white" : "text-slate-400 group-hover:text-slate-600"
-                        )}
-                      />
-                      <span>{item.name}</span>
-                    </div>
-                    {item.badge && (
-                      <span
-                        className={cn(
-                          "text-xs px-2 py-0.5 rounded-full font-bold",
-                          isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
-                        )}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-
-          {/* Content Section */}
-          <div>
-            <div className="px-3 mb-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase">
-              CONTENT
-            </div>
-            <nav className="space-y-1">
-              {CONTENT_ITEMS.map((item) => {
-                const Icon = item.icon;
-                const isActive = isItemActive(item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-150 group",
-                      isActive
-                        ? "bg-[#5e2be2] text-white shadow-md shadow-[#5e2be2]/25"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Icon
-                        className={cn(
-                          "w-4 h-4",
-                          isActive ? "text-white" : "text-slate-400 group-hover:text-slate-600"
-                        )}
-                      />
-                      <span>{item.name}</span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
-
-        {/* Admin Quick Profile Footer (Exact Super Admin Match) */}
-        <div className="relative border-t border-[#f1f5f9] bg-slate-50/50 shrink-0">
-          {showProfileMenu && (
-            <>
-              {/* Backdrop */}
-              <div 
-                className="fixed inset-0 z-30" 
-                onClick={() => setShowProfileMenu(false)} 
-              />
-
-              {/* Options Popover Menu */}
-              <div className="absolute bottom-full left-3 right-3 mb-2 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-40 animate-in fade-in-0 slide-in-from-bottom-2">
-                <div className="p-3 border-b border-slate-100 mb-1">
-                  <p className="text-xs font-bold text-slate-900">{user?.name || "Dr. Alex Harrison, PsyD"}</p>
-                  <p className="text-[11px] text-slate-500 font-medium truncate">{user?.email || "alex.harrison@hexpertify.com"}</p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowProfileMenu(false);
-                    setLocation("/profile");
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer text-left"
-                >
-                  <User className="w-4 h-4 text-slate-400" />
-                  <span>View Profile</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowProfileMenu(false);
-                    setLocation("/activities");
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer text-left"
-                >
-                  <Activity className="w-4 h-4 text-slate-400" />
-                  <span>Activity Log</span>
-                </button>
-
-                <div className="my-1 border-t border-slate-100" />
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowProfileMenu(false);
-                    setShowSignOutDialog(true);
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer text-left"
-                >
-                  <LogOut className="w-4 h-4 text-red-600" />
-                  <span>Sign Out</span>
-                </button>
-              </div>
-            </>
-          )}
-
-          <div
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="p-4 cursor-pointer hover:bg-slate-100/70 transition-colors select-none"
-            title="Click for options"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <img
-                    src={user?.photoUrl || "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80"}
-                    alt="Admin Avatar"
-                    className="w-9 h-9 rounded-full object-cover ring-2 ring-[#5e2be2]/20"
-                  />
-                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white" />
-                </div>
-                <div className="leading-tight">
-                  <p className="text-xs font-bold text-slate-900">{user?.name || "Dr. Alex Harrison, PsyD"}</p>
-                  <p className="text-[11px] text-slate-500 font-medium">{user?.title || "Licensed Clinical Psychologist"}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Mobile Drawer Overlay */}
+      {mobileOpen && (
+        <div
+          onClick={onCloseMobile}
+          className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 md:hidden animate-in fade-in-0"
+        />
+      )}
+      <aside
+        className={cn(
+          "fixed left-0 top-0 bottom-0 z-50 w-72 bg-white flex-col shadow-2xl transition-transform duration-300 md:hidden flex",
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {navContent}
       </aside>
 
       {/* Sign Out Confirmation Modal */}
       <Dialog open={showSignOutDialog} onOpenChange={setShowSignOutDialog}>
-        <DialogContent className="max-w-[380px] w-full p-6 sm:p-7 rounded-[24px] bg-white border-none shadow-2xl space-y-0 gap-0 outline-none sm:rounded-[24px] [&>button]:hidden">
-          <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center mb-5">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-[380px] p-5 sm:p-7 rounded-[20px] sm:rounded-[24px] bg-white border-none shadow-2xl space-y-0 gap-0 outline-none [&>button]:hidden">
+          <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center mb-4 sm:mb-5">
             <LogOut className="w-5 h-5 text-red-500 stroke-[2.2]" />
           </div>
 
@@ -338,7 +381,7 @@ export function Sidebar() {
   );
 }
 
-export function Header() {
+export function Header({ onOpenMobileSidebar }: { onOpenMobileSidebar?: () => void }) {
   const user = getAuthUser();
   const [, setLocation] = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -398,26 +441,40 @@ export function Header() {
   const categories = ["Clients", "Pages & Modules", "Activities", "Documents"] as const;
 
   return (
-    <header className="sticky top-0 z-20 h-24 bg-white/95 backdrop-blur-md border-b border-[#eef1f6] px-4 md:px-8 flex items-center justify-between shadow-sm">
-      {/* Global Search Bar */}
-      <div className="flex-1 max-w-xl relative">
-        <div className="relative group z-30">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-[#5e2be2] transition-colors" />
-          <input 
-            ref={searchInputRef}
-            type="text" 
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setIsSearchOpen(true);
-            }}
-            onFocus={() => setIsSearchOpen(true)}
-            placeholder="Search clients, sessions, activities, notes... (⌘K)" 
-            className="w-full bg-slate-100/70 hover:bg-slate-100 border border-slate-200/80 focus:bg-white focus:border-[#5e2be2] focus:ring-2 focus:ring-[#5e2be2]/10 rounded-full pl-10 pr-20 py-2.5 text-sm transition-all outline-none"
-          />
-          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-            {searchQuery && (
-              <button
+    <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-[#eef1f6] shadow-sm">
+      <div className="h-16 md:h-24 px-3 sm:px-6 md:px-8 flex items-center justify-between gap-2">
+        {/* Mobile Sidebar Toggle Button & Brand Logo */}
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        {onOpenMobileSidebar && (
+          <button
+            type="button"
+            onClick={onOpenMobileSidebar}
+            className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors md:hidden cursor-pointer shrink-0"
+            aria-label="Open menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
+
+        {/* Global Search Bar - Hidden on xs to prevent crowding */}
+        <div className="flex-1 max-w-xl relative hidden sm:block">
+          <div className="relative group z-30">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-[#5e2be2] transition-colors" />
+            <input 
+              ref={searchInputRef}
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setIsSearchOpen(true);
+              }}
+              onFocus={() => setIsSearchOpen(true)}
+              placeholder="Search clients, sessions, activities... (⌘K)" 
+              className="w-full bg-slate-100/70 hover:bg-slate-100 border border-slate-200/80 focus:bg-white focus:border-[#5e2be2] focus:ring-2 focus:ring-[#5e2be2]/10 rounded-full pl-10 pr-20 py-2 text-xs sm:text-sm transition-all outline-none"
+            />
+            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+              {searchQuery && (
+                <button
                 type="button"
                 onClick={() => {
                   setSearchQuery("");
@@ -521,8 +578,9 @@ export function Header() {
           </>
         )}
       </div>
+    </div>
 
-      <div className="flex items-center gap-3 md:gap-4">
+    <div className="flex items-center gap-3 md:gap-4">
         {/* Calendar Icon */}
         <Link href="/calendar">
           <button type="button" className="p-2.5 rounded-full text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer" title="View Schedule Calendar">
@@ -553,7 +611,7 @@ export function Header() {
               />
               
               {/* Notifications Popover Dropdown */}
-              <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-40 overflow-hidden animate-in fade-in-0 zoom-in-95">
+              <div className="absolute -right-2 sm:right-0 mt-3 w-[calc(100vw-2rem)] max-w-[360px] sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-40 overflow-hidden animate-in fade-in-0 zoom-in-95">
                 <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                   <div className="flex items-center gap-2">
                     <h3 className="font-bold text-slate-900 text-sm">Notifications</h3>
@@ -662,7 +720,7 @@ export function Header() {
 
         {/* Outcome Details Modal */}
         <Dialog open={!!selectedOutcome} onOpenChange={(open) => !open && setSelectedOutcome(null)}>
-          <DialogContent className="max-w-xl w-full p-6 sm:p-7 rounded-[24px] bg-white border-none shadow-2xl space-y-0 gap-0 outline-none">
+          <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-xl max-h-[90vh] overflow-y-auto p-4 sm:p-7 rounded-[20px] sm:rounded-[24px] bg-white border-none shadow-2xl space-y-0 gap-0 outline-none">
             {selectedOutcome && (
               <div className="space-y-5">
                 <DialogHeader className="space-y-1 text-left">
@@ -693,7 +751,7 @@ export function Header() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3 pt-2 border-t border-slate-200/60">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 pt-2 border-t border-slate-200/60">
                     <div className="p-3 bg-white rounded-xl border border-slate-200 text-center">
                       <p className="text-[11px] font-semibold text-slate-500">Previous Score</p>
                       <p className="text-xl font-extrabold text-slate-800 mt-0.5">{selectedOutcome.previousScore}</p>
@@ -741,7 +799,14 @@ export function Header() {
                   </div>
                 )}
 
-                <div className="flex items-center justify-end gap-3 pt-2">
+                <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedOutcome(null)}
+                    className="h-10 px-4 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    Close
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -752,13 +817,6 @@ export function Header() {
                   >
                     Go to Outcomes Dashboard
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedOutcome(null)}
-                    className="h-10 px-4 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
-                  >
-                    Close
-                  </button>
                 </div>
               </div>
             )}
@@ -767,9 +825,9 @@ export function Header() {
 
         {/* Messages Pill Button */}
         <Link href="/messages">
-          <button type="button" className="inline-flex items-center gap-2 rounded-full bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold text-sm h-10 px-5 shadow-md shadow-[#5e2be2]/25 transition-all hover:scale-105 active:scale-95 cursor-pointer">
-            <MessageSquare className="w-4 h-4" />
-            <span>Messages</span>
+          <button type="button" className="inline-flex items-center gap-2 rounded-full bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold text-xs sm:text-sm h-9 sm:h-10 px-3.5 sm:px-5 shadow-md shadow-[#5e2be2]/25 transition-all hover:scale-105 active:scale-95 cursor-pointer">
+            <MessageSquare className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+            <span className="hidden sm:inline">Messages</span>
           </button>
         </Link>
 
@@ -785,16 +843,37 @@ export function Header() {
           </div>
         </Link>
       </div>
+    </div>
+
+      {/* Mobile Search Bar below top header tabs */}
+      <div className="px-3 pb-3 sm:hidden">
+        <div className="relative group z-30">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-[#5e2be2] transition-colors" />
+          <input 
+            type="text" 
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setIsSearchOpen(true);
+            }}
+            onFocus={() => setIsSearchOpen(true)}
+            placeholder="Search clients, sessions, activities..." 
+            className="w-full bg-slate-100/80 hover:bg-slate-100 border border-slate-200/80 focus:bg-white focus:border-[#5e2be2] focus:ring-2 focus:ring-[#5e2be2]/10 rounded-full pl-9 pr-4 py-2 text-xs transition-all outline-none"
+          />
+        </div>
+      </div>
     </header>
   );
 }
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-[#f8f9fd] flex text-slate-800 antialiased">
-      <Sidebar />
-      <div className="flex-1 flex flex-col md:pl-64 min-w-0">
-        <Header />
+      <Sidebar mobileOpen={mobileOpen} onCloseMobile={() => setMobileOpen(false)} />
+      <div className="flex-1 flex flex-col pl-0 md:pl-64 min-w-0">
+        <Header onOpenMobileSidebar={() => setMobileOpen(true)} />
         <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto overflow-y-auto">
           {children}
         </main>

@@ -754,7 +754,7 @@ export default function Calendar() {
 
       {/* Assign Client to Open Slot Modal */}
       <Dialog open={assignModalOpen} onOpenChange={setAssignModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl p-6 border-0 shadow-2xl">
+        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-md rounded-3xl p-4 sm:p-6 border-0 shadow-2xl max-h-[92vh] overflow-y-auto">
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
               <Plus className="w-5 h-5 text-[#5e2be2]" />
@@ -822,7 +822,7 @@ export default function Calendar() {
 
       {/* Cancel Booking Confirmation Popup (Cancel / Yes) */}
       <AlertDialog open={confirmRescheduleOpen} onOpenChange={setConfirmRescheduleOpen}>
-        <AlertDialogContent className="rounded-3xl p-6 max-w-md border-0 shadow-2xl bg-white">
+        <AlertDialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-3xl p-4 sm:p-6 border-0 shadow-2xl bg-white max-h-[92vh] overflow-y-auto">
           <AlertDialogHeader className="space-y-2">
             <AlertDialogTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
               <Ban className="w-5 h-5 text-rose-600" />
@@ -857,7 +857,7 @@ export default function Calendar() {
 
       {/* Reschedule Session Dialog Modal */}
       <Dialog open={rescheduleModalOpen} onOpenChange={setRescheduleModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl p-6 border-0 shadow-2xl">
+        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-md rounded-3xl p-4 sm:p-6 border-0 shadow-2xl max-h-[92vh] overflow-y-auto">
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
               <CalendarIcon className="w-5 h-5 text-[#5e2be2]" />

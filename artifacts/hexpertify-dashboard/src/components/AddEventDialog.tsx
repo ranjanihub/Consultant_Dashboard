@@ -109,18 +109,18 @@ export default function AddEventDialog({ open, onOpenChange, defaultDate, onAddS
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden rounded-2xl">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-lg max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl">
         {/* Purple header */}
-        <div className="bg-primary px-8 pt-8 pb-6 text-white">
+        <div className="bg-primary px-4 sm:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6 text-white shrink-0">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-white">Add Event</DialogTitle>
-            <DialogDescription className="text-white/70 mt-1">
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-white">Add Event</DialogTitle>
+            <DialogDescription className="text-white/70 text-xs sm:text-sm mt-1">
               Schedule a session, block time, or mark availability.
             </DialogDescription>
           </DialogHeader>
 
           {/* Event type selector */}
-          <div className="flex gap-2 mt-5">
+          <div className="grid grid-cols-2 sm:flex flex-wrap gap-2 mt-4 sm:mt-5">
             {EVENT_TYPES.map(t => {
               const Icon = t.icon;
               const active = form.type === t.value;
@@ -144,7 +144,7 @@ export default function AddEventDialog({ open, onOpenChange, defaultDate, onAddS
         </div>
 
         {/* Form body */}
-        <div className="px-8 py-7 space-y-5">
+        <div className="px-4 sm:px-8 py-5 sm:py-7 space-y-4 sm:space-y-5 flex-1 overflow-y-auto max-h-[60vh]">
           {isSession ? (
             <div className="space-y-1.5">
               <Label>Client <span className="text-destructive">*</span></Label>
@@ -175,7 +175,7 @@ export default function AddEventDialog({ open, onOpenChange, defaultDate, onAddS
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-1.5">
               <Label>Start time <span className="text-destructive">*</span></Label>
               <Select value={form.start} onValueChange={v => set("start", v)}>
@@ -224,7 +224,7 @@ export default function AddEventDialog({ open, onOpenChange, defaultDate, onAddS
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-8 py-5 border-t border-border bg-secondary/30">
+        <div className="flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5 border-t border-border bg-secondary/30 shrink-0">
           <Button variant="ghost" onClick={handleClose} className="text-muted-foreground">
             Cancel
           </Button>

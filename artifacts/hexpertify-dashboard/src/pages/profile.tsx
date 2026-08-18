@@ -113,7 +113,7 @@ export default function Profile() {
           <div className="absolute top-0 right-0 w-[350px] h-[350px] bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         </div>
 
-        <CardContent className="px-8 pb-0">
+        <CardContent className="px-4 sm:px-8 pb-0">
           {/* avatar row */}
           <div className="flex flex-col sm:flex-row sm:items-end gap-5 mb-6">
             <div className="relative shrink-0 -mt-14">
@@ -149,7 +149,7 @@ export default function Profile() {
           </div>
 
           {/* stat strip */}
-          <div className="flex items-stretch border-t border-border divide-x divide-border -mx-8">
+          <div className="flex items-stretch border-t border-border divide-x divide-border -mx-6 sm:-mx-8 overflow-x-auto scrollbar-none">
             <StatPill icon={Briefcase} value={`${expVal}y`}  label="Experience" />
             <StatPill icon={Users}     value="24"            label="Active Clients" />
             <StatPill icon={IndianRupee} value={`₹${feeVal}`} label="Per Session" />
@@ -216,7 +216,7 @@ export default function Profile() {
         {/* Right column — edit form */}
         <div className="lg:col-span-2">
           <Card className="shadow-sm border-border rounded-3xl">
-            <CardContent className="p-8">
+            <CardContent className="p-4 sm:p-8">
               <SectionHeading>Edit Profile</SectionHeading>
 
               <Form {...form}>

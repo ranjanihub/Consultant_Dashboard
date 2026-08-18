@@ -615,7 +615,7 @@ export default function ActivitiesPage() {
       {/* Preview Activity Modal with Interactive Game Player */}
       <Dialog open={!!activeActivity} onOpenChange={() => setActiveActivity(null)}>
         {activeActivity && (
-          <DialogContent className="max-w-2xl p-0 rounded-3xl overflow-hidden border-none shadow-2xl bg-slate-950 text-white max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl p-0 rounded-3xl overflow-hidden border-none shadow-2xl bg-slate-950 text-white max-h-[92vh] overflow-y-auto">
             {/* Header Banner */}
             <div className="relative h-40 w-full overflow-hidden bg-slate-900 shrink-0">
               <img
@@ -708,10 +708,10 @@ export default function ActivitiesPage() {
         )}
       </Dialog>
 
-      {/* Assign Activity & Select Frequency Multi-Step Modal */}
+      {/* PER-CLIENT FREQUENCY ASSIGNMENT MODAL */}
       <Dialog open={!!assignModalActivity} onOpenChange={() => { setAssignModalActivity(null); setAssignStep(1); }}>
         {assignModalActivity && (
-          <DialogContent className="max-w-lg p-6 sm:p-7 rounded-3xl bg-white border-none shadow-2xl">
+          <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-lg p-4 sm:p-7 rounded-3xl bg-white border-none shadow-2xl max-h-[92vh] overflow-y-auto">
             {/* Header with Step indicator */}
             <DialogHeader className="pb-2">
               <div className="flex items-center justify-between">
@@ -926,7 +926,7 @@ export default function ActivitiesPage() {
       {/* Edit Activity Modal */}
       <Dialog open={!!editModalActivity} onOpenChange={() => setEditModalActivity(null)}>
         {editModalActivity && (
-          <DialogContent className="max-w-lg p-6 sm:p-7 rounded-3xl bg-white border-none shadow-2xl">
+          <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-lg p-4 sm:p-7 rounded-3xl bg-white border-none shadow-2xl max-h-[92vh] overflow-y-auto">
             <DialogHeader className="pb-2">
               <DialogTitle className="text-2xl font-bold text-slate-900 tracking-tight">
                 Edit Activity

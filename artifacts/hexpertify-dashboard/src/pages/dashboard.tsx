@@ -248,7 +248,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Hero Banner (Compact & Streamlined) */}
-      <div className="rounded-2xl bg-gradient-to-r from-[#4f28d9] via-[#5e2be2] to-[#3b1799] p-5 md:p-6 text-white shadow-lg overflow-hidden relative">
+      <div className="rounded-2xl bg-gradient-to-r from-[#4f28d9] via-[#5e2be2] to-[#3b1799] p-4 sm:p-6 text-white shadow-lg overflow-hidden relative">
         <div className="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-1/4 w-48 h-48 bg-black/10 rounded-full blur-3xl translate-y-1/2"></div>
 
@@ -311,7 +311,7 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title="Sessions today"
           value={stats.sessionsToday}
@@ -353,14 +353,14 @@ export default function Dashboard() {
       {/* Schedule & Reports */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 shadow-sm border-border">
-          <CardHeader className="flex flex-row items-center justify-between pb-4">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4">
             <div>
-              <CardTitle className="text-xl">{currentSchedule.title}</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">{currentSchedule.title}</CardTitle>
               <CardDescription>
                 {activeSessionList.length} sessions
               </CardDescription>
             </div>
-            <Tabs value={scheduleTab} onValueChange={(val) => setScheduleTab(val as 'today' | 'week' | 'month')} className="w-[200px]">
+            <Tabs value={scheduleTab} onValueChange={(val) => setScheduleTab(val as 'today' | 'week' | 'month')} className="w-full sm:w-[200px]">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="today">Today</TabsTrigger>
                 <TabsTrigger value="week">Week</TabsTrigger>
@@ -679,7 +679,7 @@ function StatCard({
 }) {
   return (
     <Card className="shadow-sm border-border overflow-hidden group">
-      <CardContent className="p-5">
+      <CardContent className="p-4 sm:p-5">
         <div className="flex justify-between items-start mb-4">
           <div className="p-2 bg-secondary rounded-lg text-primary">{icon}</div>
           <Badge variant="secondary" className={cn(

@@ -88,9 +88,9 @@ export default function Reviews() {
         icon={<Star className="w-4 h-4 text-purple-200" />}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         <Card className="shadow-sm border-border bg-gradient-to-b from-amber-50/50 to-white">
-          <CardContent className="p-8 flex flex-col items-center justify-center text-center">
+          <CardContent className="p-5 sm:p-8 flex flex-col items-center justify-center text-center">
             {summaryLoading ? (
               <Skeleton className="h-32 w-32 rounded-full" />
             ) : (

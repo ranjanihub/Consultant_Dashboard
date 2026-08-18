@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Send, Search, Circle, MessageSquare } from "lucide-react";
+import { Send, Search, Circle, MessageSquare, ArrowLeft } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,6 +82,7 @@ export default function Messages() {
   const [activeChatId, setActiveChatId] = useState<number>(1);
   const [inputText, setInputText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
 
   const activeChat = chats.find(c => c.id === activeChatId) || chats[0];
 
@@ -117,9 +118,9 @@ export default function Messages() {
   );
 
   return (
-    <div className="h-[calc(100vh-140px)] min-h-[500px] flex border border-border rounded-xl bg-card overflow-hidden shadow-sm">
+    <div className="h-[calc(100vh-100px)] md:h-[calc(100vh-140px)] min-h-[450px] flex border border-border rounded-xl bg-card overflow-hidden shadow-sm">
       {/* Left Conversations Sidebar */}
-      <div className="w-[320px] border-r border-border flex flex-col bg-white shrink-0">
+      <div className={`w-full md:w-[320px] border-r border-border flex-col bg-white shrink-0 ${mobileView === 'chat' ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-4 border-b border-border">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -141,6 +142,7 @@ export default function Messages() {
                 key={chat.id}
                 onClick={() => {
                   setActiveChatId(chat.id);
+                  setMobileView('chat');
                   // Mark as read
                   setChats(prev => prev.map(c => c.id === chat.id ? { ...c, unreadCount: 0 } : c));
                 }}
@@ -177,21 +179,29 @@ export default function Messages() {
           <img 
             src="/hexpertify-logo.png" 
             alt="Hexpertify Logo" 
-            className="h-12 w-auto object-contain max-h-12" 
+            className="h-10 w-auto object-contain max-h-10" 
           />
         </div>
       </div>
 
       {/* Right Chat Window */}
-      <div className="flex-1 flex flex-col bg-secondary/10">
+      <div className={`flex-1 flex-col bg-secondary/10 ${mobileView === 'list' ? 'hidden md:flex' : 'flex'}`}>
         {/* Chat header */}
-        <div className="px-6 py-4 bg-white border-b border-border flex items-center justify-between shadow-xs">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4 bg-white border-b border-border flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 border border-border">
-              <AvatarFallback className="bg-primary/5 text-primary font-semibold text-sm">{getInitials(activeChat.name)}</AvatarFallback>
+            <button
+              onClick={() => setMobileView('list')}
+              className="p-1.5 rounded-xl text-slate-600 hover:bg-slate-100 md:hidden cursor-pointer"
+              title="Back to Conversations"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <Avatar className="h-9 w-9 sm:h-10 sm:w-10 border border-border">
+              <AvatarFallback className="bg-primary/5 text-primary font-semibold text-xs sm:text-sm">{getInitials(activeChat.name)}</AvatarFallback>
             </Avatar>
             <div>
-              <h4 className="font-bold text-[15px] text-foreground leading-snug">{activeChat.name}</h4>
+              <h4 className="font-bold text-xs sm:text-[15px] text-foreground leading-snug">{activeChat.name}</h4>
+              <span className="text-[10px] text-emerald-600 font-semibold block">Online</span>
             </div>
           </div>
         </div>

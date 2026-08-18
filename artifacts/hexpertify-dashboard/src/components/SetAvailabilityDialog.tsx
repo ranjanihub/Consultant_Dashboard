@@ -113,22 +113,22 @@ export default function SetAvailabilityDialog({ open, onOpenChange }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden rounded-2xl">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl">
         {/* Purple header */}
-        <div className="bg-primary px-8 pt-8 pb-6 text-white">
+        <div className="bg-primary px-4 sm:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6 text-white shrink-0">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-white">Set Availability</DialogTitle>
-            <DialogDescription className="text-white/70 mt-1">
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-white">Set Availability</DialogTitle>
+            <DialogDescription className="text-white/70 text-xs sm:text-sm mt-1">
               Configure your weekly working hours for session bookings.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex items-center gap-3 mt-5">
-            <div className="flex gap-1.5">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-4 sm:mt-5">
+            <div className="flex flex-wrap gap-1 sm:gap-1.5">
               {DAYS.map((d) => (
                 <div
                   key={d.key}
                   className={cn(
-                    "w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold transition-all",
+                    "w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-semibold transition-all",
                     schedule[d.key].enabled
                       ? "bg-white text-primary"
                       : "bg-white/10 text-white/40"
@@ -138,23 +138,23 @@ export default function SetAvailabilityDialog({ open, onOpenChange }: Props) {
                 </div>
               ))}
             </div>
-            <span className="text-white/70 text-sm ml-1">{enabledCount} days active</span>
+            <span className="text-white/70 text-xs sm:text-sm ml-1">{enabledCount} days active</span>
           </div>
         </div>
 
         {/* Day rows */}
-        <div className="divide-y divide-border max-h-[420px] overflow-y-auto">
+        <div className="divide-y divide-border flex-1 max-h-[55vh] overflow-y-auto">
           {DAYS.map((d) => {
             const cfg = schedule[d.key];
             return (
               <div
                 key={d.key}
                 className={cn(
-                  "px-8 py-4 transition-colors",
+                  "px-4 sm:px-8 py-3.5 sm:py-4 transition-colors",
                   cfg.enabled ? "bg-white" : "bg-secondary/30"
                 )}
               >
-                <div className="flex items-start gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-2.5 sm:gap-4">
                   {/* Toggle + label */}
                   <div className="flex items-center gap-3 w-32 pt-1 shrink-0">
                     <Switch
@@ -176,13 +176,13 @@ export default function SetAvailabilityDialog({ open, onOpenChange }: Props) {
                   {cfg.enabled ? (
                     <div className="flex flex-col gap-2 flex-1">
                       {cfg.slots.map((slot, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <Clock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <div key={idx} className="flex flex-wrap items-center gap-2">
+                          <Clock className="w-3.5 h-3.5 text-muted-foreground shrink-0 hidden sm:inline" />
                           <Select
                             value={slot.start}
                             onValueChange={(v) => updateSlot(d.key, idx, "start", v)}
                           >
-                            <SelectTrigger className="h-8 w-[120px] text-sm">
+                            <SelectTrigger className="h-8 w-[110px] text-xs sm:text-sm">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -196,7 +196,7 @@ export default function SetAvailabilityDialog({ open, onOpenChange }: Props) {
                             value={slot.end}
                             onValueChange={(v) => updateSlot(d.key, idx, "end", v)}
                           >
-                            <SelectTrigger className="h-8 w-[120px] text-sm">
+                            <SelectTrigger className="h-8 w-[110px] text-xs sm:text-sm">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -207,7 +207,7 @@ export default function SetAvailabilityDialog({ open, onOpenChange }: Props) {
                           </Select>
                           <button
                             onClick={() => removeSlot(d.key, idx)}
-                            className="text-muted-foreground hover:text-destructive transition-colors ml-1"
+                            className="text-muted-foreground hover:text-destructive transition-colors ml-1 p-1"
                             disabled={cfg.slots.length === 1}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -223,7 +223,7 @@ export default function SetAvailabilityDialog({ open, onOpenChange }: Props) {
                       </button>
                     </div>
                   ) : (
-                    <span className="text-muted-foreground text-sm pt-1 italic">Unavailable</span>
+                    <span className="text-muted-foreground text-xs sm:text-sm pt-1 italic">Unavailable</span>
                   )}
                 </div>
               </div>
@@ -232,7 +232,7 @@ export default function SetAvailabilityDialog({ open, onOpenChange }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-8 py-5 border-t border-border bg-secondary/30">
+        <div className="flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5 border-t border-border bg-secondary/30 shrink-0">
           <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-muted-foreground">
             Cancel
           </Button>

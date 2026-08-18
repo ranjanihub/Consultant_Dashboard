@@ -683,7 +683,7 @@ export default function Outcomes() {
 
       {/* Interactive Simulation Drawer Modal */}
       <Dialog open={showSimulator} onOpenChange={setShowSimulator}>
-        <DialogContent className="max-w-md w-full p-6 rounded-[24px] bg-white border-none shadow-2xl space-y-4 outline-none">
+        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-md p-4 sm:p-6 rounded-[20px] sm:rounded-[24px] bg-white border-none shadow-2xl space-y-4 outline-none max-h-[92vh] overflow-y-auto">
           <DialogHeader className="text-left space-y-1">
             <DialogTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
               <Sliders className="w-5 h-5 text-[#5e2be2]" />
@@ -790,7 +790,7 @@ export default function Outcomes() {
 
       {/* Outcome Detail Modal */}
       <Dialog open={!!selectedOutcome} onOpenChange={(open) => !open && setSelectedOutcome(null)}>
-        <DialogContent className="max-w-xl w-full p-6 sm:p-7 rounded-[24px] bg-white border-none shadow-2xl space-y-0 gap-0 outline-none">
+        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-xl p-4 sm:p-7 rounded-[20px] sm:rounded-[24px] bg-white border-none shadow-2xl space-y-0 gap-0 outline-none max-h-[92vh] overflow-y-auto">
           {selectedOutcome && (
             <div className="space-y-5">
               <DialogHeader className="space-y-1 text-left">
@@ -821,7 +821,7 @@ export default function Outcomes() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 pt-2 border-t border-slate-200/60">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 pt-2 border-t border-slate-200/60">
                   <div className="p-3 bg-white rounded-xl border border-slate-200 text-center">
                     <p className="text-[11px] font-semibold text-slate-500">Previous Score</p>
                     <p className="text-xl font-extrabold text-slate-800 mt-0.5">{selectedOutcome.previousScore}</p>

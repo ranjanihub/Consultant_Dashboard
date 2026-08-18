@@ -1743,7 +1743,7 @@ export default function Assessments() {
 
             <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700">
               {/* Meta Box */}
-              <div className="grid grid-cols-3 gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
                 <div>
                   <span className="text-slate-400 block font-semibold">Target Condition</span>
                   <span className="font-extrabold text-slate-900 text-sm">{activeProtocolModal.targetCondition}</span>

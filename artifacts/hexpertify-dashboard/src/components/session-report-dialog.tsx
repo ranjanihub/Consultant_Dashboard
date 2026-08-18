@@ -319,14 +319,14 @@ export function SessionReportDialog({ open, onOpenChange, sessionId, clientName 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden bg-white">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-[700px] max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl bg-white">
         {/* HEADER matching app theme */}
-        <div className="bg-secondary/30 px-6 py-4 border-b border-border flex flex-col gap-4">
+        <div className="bg-secondary/30 px-4 sm:px-6 py-3.5 sm:py-4 border-b border-border flex flex-col gap-3 sm:gap-4 shrink-0">
           <DialogHeader className="text-left space-y-1">
-            <DialogTitle className="text-xl font-semibold tracking-tight">
+            <DialogTitle className="text-lg sm:text-xl font-semibold tracking-tight">
               Session Report: {clientName}
             </DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground">
+            <DialogDescription className="text-xs sm:text-sm text-muted-foreground">
               Step {step} of {totalSteps}: {STEPS[step - 1].title}
             </DialogDescription>
           </DialogHeader>
@@ -345,7 +345,7 @@ export function SessionReportDialog({ open, onOpenChange, sessionId, clientName 
         </div>
 
         {/* STEP CONTENT CONTAINER */}
-        <div className="px-6 py-6 max-h-[60vh] overflow-y-auto">
+        <div className="px-4 sm:px-6 py-4 sm:py-6 flex-1 max-h-[60vh] overflow-y-auto">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
