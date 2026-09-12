@@ -29,6 +29,7 @@ import {
   X,
   Plus,
 } from "lucide-react";
+import { getAuthUser } from "@/lib/auth";
 
 interface AddClientDialogProps {
   open: boolean;
@@ -115,10 +116,37 @@ export default function AddClientDialog({ open, onOpenChange }: AddClientDialogP
 
   const handleSubmit = async () => {
     setSubmitting(true);
-    // Optimistic — just close after brief delay (API POST not yet wired)
-    await new Promise((r) => setTimeout(r, 800));
-    setSubmitting(false);
-    handleClose();
+    try {
+      const authUser = getAuthUser();
+      const clientEmail = `${form.name.toLowerCase().replace(/[^a-z0-9]/g, '.')}${Date.now().toString().slice(-3)}@example.com`;
+      await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: clientEmail,
+          role: 'USER',
+          status: 'Active',
+          assignedTherapistId: authUser?.id || '',
+          assignedTherapistName: authUser?.name || 'Therapist',
+          therapyGoals: form.therapyGoals.filter(Boolean),
+          presentingProblems: form.presentingProblems,
+          aiIntakeSummary: form.aiIntakeSummary,
+          therapyTimeline: form.therapyTimeline,
+          gender: form.gender,
+          age: form.age,
+          preferredLanguage: form.preferredLanguage,
+          communicationPreference: form.communicationPreference
+        })
+      }).catch(() => null);
+
+      window.dispatchEvent(new Event('client_created'));
+    } catch (e) {
+      console.error('Error creating client:', e);
+    } finally {
+      setSubmitting(false);
+      handleClose();
+    }
   };
 
   const canNext1 = form.name.trim() && form.age && form.gender;

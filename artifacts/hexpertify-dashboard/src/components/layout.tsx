@@ -110,7 +110,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const confirmSignOut = () => {
     setShowSignOutDialog(false);
     logoutUser();
-    setLocation("/login");
+    window.location.href = "/client/login";
   };
 
   const isItemActive = (href: string) => {
@@ -245,8 +245,8 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
             {/* Options Popover Menu */}
             <div className="absolute bottom-full left-3 right-3 mb-2 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-40 animate-in fade-in-0 slide-in-from-bottom-2">
               <div className="p-3 border-b border-slate-100 mb-1">
-                <p className="text-xs font-bold text-slate-900">{user?.name || "Dr. Alex Harrison, PsyD"}</p>
-                <p className="text-[11px] text-slate-500 font-medium truncate">{user?.email || "alex.harrison@hexpertify.com"}</p>
+                <p className="text-xs font-bold text-slate-900">{user?.name || "Therapist Consultant"}</p>
+                <p className="text-[11px] text-slate-500 font-medium truncate">{user?.email || "consultant@hexpertify.com"}</p>
               </div>
 
               <button

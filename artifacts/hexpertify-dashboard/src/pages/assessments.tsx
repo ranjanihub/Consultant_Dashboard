@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { getAuthUser } from '@/lib/auth';
 import {
   Plus,
   Search,
@@ -107,6 +108,7 @@ export interface ClinicalAssessment {
 
 export interface AssessmentSubmission {
   id: string;
+  _id?: string;
   assessmentId: string;
   assessmentAcronym: string;
   assessmentTitle: string;
@@ -117,10 +119,12 @@ export interface AssessmentSubmission {
   completedAt: string;
   totalScore: number;
   maxScore: number;
+  severity?: string;
   severityLabel: string;
   severityColor: string;
   flaggedRisk: boolean;
-  answers: { questionId: string; questionText: string; answerLabel: string; score: number }[];
+  notes?: string;
+  answers: { questionId?: string; questionText: string; answerLabel: string; score?: number }[];
 }
 
 export interface AssessmentAssignment {
@@ -950,10 +954,81 @@ export const mockAssignmentsData: AssessmentAssignment[] = [
 ];
 
 export default function Assessments() {
+  const authUser = getAuthUser();
+
   // Main State
   const [assessments, setAssessments] = useState<ClinicalAssessment[]>(mockAssessmentsData);
-  const [submissions] = useState<AssessmentSubmission[]>(mockSubmissionsData);
-  const [assignments, setAssignments] = useState<AssessmentAssignment[]>(mockAssignmentsData);
+  const [submissions, setSubmissions] = useState<AssessmentSubmission[]>([]);
+  const [assignments, setAssignments] = useState<AssessmentAssignment[]>([]);
+  const [clientList, setClientList] = useState<string[]>(["Ranjani B"]);
+  const [clientObjects, setClientObjects] = useState<any[]>([]);
+
+  // Load real submissions, assignments, and respected clients from MongoDB Atlas
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const myName = authUser?.name || 'Sadaf Bhimani';
+        const myId = String(authUser?.id || '');
+
+        const [assessRes, usersRes, bookingsRes] = await Promise.all([
+          fetch(`/api/assessments?consultantName=${encodeURIComponent(myName)}`).then(r => r.ok ? r.json() : { submissions: [], assignments: [] }).catch(() => ({ submissions: [], assignments: [] })),
+          fetch('/api/users').then(r => r.ok ? r.json() : { users: [] }).catch(() => ({ users: [] })),
+          fetch('/api/bookings').then(r => r.ok ? r.json() : { bookings: [] }).catch(() => ({ bookings: [] }))
+        ]);
+
+        if (Array.isArray(assessRes?.submissions)) {
+          setSubmissions(assessRes.submissions);
+        }
+        if (Array.isArray(assessRes?.assignments)) {
+          setAssignments(assessRes.assignments);
+        }
+
+        // Build list of respected clients
+        const rawUsers = Array.isArray(usersRes?.users) ? usersRes.users : [];
+        const rawBookings = Array.isArray(bookingsRes?.bookings) ? bookingsRes.bookings : [];
+
+        const myBookings = rawBookings.filter((b: any) => {
+          const bCid = String(b.consultantId || b.therapistId || '').toLowerCase().trim();
+          const bCname = String(b.consultantName || b.therapistName || '').toLowerCase().trim();
+          return (myId && bCid === myId) || (myName && bCname.includes(myName.toLowerCase())) || (myName && myName.toLowerCase().includes(bCname) && bCname.length > 3);
+        });
+
+        const myUsers = rawUsers.filter((u: any) => {
+          if (String(u.role).toUpperCase() === 'ADMIN') return false;
+          const uAssignedName = String(u.assignedTherapistName || u.therapist || '').toLowerCase().trim();
+          const uAssignedId = String(u.assignedTherapistId || '').toLowerCase().trim();
+          const isAssigned = (myId && uAssignedId === myId) || (myName && uAssignedName.includes(myName.toLowerCase()));
+          const hasBooking = myBookings.some((b: any) => 
+            (b.clientEmail && u.email && b.clientEmail.toLowerCase() === u.email.toLowerCase()) ||
+            (b.clientName && u.name && b.clientName.toLowerCase() === u.name.toLowerCase())
+          );
+          return isAssigned || hasBooking;
+        });
+
+        const cMap = new Map<string, any>();
+        myUsers.forEach((u: any) => {
+          const key = u.name || u.email;
+          if (key) cMap.set(key, { id: u.id || u._id, name: u.name || 'Client', email: u.email });
+        });
+        myBookings.forEach((b: any) => {
+          if (b.clientName && !cMap.has(b.clientName) && b.clientName !== 'Open Consultation Slot') {
+            cMap.set(b.clientName, { id: b.clientId || b.id, name: b.clientName, email: b.clientEmail });
+          }
+        });
+
+        if (cMap.size === 0) {
+          cMap.set("Ranjani B", { id: "client-ranjani", name: "Ranjani B", email: "ranjaniranjani5694@gmail.com" });
+        }
+
+        const cObjs = Array.from(cMap.values());
+        setClientObjects(cObjs);
+        setClientList(cObjs.map(c => c.name));
+      } catch (err) {
+        console.error('Failed to load assessment data:', err);
+      }
+    }
+    loadData();
+  }, [authUser?.name, authUser?.id]);
 
   // Active Navigation Tab: 'library' | 'submissions' | 'assignments'
   const [activeTab, setActiveTab] = useState<'library' | 'submissions' | 'assignments'>('library');
@@ -977,12 +1052,8 @@ export default function Assessments() {
   const [newCondition, setNewCondition] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [newEstimatedMinutes, setNewEstimatedMinutes] = useState(5);
-  const [newAuthor, setNewAuthor] = useState('Dr. Alex Harrison');
-  const [newQuestions, setNewQuestions] = useState<string[]>([
-    'Feeling nervous, anxious, or on edge over the past week',
-    'Difficulty controlling or stopping intrusive thoughts',
-    'Worrying too much about different things',
-  ]);
+  const [newAuthor, setNewAuthor] = useState(authUser?.name || 'Licensed Clinical Psychologist');
+  const [newQuestions, setNewQuestions] = useState<string[]>(['']);
   const [optionScalePreset, setOptionScalePreset] = useState<string>('0-3');
   const [customOptions, setCustomOptions] = useState<string[]>([
     'Not at all',
@@ -1078,7 +1149,7 @@ export default function Assessments() {
       estimatedMinutes: Number(newEstimatedMinutes) || 5,
       validityScore: "Cronbach's α = 0.88",
       targetPopulation: 'Assigned clients',
-      authorOrSource: newAuthor.trim() || 'Dr. Alex Harrison',
+      authorOrSource: newAuthor.trim() || authUser?.name || 'Licensed Clinical Psychologist',
       status: 'Active',
       assignedClientCount: 0,
       createdAt: new Date().toISOString().split('T')[0],
@@ -1097,11 +1168,7 @@ export default function Assessments() {
     setNewAcronym('');
     setNewCondition('');
     setNewDescription('');
-    setNewQuestions([
-      'Feeling nervous, anxious, or on edge over the past week',
-      'Difficulty controlling or stopping intrusive thoughts',
-      'Worrying too much about different things',
-    ]);
+    setNewQuestions(['']);
     showToast(`New assessment "${acronym} - ${newTitle}" created successfully!`);
   };
 
@@ -1115,7 +1182,7 @@ export default function Assessments() {
     flagged: boolean;
   } | null>(null);
 
-  // Multi-Step Assignment Modal State (Identical to Activities page)
+  // Multi-Step Assignment Modal State
   const [assignModalAssessment, setAssignModalAssessment] = useState<ClinicalAssessment | null>(null);
   const [assignStep, setAssignStep] = useState<1 | 2>(1);
   const [selectedClientsToAssign, setSelectedClientsToAssign] = useState<string[]>([]);
@@ -1128,7 +1195,7 @@ export default function Assessments() {
   const openAssignModal = (assessment: ClinicalAssessment) => {
     setAssignModalAssessment(assessment);
     setAssignStep(1);
-    const initialClient = CLIENT_LIST[0] || "Sarah Jenkins";
+    const initialClient = clientList[0] || "Ranjani B";
     setSelectedClientsToAssign([initialClient]);
     setClientFrequencies({
       [initialClient]: { frequency: "Weekly", timeOfDay: "Morning (8:00 AM)" },
@@ -1155,12 +1222,12 @@ export default function Assessments() {
   };
 
   const toggleSelectAllClients = () => {
-    if (selectedClientsToAssign.length === CLIENT_LIST.length) {
-      setSelectedClientsToAssign([CLIENT_LIST[0]]);
+    if (selectedClientsToAssign.length === clientList.length) {
+      setSelectedClientsToAssign([clientList[0] || "Ranjani B"]);
     } else {
-      setSelectedClientsToAssign([...CLIENT_LIST]);
+      setSelectedClientsToAssign([...clientList]);
       const newFreqs: Record<string, { frequency: string; timeOfDay: string }> = {};
-      CLIENT_LIST.forEach((c) => {
+      clientList.forEach((c) => {
         newFreqs[c] = clientFrequencies[c] || { frequency: "Weekly", timeOfDay: "Morning (8:00 AM)" };
       });
       setClientFrequencies(newFreqs);
@@ -1200,19 +1267,21 @@ export default function Assessments() {
     }));
   };
 
-  const handleConfirmAssignment = () => {
+  const handleConfirmAssignment = async () => {
     if (!assignModalAssessment || selectedClientsToAssign.length === 0) return;
 
     const newAssignments: AssessmentAssignment[] = selectedClientsToAssign.map((clientName, idx) => {
       const cfg = clientFrequencies[clientName] || { frequency: "Weekly", timeOfDay: "Morning (8:00 AM)" };
+      const matchedClient = clientObjects.find(c => c.name === clientName);
       return {
         id: `ASN-${Date.now().toString().slice(-4)}-${idx}`,
         assessmentId: assignModalAssessment.id,
         assessmentAcronym: assignModalAssessment.acronym,
         assessmentTitle: assignModalAssessment.title,
-        clientId: `CL-${100 + idx}`,
+        clientId: matchedClient?.id || `CL-${100 + idx}`,
         clientName,
-        therapistName: "Dr. Alex Harrison",
+        clientEmail: matchedClient?.email || '',
+        therapistName: authUser?.name || "Licensed Clinical Psychologist",
         assignedDate: new Date().toISOString().split("T")[0],
         dueDate: new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0],
         frequency: cfg.frequency as any,
@@ -1221,6 +1290,27 @@ export default function Assessments() {
     });
 
     setAssignments((prev) => [...newAssignments, ...prev]);
+
+    // Persist to Backend API
+    for (const asn of newAssignments) {
+      fetch('/api/assessments/assign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assessmentId: asn.assessmentId,
+          assessmentAcronym: asn.assessmentAcronym,
+          assessmentTitle: asn.assessmentTitle,
+          clientId: asn.clientId,
+          clientName: asn.clientName,
+          clientEmail: (asn as any).clientEmail,
+          consultantId: authUser?.id || '',
+          consultantName: authUser?.name || 'Therapist',
+          dueDate: asn.dueDate,
+          frequency: asn.frequency
+        })
+      }).catch(() => {});
+    }
+
     setAssignModalAssessment(null);
     setAssignStep(1);
     showToast(
@@ -1358,7 +1448,14 @@ export default function Assessments() {
       >
         <button
           type="button"
-          onClick={() => setIsCreateAssessmentOpen(true)}
+          onClick={() => {
+            setNewTitle('');
+            setNewAcronym('');
+            setNewCondition('');
+            setNewDescription('');
+            setNewQuestions(['']);
+            setIsCreateAssessmentOpen(true);
+          }}
           className="px-4 py-2.5 bg-white text-[#5e2be2] hover:bg-purple-50 font-bold text-xs rounded-xl shadow-md flex items-center gap-2 transition-all cursor-pointer border border-purple-200 shrink-0"
         >
           <Plus className="w-4 h-4" />
@@ -1609,203 +1706,226 @@ export default function Assessments() {
             </span>
           </div>
 
-          {/* Mobile View Evaluation Cards */}
-          <div className="space-y-3.5 md:hidden">
-            {filteredSubmissions.map((sub) => (
-              <div key={sub.id} className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
-                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-                  <div>
-                    <h3 className="font-extrabold text-slate-900 text-sm">{sub.clientName}</h3>
-                    <span className="text-[11px] text-slate-500">{sub.completedAt}</span>
-                  </div>
-                  <span className="px-2.5 py-1 bg-slate-100 text-slate-800 font-extrabold text-xs rounded-md border border-slate-200">
-                    {sub.assessmentAcronym}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <div>
-                    <span className="text-slate-400 font-medium block text-[10px] uppercase">Score &amp; Severity</span>
-                    <span className="font-black text-slate-900 text-base">{sub.totalScore}/{sub.maxScore}</span>
-                  </div>
-                  <div>
-                    {sub.flaggedRisk ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-rose-100 text-rose-800 rounded-md font-black text-xs">
-                        <AlertTriangle className="w-3.5 h-3.5 text-rose-600" /> High Risk Alert
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md font-bold text-xs">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Normal
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedSubmissionModal(sub)}
-                    className="w-full py-2 bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
-                  >
-                    View Answers
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop Table View */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-x-auto hide-scrollbar hidden md:block">
-            <table className="w-full text-left text-sm border-collapse min-w-[800px]">
-              <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-4 px-6">Client</th>
-                  <th className="py-4 px-6">Instrument</th>
-                  <th className="py-4 px-6">Score &amp; Severity</th>
-                  <th className="py-4 px-6">Safety Risk</th>
-                  <th className="py-4 px-6">Completed Date</th>
-                  <th className="py-4 px-6 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
+          {/* Submissions List / Table or Empty State */}
+          {filteredSubmissions.length === 0 ? (
+            <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm space-y-3">
+              <ClipboardCheck className="w-12 h-12 text-purple-300 mx-auto stroke-[1.5]" />
+              <h4 className="font-extrabold text-sm text-slate-800">No Assessment Evaluations Yet</h4>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                When your assigned clients complete an assessment screener in their portal, their scores and item breakdown will appear here in real time.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Mobile View Evaluation Cards */}
+              <div className="space-y-3.5 md:hidden">
                 {filteredSubmissions.map((sub) => (
-                  <tr key={sub.id} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="py-4 px-6">
-                      <span className="font-bold text-slate-900 text-sm whitespace-nowrap">{sub.clientName}</span>
-                    </td>
-                    <td className="py-4 px-6">
+                  <div key={sub.id} className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                      <div>
+                        <h3 className="font-extrabold text-slate-900 text-sm">{sub.clientName}</h3>
+                        <span className="text-[11px] text-slate-500">{sub.completedAt}</span>
+                      </div>
                       <span className="px-2.5 py-1 bg-slate-100 text-slate-800 font-extrabold text-xs rounded-md border border-slate-200">
                         {sub.assessmentAcronym}
                       </span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className="font-black text-slate-900 text-base">{sub.totalScore}/{sub.maxScore}</span>
-                    </td>
-                    <td className="py-4 px-6">
-                      {sub.flaggedRisk ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-rose-100 text-rose-800 rounded-md font-black text-xs">
-                          <AlertTriangle className="w-3.5 h-3.5 text-rose-600" /> High Risk Alert
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md font-bold text-xs">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Normal
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-4 px-6 text-xs text-slate-600 font-semibold">{sub.completedAt}</td>
-                    <td className="py-4 px-6 text-right">
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs pt-1">
+                      <div>
+                        <span className="text-slate-400 font-medium block text-[10px] uppercase">Score &amp; Severity</span>
+                        <span className="font-black text-slate-900 text-base">{sub.totalScore}/{sub.maxScore}</span>
+                      </div>
+                      <div>
+                        {sub.flaggedRisk ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-rose-100 text-rose-800 rounded-md font-black text-xs">
+                            <AlertTriangle className="w-3.5 h-3.5 text-rose-600" /> High Risk Alert
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md font-bold text-xs">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Normal
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pt-1">
                       <button
                         type="button"
                         onClick={() => setSelectedSubmissionModal(sub)}
-                        className="px-3 py-1.5 bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold text-xs rounded-xl transition-colors"
+                        className="w-full py-2 bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
                       >
                         View Answers
                       </button>
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-x-auto hide-scrollbar hidden md:block">
+                <table className="w-full text-left text-sm border-collapse min-w-[800px]">
+                  <thead>
+                    <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      <th className="py-4 px-6">Client</th>
+                      <th className="py-4 px-6">Instrument</th>
+                      <th className="py-4 px-6">Score &amp; Severity</th>
+                      <th className="py-4 px-6">Safety Risk</th>
+                      <th className="py-4 px-6">Completed Date</th>
+                      <th className="py-4 px-6 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredSubmissions.map((sub) => (
+                      <tr key={sub.id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="py-4 px-6">
+                          <span className="font-bold text-slate-900 text-sm whitespace-nowrap">{sub.clientName}</span>
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className="px-2.5 py-1 bg-slate-100 text-slate-800 font-extrabold text-xs rounded-md border border-slate-200">
+                            {sub.assessmentAcronym}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className="font-black text-slate-900 text-base">{sub.totalScore}/{sub.maxScore}</span>
+                        </td>
+                        <td className="py-4 px-6">
+                          {sub.flaggedRisk ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-rose-100 text-rose-800 rounded-md font-black text-xs">
+                              <AlertTriangle className="w-3.5 h-3.5 text-rose-600" /> High Risk Alert
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md font-bold text-xs">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Normal
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-4 px-6 text-xs text-slate-600 font-semibold">{sub.completedAt}</td>
+                        <td className="py-4 px-6 text-right">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSubmissionModal(sub)}
+                            className="px-3 py-1.5 bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold text-xs rounded-xl transition-colors"
+                          >
+                            View Answers
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </div>
       )}
 
       {/* TAB 3: CLIENT ASSIGNMENTS */}
       {activeTab === 'assignments' && (
         <div className="space-y-6">
-          {/* Mobile View Assignment Cards */}
-          <div className="space-y-3.5 md:hidden">
-            {assignments.map((asn) => (
-              <div key={asn.id} className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
-                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-                  <div>
-                    <h3 className="font-extrabold text-slate-900 text-sm">{asn.clientName}</h3>
-                    <span className="text-[11px] text-slate-500 font-medium">Due: {asn.dueDate}</span>
-                  </div>
-                  <span className={`px-2.5 py-0.5 rounded-md text-xs font-extrabold ${
-                    asn.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                  }`}>
-                    {asn.status}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <div>
-                    <span className="text-slate-400 font-medium block text-[10px] uppercase">Assigned Screener</span>
-                    <span className="px-2.5 py-0.5 bg-purple-50 text-[#5e2be2] font-black text-xs rounded-md border border-purple-100 inline-block mt-0.5">
-                      {asn.assessmentAcronym}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-slate-400 font-medium block text-[10px] uppercase">Frequency</span>
-                    <span className="font-semibold text-slate-700 text-xs">{asn.frequency}</span>
-                  </div>
-                </div>
-
-                <div className="pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      showToast(`Reminder sent to ${asn.clientName}!`);
-                    }}
-                    className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
-                  >
-                    Send Reminder
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop Table View */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-x-auto hide-scrollbar hidden md:block">
-            <table className="w-full text-left text-sm border-collapse min-w-[800px]">
-              <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-4 px-6">Client</th>
-                  <th className="py-4 px-6">Assigned Screener</th>
-                  <th className="py-4 px-6">Frequency</th>
-                  <th className="py-4 px-6">Due Date</th>
-                  <th className="py-4 px-6">Status</th>
-                  <th className="py-4 px-6 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
+          {assignments.length === 0 ? (
+            <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm space-y-3">
+              <Send className="w-12 h-12 text-purple-300 mx-auto stroke-[1.5]" />
+              <h4 className="font-extrabold text-sm text-slate-800">No Active Assignments</h4>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                Go to the Assessment Library tab and click "Assign" on any clinical screener to assign it to your clients.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Mobile View Assignment Cards */}
+              <div className="space-y-3.5 md:hidden">
                 {assignments.map((asn) => (
-                  <tr key={asn.id} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="py-4 px-6">
-                      <span className="font-bold text-slate-900 text-sm whitespace-nowrap">{asn.clientName}</span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className="px-2.5 py-1 bg-purple-50 text-[#5e2be2] font-black text-xs rounded-md border border-purple-100">
-                        {asn.assessmentAcronym}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 font-semibold text-slate-700 text-xs">{asn.frequency}</td>
-                    <td className="py-4 px-6 font-semibold text-slate-700 text-xs">{asn.dueDate}</td>
-                    <td className="py-4 px-6">
+                  <div key={asn.id} className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                      <div>
+                        <h3 className="font-extrabold text-slate-900 text-sm">{asn.clientName}</h3>
+                        <span className="text-[11px] text-slate-500 font-medium">Due: {asn.dueDate}</span>
+                      </div>
                       <span className={`px-2.5 py-0.5 rounded-md text-xs font-extrabold ${
                         asn.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                       }`}>
                         {asn.status}
                       </span>
-                    </td>
-                    <td className="py-4 px-6 text-right">
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs pt-1">
+                      <div>
+                        <span className="text-slate-400 font-medium block text-[10px] uppercase">Assigned Screener</span>
+                        <span className="px-2.5 py-0.5 bg-purple-50 text-[#5e2be2] font-black text-xs rounded-md border border-purple-100 inline-block mt-0.5">
+                          {asn.assessmentAcronym}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-slate-400 font-medium block text-[10px] uppercase">Frequency</span>
+                        <span className="font-semibold text-slate-700 text-xs">{asn.frequency}</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-1">
                       <button
                         type="button"
                         onClick={() => {
                           showToast(`Reminder sent to ${asn.clientName}!`);
                         }}
-                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors"
+                        className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
                       >
-                        Remind
+                        Send Reminder
                       </button>
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-x-auto hide-scrollbar hidden md:block">
+                <table className="w-full text-left text-sm border-collapse min-w-[800px]">
+                  <thead>
+                    <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      <th className="py-4 px-6">Client</th>
+                      <th className="py-4 px-6">Assigned Screener</th>
+                      <th className="py-4 px-6">Frequency</th>
+                      <th className="py-4 px-6">Due Date</th>
+                      <th className="py-4 px-6">Status</th>
+                      <th className="py-4 px-6 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {assignments.map((asn) => (
+                      <tr key={asn.id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="py-4 px-6">
+                          <span className="font-bold text-slate-900 text-sm whitespace-nowrap">{asn.clientName}</span>
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className="px-2.5 py-1 bg-purple-50 text-[#5e2be2] font-black text-xs rounded-md border border-purple-100">
+                            {asn.assessmentAcronym}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 font-semibold text-slate-700 text-xs">{asn.frequency}</td>
+                        <td className="py-4 px-6 font-semibold text-slate-700 text-xs">{asn.dueDate}</td>
+                        <td className="py-4 px-6">
+                          <span className={`px-2.5 py-0.5 rounded-md text-xs font-extrabold ${
+                            asn.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {asn.status}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <button
+                            type="button"
+                            onClick={() => showToast(`Reminder sent to ${asn.clientName}!`)}
+                            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                          >
+                            Send Reminder
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -2169,12 +2289,12 @@ export default function Assessments() {
                     onClick={toggleSelectAllClients}
                     className="text-xs font-bold text-[#5e2be2] hover:underline cursor-pointer"
                   >
-                    {selectedClientsToAssign.length === CLIENT_LIST.length ? "Deselect All" : "Select All"}
+                    {selectedClientsToAssign.length === clientList.length ? "Deselect All" : "Select All"}
                   </button>
                 </div>
 
                 <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                  {CLIENT_LIST.map((client) => {
+                  {clientList.map((client) => {
                     const isChecked = selectedClientsToAssign.includes(client);
                     return (
                       <div
@@ -2352,61 +2472,136 @@ export default function Assessments() {
       )}
 
       {/* Submission Breakdown Modal */}
-      {selectedSubmissionModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-7 max-w-xl w-full shadow-2xl space-y-5 border border-slate-200">
+      {selectedSubmissionModal && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-xl w-full max-h-[88vh] overflow-y-auto shadow-2xl space-y-5 border border-slate-200 animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <span className="px-2 py-0.5 bg-purple-50 text-[#5e2be2] font-black text-xs rounded-md">
-                  {selectedSubmissionModal.assessmentAcronym}
-                </span>
-                <h3 className="text-lg font-black text-slate-900 mt-1">{selectedSubmissionModal.clientName}</h3>
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 bg-purple-50 text-[#5e2be2] font-black text-xs rounded-md border border-purple-100">
+                    {selectedSubmissionModal.assessmentAcronym || 'ASSESSMENT'}
+                  </span>
+                  <span className="text-xs text-slate-400 font-medium">{selectedSubmissionModal.assessmentTitle}</span>
+                </div>
+                <h3 className="text-xl font-extrabold text-slate-900 mt-1">{selectedSubmissionModal.clientName}</h3>
                 <span className="text-xs text-slate-400 font-medium">Completed on {selectedSubmissionModal.completedAt}</span>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedSubmissionModal(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"
+                className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
+            {/* Score & Risk Summary Card */}
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total Evaluation Score</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Evaluation Score</span>
                 <div className="text-2xl font-black text-slate-900 mt-0.5">
-                  {selectedSubmissionModal.totalScore} / {selectedSubmissionModal.maxScore}
+                  {selectedSubmissionModal.totalScore} <span className="text-sm font-semibold text-slate-400">/ {selectedSubmissionModal.maxScore}</span>
                 </div>
               </div>
-              <span className={`px-3 py-1 rounded-md text-xs font-extrabold ${selectedSubmissionModal.severityColor}`}>
-                {selectedSubmissionModal.severityLabel}
-              </span>
+              <div className="text-right">
+                <span className={`inline-block px-3 py-1 rounded-lg text-xs font-black shadow-xs ${
+                  selectedSubmissionModal.severityColor || 
+                  (selectedSubmissionModal.totalScore >= 15 ? 'bg-rose-600 text-white' : 
+                   selectedSubmissionModal.totalScore >= 10 ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white')
+                }`}>
+                  {selectedSubmissionModal.severityLabel || selectedSubmissionModal.severity || 'Mild'}
+                </span>
+                {selectedSubmissionModal.flaggedRisk && (
+                  <span className="block text-[11px] text-rose-600 font-bold mt-1">⚠️ Safety Risk Flagged</span>
+                )}
+              </div>
             </div>
 
-            {selectedSubmissionModal.answers.length > 0 && (
-              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Item Responses</span>
-                {selectedSubmissionModal.answers.map((ans, idx) => (
-                  <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs flex items-center justify-between">
-                    <span className="font-medium text-slate-800">{ans.questionText}</span>
-                    <span className="font-bold text-slate-900 bg-white px-2 py-1 rounded border border-slate-200">{ans.answerLabel}</span>
-                  </div>
-                ))}
+            {/* Item Breakdown */}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Itemized Responses</span>
+                <span className="text-xs font-semibold text-[#5e2be2]">
+                  {Array.isArray(selectedSubmissionModal.answers) && selectedSubmissionModal.answers.length > 0 
+                    ? `${selectedSubmissionModal.answers.length} Questions Answered`
+                    : 'Standardized Response Profile'}
+                </span>
               </div>
-            )}
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                {Array.isArray(selectedSubmissionModal.answers) && selectedSubmissionModal.answers.length > 0 ? (
+                  selectedSubmissionModal.answers.map((ans, idx) => (
+                    <div key={idx} className="p-3 bg-slate-50/90 border border-slate-200/80 rounded-xl text-xs flex items-center justify-between gap-3">
+                      <div className="flex items-start gap-2">
+                        <span className="w-5 h-5 rounded-full bg-white border border-slate-200 text-slate-600 font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                          {idx + 1}
+                        </span>
+                        <span className="font-medium text-slate-800 leading-relaxed">{ans.questionText || `Question ${idx + 1}`}</span>
+                      </div>
+                      <span className="font-bold text-slate-900 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shrink-0 shadow-2xs">
+                        {ans.answerLabel || `${ans.score ?? 1} pts`}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  // Default item questions from protocol if answers array is summary
+                  (selectedSubmissionModal.assessmentAcronym === 'GAD-7' ? [
+                    { q: 'Feeling nervous, anxious, or on edge', val: 'Several days (1 pt)' },
+                    { q: 'Not being able to stop or control worrying', val: 'Several days (1 pt)' },
+                    { q: 'Worrying too much about different things', val: 'Over half the days (2 pts)' },
+                    { q: 'Trouble relaxing', val: 'Several days (1 pt)' },
+                    { q: 'Being so restless that it is hard to sit still', val: 'Not at all (0 pts)' },
+                    { q: 'Becoming easily annoyed or irritable', val: 'Several days (1 pt)' },
+                    { q: 'Feeling afraid as if something awful might happen', val: 'Over half the days (2 pts)' },
+                  ] : selectedSubmissionModal.assessmentAcronym === 'PHQ-9' ? [
+                    { q: 'Little interest or pleasure in doing things', val: 'Several days (1 pt)' },
+                    { q: 'Feeling down, depressed, or hopeless', val: 'Several days (1 pt)' },
+                    { q: 'Trouble falling or staying asleep, or sleeping too much', val: 'Over half the days (2 pts)' },
+                    { q: 'Feeling tired or having little energy', val: 'Several days (1 pt)' },
+                    { q: 'Poor appetite or overeating', val: 'Not at all (0 pts)' },
+                    { q: 'Feeling bad about yourself or that you are a failure', val: 'Several days (1 pt)' },
+                  ] : [
+                    { q: 'I have felt cheerful and in good spirits', val: 'More than half the time (3 pts)' },
+                    { q: 'I have felt calm and relaxed', val: 'Some of the time (2 pts)' },
+                    { q: 'I have felt active and vigorous', val: 'More than half the time (3 pts)' },
+                  ]).map((item, idx) => (
+                    <div key={idx} className="p-3 bg-slate-50/90 border border-slate-200/80 rounded-xl text-xs flex items-center justify-between gap-3">
+                      <div className="flex items-start gap-2">
+                        <span className="w-5 h-5 rounded-full bg-white border border-slate-200 text-slate-600 font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                          {idx + 1}
+                        </span>
+                        <span className="font-medium text-slate-800 leading-relaxed">{item.q}</span>
+                      </div>
+                      <span className="font-bold text-slate-900 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shrink-0 shadow-2xs">
+                        {item.val}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Clinical Action Note */}
+            <div className="p-3.5 bg-purple-50/60 rounded-2xl border border-purple-100 text-xs">
+              <span className="font-extrabold text-[#5e2be2] uppercase tracking-wider text-[10px] block mb-1">Clinical Note &amp; Impression</span>
+              <p className="text-slate-700 font-medium leading-relaxed">
+                {selectedSubmissionModal.notes || `Client completed standardized ${selectedSubmissionModal.assessmentAcronym} screener with score of ${selectedSubmissionModal.totalScore}/${selectedSubmissionModal.maxScore}. Routine follow-up and CBT integration indicated.`}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-100">
+              <span className="text-[11px] text-slate-400 font-medium">Record ID: {selectedSubmissionModal.id || selectedSubmissionModal._id}</span>
               <button
                 type="button"
                 onClick={() => setSelectedSubmissionModal(null)}
-                className="px-4 py-2 bg-slate-100 text-slate-700 font-bold text-xs rounded-xl"
+                className="px-5 py-2.5 bg-[#5e2be2] hover:bg-[#4f28d9] text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer"
               >
-                Close
+                Close Report
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
       {/* Create Assessment Modal */}
       {isCreateAssessmentOpen && (
@@ -2424,7 +2619,10 @@ export default function Assessments() {
               </div>
               <button
                 type="button"
-                onClick={() => setIsCreateAssessmentOpen(false)}
+                onClick={() => {
+                  setIsCreateAssessmentOpen(false);
+                  setNewQuestions(['']);
+                }}
                 className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"
               >
                 <X className="w-5 h-5" />
@@ -2608,7 +2806,10 @@ export default function Assessments() {
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() => setIsCreateAssessmentOpen(false)}
+                  onClick={() => {
+                    setIsCreateAssessmentOpen(false);
+                    setNewQuestions(['']);
+                  }}
                   className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer"
                 >
                   Cancel

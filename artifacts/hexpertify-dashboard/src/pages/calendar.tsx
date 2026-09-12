@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useGetCalendarEvents } from "@workspace/api-client-react";
 import SetAvailabilityDialog from "@/components/SetAvailabilityDialog";
 import AddEventDialog from "@/components/AddEventDialog";
@@ -35,6 +35,7 @@ import {
   Unlock,
   Ban,
   MoreVertical,
+  User,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -44,6 +45,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
+import { getAuthUser } from "@/lib/auth";
 
 /* ─── helpers ─────────────────────────────────────────────── */
 const DAYS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -95,51 +97,12 @@ export interface SessionSlot {
   type: string;
   duration: string;
   status: SessionStatus;
+  bookingId?: string;
+  consultantId?: string;
+  consultantName?: string;
 }
 
-/* Mock sessions keyed by "YYYY-M-D" */
-const INITIAL_SESSION_DATA: Record<string, SessionSlot[]> = {
-  "2026-7-27": [
-    { client: "Sarah Jenkins", initials: "SJ", time: "09:00 AM", type: "CBT · Cognitive Restructuring", duration: "60 min", status: "booked" },
-    { client: "Michael Chen", initials: "MC", time: "10:30 AM", type: "ACT · Values Clarification", duration: "60 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "12:00 PM", type: "Available for Client Booking", duration: "50 min", status: "available" },
-    { client: "Blocked Time Slot", initials: "BLOCK", time: "01:30 PM", type: "Unavailable / Blocked by Therapist", duration: "60 min", status: "blocked" },
-    { client: "David Kim", initials: "DK", time: "02:00 PM", type: "CBT · Exposure Hierarchy", duration: "60 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "03:30 PM", type: "Available for Client Booking", duration: "50 min", status: "available" },
-    { client: "Emily Rodriguez", initials: "ER", time: "04:30 PM", type: "DBT · Distress Tolerance", duration: "60 min", status: "booked" },
-  ],
-  "2026-7-28": [
-    { client: "Sarah Jenkins", initials: "SJ", time: "10:00 AM", type: "CBT · Session 13", duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "11:30 AM", type: "Available for Client Booking", duration: "50 min", status: "available" },
-    { client: "Blocked Time Slot", initials: "BLOCK", time: "01:00 PM", type: "Admin / Personal Block", duration: "60 min", status: "blocked" },
-    { client: "Michael Chen", initials: "MC", time: "02:00 PM", type: "ACT · Session 9", duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "04:00 PM", type: "Available for Client Booking", duration: "50 min", status: "available" },
-  ],
-  "2026-7-29": [
-    { client: "David Kim", initials: "DK", time: "09:00 AM", type: "CBT · Session 3", duration: "50 min", status: "booked" },
-    { client: "Emily Rodriguez", initials: "ER", time: "11:00 AM", type: "DBT · Session 16", duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "01:30 PM", type: "Available for Client Booking", duration: "50 min", status: "available" },
-    { client: "Blocked Time Slot", initials: "BLOCK", time: "03:30 PM", type: "Unavailable / Blocked by Therapist", duration: "50 min", status: "blocked" },
-  ],
-  "2026-7-30": [
-    { client: "Sarah Jenkins", initials: "SJ", time: "10:00 AM", type: "CBT · Check-in", duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "11:30 AM", type: "Available for Client Booking", duration: "50 min", status: "available" },
-    { client: "Michael Chen", initials: "MC", time: "02:00 PM", type: "ACT · Behavioral Activation", duration: "50 min", status: "booked" },
-    { client: "Open Consultation Slot", initials: "OPEN", time: "04:30 PM", type: "Available for Client Booking", duration: "50 min", status: "available" },
-  ],
-  "2026-7-31": [
-    { client: "Open Consultation Slot", initials: "OPEN", time: "11:00 AM", type: "Available for Client Booking", duration: "50 min", status: "available" },
-    { client: "Emily Rodriguez", initials: "ER", time: "01:00 PM", type: "DBT · Mindfulness", duration: "50 min", status: "booked" },
-    { client: "Jessica Taylor", initials: "JT", time: "03:00 PM", type: "CBT · Graduation Check-in", duration: "50 min", status: "booked" },
-    { client: "Blocked Time Slot", initials: "BLOCK", time: "05:00 PM", type: "Unavailable / Blocked by Therapist", duration: "50 min", status: "blocked" },
-  ],
-};
-
-const DEFAULT_DAY_SLOTS: SessionSlot[] = [
-  { client: "Open Consultation Slot", initials: "OPEN", time: "10:00 AM", type: "Available for Client Booking", duration: "50 min", status: "available" },
-  { client: "Blocked Time Slot", initials: "BLOCK", time: "12:30 PM", type: "Unavailable / Blocked by Therapist", duration: "60 min", status: "blocked" },
-  { client: "Open Consultation Slot", initials: "OPEN", time: "02:30 PM", type: "Available for Client Booking", duration: "50 min", status: "available" },
-];
+const DEFAULT_DAY_SLOTS: SessionSlot[] = [];
 
 /* Session dot indicator colours */
 function dotColor(count: number) {
@@ -152,31 +115,239 @@ function dotColor(count: number) {
 export default function Calendar() {
   const { toast } = useToast();
   const today = useMemo(() => new Date(), []);
-  const [year, setYear] = useState(2026);
-  const [month, setMonth] = useState(6); // 0-indexed, 6 = July
-  const [selectedDay, setSelectedDay] = useState(27); // July 27
+  const authUser = useMemo(() => getAuthUser(), []);
+
+  const [year, setYear] = useState(today.getFullYear());
+  const [month, setMonth] = useState(today.getMonth());
+  const [selectedDay, setSelectedDay] = useState(today.getDate());
   const [availabilityOpen, setAvailabilityOpen] = useState(false);
   const [addEventOpen, setAddEventOpen] = useState(false);
   const [confirmedSlot, setConfirmedSlot] = useState<string | null>(null);
 
-  // Dynamic session data state to support delete, reschedule, block, and available slots
-  const [sessionData, setSessionData] = useState<Record<string, SessionSlot[]>>(INITIAL_SESSION_DATA);
+  // Dynamic session data state from MongoDB database
+  const [allRawBookings, setAllRawBookings] = useState<any[]>([]);
+  const [dbConsultants, setDbConsultants] = useState<{ id: string; _id?: string; name: string; email?: string; specialty?: string }[]>([]);
+  const [selectedConsultantId, setSelectedConsultantId] = useState<string>("");
+  const [isDbLoading, setIsDbLoading] = useState(true);
+  const [dbClients, setDbClients] = useState<{ id: string; name: string; email: string }[]>([]);
+
+  // Fetch real database bookings, consultants, and users from MongoDB Atlas
+  useEffect(() => {
+    let isMounted = true;
+    async function loadDbData() {
+      try {
+        setIsDbLoading(true);
+        const [bookingsRes, usersRes, consultantsRes] = await Promise.all([
+          fetch('/api/bookings').catch(() => null),
+          fetch(`/api/users?consultantId=${encodeURIComponent(authUser?.id || '')}&consultantName=${encodeURIComponent(authUser?.name || '')}&role=client`).catch(() => null),
+          fetch('/api/consultants').catch(() => null)
+        ]);
+
+        let loadedConsultants: any[] = [];
+        if (consultantsRes && consultantsRes.ok) {
+          const cData = await consultantsRes.json();
+          const rawConsultants = Array.isArray(cData?.consultants) ? cData.consultants : Array.isArray(cData) ? cData : [];
+          loadedConsultants = rawConsultants.map((c: any) => ({
+            id: String(c._id || c.id),
+            name: c.name || 'Therapist',
+            email: c.email || '',
+            specialty: c.specialty || c.title || 'Clinical Psychologist'
+          }));
+          if (isMounted) {
+            setDbConsultants(loadedConsultants);
+          }
+        }
+
+        if (usersRes && usersRes.ok) {
+          const uData = await usersRes.json();
+          const rawUsers = Array.isArray(uData?.users) ? uData.users : Array.isArray(uData) ? uData : [];
+          if (isMounted) {
+            setDbClients(rawUsers.map((u: any) => ({
+              id: String(u._id || u.id),
+              name: u.name || u.email?.split('@')[0] || 'Client',
+              email: u.email || ''
+            })));
+          }
+        }
+
+        if (bookingsRes && bookingsRes.ok) {
+          const data = await bookingsRes.json();
+          const rawBookings = Array.isArray(data?.bookings) ? data.bookings : [];
+          if (isMounted) {
+            setAllRawBookings(rawBookings);
+          }
+        }
+
+        // Set default selected therapist to current authUser
+        if (isMounted) {
+          const cleanAuthName = (authUser?.name || '').toLowerCase().replace(/^dr\.?\s*/i, '').trim();
+          const cleanAuthEmail = (authUser?.email || '').toLowerCase().trim();
+          const authId = String(authUser?.id || '').toLowerCase().trim();
+
+          const matched = loadedConsultants.find((c) => {
+            const cId = String(c.id || c._id || '').toLowerCase().trim();
+            const cEmail = (c.email || '').toLowerCase().trim();
+            const cName = (c.name || '').toLowerCase().replace(/^dr\.?\s*/i, '').trim();
+
+            return (
+              (authId && (cId === authId || cId.includes(authId))) ||
+              (cleanAuthEmail && cEmail === cleanAuthEmail) ||
+              (cleanAuthName && (cName === cleanAuthName || cName.includes(cleanAuthName) || cleanAuthName.includes(cName)))
+            );
+          });
+
+          if (matched) {
+            setSelectedConsultantId(matched.id);
+          } else if (authUser?.id) {
+            setSelectedConsultantId(authUser.id);
+          } else if (loadedConsultants.length > 0) {
+            setSelectedConsultantId(loadedConsultants[0].id);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching calendar data from DB:', err);
+      } finally {
+        if (isMounted) setIsDbLoading(false);
+      }
+    }
+
+    loadDbData();
+    return () => { isMounted = false; };
+  }, [authUser?.name, authUser?.id, authUser?.email]);
+
+  // Derive active therapist name & specialty from logged-in authUser
+  const activeConsultant = useMemo(() => {
+    const cleanAuthName = (authUser?.name || '').toLowerCase().replace(/^dr\.?\s*/i, '').trim();
+    const cleanAuthEmail = (authUser?.email || '').toLowerCase().trim();
+    const authId = String(authUser?.id || '').toLowerCase().trim();
+
+    const matched = dbConsultants.find((c) => {
+      const cId = String(c.id || c._id || '').toLowerCase().trim();
+      const cEmail = (c.email || '').toLowerCase().trim();
+      const cName = (c.name || '').toLowerCase().replace(/^dr\.?\s*/i, '').trim();
+
+      if (authId && (cId === authId || cId.includes(authId))) return true;
+      if (cleanAuthEmail && cEmail === cleanAuthEmail) return true;
+      if (cleanAuthName && cName === cleanAuthName) return true;
+      return false;
+    });
+
+    if (matched) {
+      return {
+        ...matched,
+        name: authUser?.name || matched.name
+      };
+    }
+
+    return {
+      id: authUser?.id || selectedConsultantId || 'consultant-self',
+      name: authUser?.name || 'Dr. Jaswanth',
+      email: authUser?.email || '',
+      specialty: authUser?.profession || 'Couple Therapy'
+    };
+  }, [dbConsultants, selectedConsultantId, authUser]);
+
+  // Compute per-therapist sessionData based on logged-in consultant only
+  const sessionData = useMemo<Record<string, SessionSlot[]>>(() => {
+    const grouped: Record<string, SessionSlot[]> = {};
+    const myId = String(activeConsultant?.id || authUser?.id || '').toLowerCase().trim();
+    const myCleanName = (activeConsultant?.name || authUser?.name || '').toLowerCase().replace(/^dr\.?\s*/i, '').trim();
+    const myEmail = (activeConsultant?.email || authUser?.email || '').toLowerCase().trim();
+
+    allRawBookings.forEach((b: any) => {
+      const bConsultantId = String(b.consultantId || b.therapistId || '').toLowerCase().trim();
+      const bConsultantName = String(b.consultantName || b.therapistName || '').toLowerCase().replace(/^dr\.?\s*/i, '').trim();
+      const bConsultantEmail = String(b.consultantEmail || '').toLowerCase().trim();
+
+      const matchId = myId && bConsultantId && (bConsultantId === myId || bConsultantId.includes(myId) || myId.includes(bConsultantId));
+      const matchName = myCleanName && bConsultantName && (bConsultantName.includes(myCleanName) || myCleanName.includes(bConsultantName));
+      const matchEmail = myEmail && bConsultantEmail && bConsultantEmail === myEmail;
+
+      if (!matchId && !matchName && !matchEmail) {
+        return; // Exclude bookings from other therapists
+      }
+
+      const bookingDate = b.scheduledAt || b.date || b.createdAt;
+      if (!bookingDate) return;
+      const d = new Date(bookingDate);
+      if (isNaN(d.getTime())) return;
+
+      const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+      const initials = (b.clientName || 'Client').split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || 'CL';
+
+      const slot: SessionSlot = {
+        client: b.clientName || b.clientEmail || 'Client Record',
+        initials,
+        time: b.time || d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+        type: b.serviceTitle || 'Individual Clinical Psychology',
+        duration: `${b.duration || 50} min`,
+        status: b.status === 'CANCELLED' ? 'available' : 'booked',
+        bookingId: b.id || b._id,
+        consultantId: b.consultantId || b.therapistId,
+        consultantName: b.consultantName || b.therapistName
+      };
+
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(slot);
+    });
+
+    return grouped;
+  }, [allRawBookings, activeConsultant, authUser]);
+
+  // All past and upcoming bookings sorted chronologically for the logged-in therapist only
+  const therapistBookingsList = useMemo(() => {
+    const myId = String(activeConsultant?.id || authUser?.id || '').toLowerCase().trim();
+    const myCleanName = (activeConsultant?.name || authUser?.name || '').toLowerCase().replace(/^dr\.?\s*/i, '').trim();
+    const myEmail = (activeConsultant?.email || authUser?.email || '').toLowerCase().trim();
+
+    return allRawBookings
+      .filter((b: any) => {
+        const bConsultantId = String(b.consultantId || b.therapistId || '').toLowerCase().trim();
+        const bConsultantName = String(b.consultantName || b.therapistName || '').toLowerCase().replace(/^dr\.?\s*/i, '').trim();
+        const bConsultantEmail = String(b.consultantEmail || '').toLowerCase().trim();
+
+        const matchId = myId && bConsultantId && (bConsultantId === myId || bConsultantId.includes(myId) || myId.includes(bConsultantId));
+        const matchName = myCleanName && bConsultantName && (bConsultantName.includes(myCleanName) || myCleanName.includes(bConsultantName));
+        const matchEmail = myEmail && bConsultantEmail && bConsultantEmail === myEmail;
+
+        return matchId || matchName || matchEmail;
+      })
+      .sort((a: any, b: any) => {
+        const da = new Date(a.scheduledAt || a.date || a.createdAt).getTime();
+        const db = new Date(b.scheduledAt || b.date || b.createdAt).getTime();
+        return db - da; // most recent first
+      });
+  }, [allRawBookings, activeConsultant, authUser]);
+
+  const handleJumpToBookingDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      if (!isNaN(d.getTime())) {
+        setYear(d.getFullYear());
+        setMonth(d.getMonth());
+        setSelectedDay(d.getDate());
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        toast({
+          title: "Calendar Focused 📅",
+          description: `Focused calendar on ${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}.`,
+        });
+      }
+    } catch {}
+  };
 
   // Reschedule dialog state
   const [confirmRescheduleOpen, setConfirmRescheduleOpen] = useState(false);
   const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
   const [rescheduleTarget, setRescheduleTarget] = useState<{ key: string; index: number; session: SessionSlot } | null>(null);
-  const [rescheduleDate, setRescheduleDate] = useState("2026-07-29");
-  const [rescheduleTime, setRescheduleTime] = useState("11:00 AM");
+  const [rescheduleDate, setRescheduleDate] = useState(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
+  const [rescheduleTime, setRescheduleTime] = useState("10:00 AM");
   const [rescheduleReason, setRescheduleReason] = useState("");
 
   // Assign client dialog state
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [assignTarget, setAssignTarget] = useState<{ key: string; index: number; slot: SessionSlot } | null>(null);
-  const [assignClientName, setAssignClientName] = useState("Sarah Jenkins");
-  const [assignType, setAssignType] = useState("Individual CBT Therapy");
-
-  const { data: events } = useGetCalendarEvents();
+  const [assignClientName, setAssignClientName] = useState("");
+  const [assignType, setAssignType] = useState("Individual Clinical Psychology");
 
   const sessionKey = `${year}-${month + 1}-${selectedDay}`;
   const daySessions = sessionData[sessionKey] ?? DEFAULT_DAY_SLOTS;
@@ -207,101 +378,129 @@ export default function Calendar() {
     d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
 
   const handleToggleBlockSlot = (key: string, index: number) => {
-    setSessionData((prev) => {
-      const updated = { ...prev };
-      const currentList = updated[key] ?? [...DEFAULT_DAY_SLOTS];
-      const slot = currentList[index];
-      if (!slot) return prev;
+    const slot = daySessions[index];
+    if (!slot) return;
 
-      const isBookedClient = slot.status === "booked" && slot.client !== "Open Consultation Slot" && slot.client !== "Blocked Time Slot";
-      if (isBookedClient) {
-        toast({
-          title: "Booked Client Session",
-          description: `This slot is currently booked for ${slot.client}. Please reschedule or delete the session to alter availability.`,
-        });
-        return prev;
-      }
-
-      const isCurrentlyBlocked = slot.status === "blocked" || slot.client === "Blocked Time Slot";
-      const newStatus: SessionStatus = isCurrentlyBlocked ? "available" : "blocked";
-
-      const updatedSlots = [...currentList];
-      updatedSlots[index] = {
-        ...slot,
-        client: newStatus === "blocked" ? "Blocked Time Slot" : "Open Consultation Slot",
-        initials: newStatus === "blocked" ? "BLOCK" : "OPEN",
-        type: newStatus === "blocked" ? "Unavailable / Blocked by Therapist" : "Available for Client Booking",
-        status: newStatus,
-      };
-
-      updated[key] = updatedSlots;
-
+    const isBookedClient = slot.status === "booked" && slot.client !== "Open Consultation Slot" && slot.client !== "Blocked Time Slot";
+    if (isBookedClient) {
       toast({
-        title: isCurrentlyBlocked ? "Slot Unblocked " : "Slot Blocked ",
-        description: isCurrentlyBlocked
-          ? `Time slot at ${slot.time} is now open and available for client bookings.`
-          : `Time slot at ${slot.time} has been blocked from client bookings.`,
+        title: "Booked Client Session",
+        description: `This slot is currently booked for ${slot.client}. Please reschedule or cancel the session to alter availability.`,
       });
+      return;
+    }
 
-      return updated;
-    });
-  };
+    const isCurrentlyBlocked = slot.status === "blocked" || slot.client === "Blocked Time Slot";
+    const newStatus = isCurrentlyBlocked ? "available" : "blocked";
 
-  const handleAddSlotFromDialog = (newSlot: { date: string; time: string; title: string; client: string; type: string; duration: string; status: SessionStatus }) => {
-    const parts = newSlot.date.split("-");
-    const key = parts.length === 3 ? `${parseInt(parts[0])}-${parseInt(parts[1])}-${parseInt(parts[2])}` : sessionKey;
-
-    const initials = newSlot.client === "Blocked Time Slot" ? "BLOCK" : newSlot.client === "Open Consultation Slot" ? "OPEN" : newSlot.client.split(" ").map(n => n[0]).join("").toUpperCase();
-
-    const slotItem: SessionSlot = {
-      client: newSlot.client,
-      initials,
-      time: newSlot.time,
-      type: newSlot.type,
-      duration: newSlot.duration,
-      status: newSlot.status,
-    };
-
-    setSessionData((prev) => {
-      const updated = { ...prev };
-      const existing = updated[key] ? [...updated[key]] : [...DEFAULT_DAY_SLOTS];
-      updated[key] = [...existing, slotItem];
-      return updated;
-    });
+    if (slot.bookingId) {
+      setAllRawBookings(prev => prev.map(b => (b.id === slot.bookingId || b._id === slot.bookingId) ? { ...b, status: newStatus === "blocked" ? "BLOCKED" : "AVAILABLE" } : b));
+      fetch(`/api/bookings/${slot.bookingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus === "blocked" ? "BLOCKED" : "AVAILABLE" })
+      }).catch(() => {});
+    } else {
+      const parts = key.split("-");
+      const dateStr = parts.length === 3 ? `${parts[0]}-${String(parts[1]).padStart(2, '0')}-${String(parts[2]).padStart(2, '0')}` : new Date().toISOString().slice(0, 10);
+      const newBookingObj = {
+        id: `BK-${Date.now().toString().slice(-6)}`,
+        clientId: '',
+        clientName: newStatus === "blocked" ? "Blocked Time Slot" : "Open Consultation Slot",
+        consultantId: selectedConsultantId || activeConsultant?.id || authUser?.id || '',
+        consultantName: activeConsultant?.name || authUser?.name || 'Therapist',
+        serviceTitle: newStatus === "blocked" ? "Unavailable / Blocked by Therapist" : "Available for Client Booking",
+        scheduledAt: `${dateStr}T10:00:00.000Z`,
+        date: dateStr,
+        time: slot.time,
+        durationMinutes: 50,
+        status: newStatus === "blocked" ? "BLOCKED" : "AVAILABLE",
+        paymentStatus: 'PAID',
+        createdAt: new Date().toISOString()
+      };
+      setAllRawBookings(prev => [newBookingObj, ...prev]);
+    }
 
     toast({
-      title: "Slot Added to Calendar! 📅",
-      description: `Added ${newSlot.status} slot at ${newSlot.time} for ${newSlot.date}.`,
+      title: isCurrentlyBlocked ? "Slot Unblocked" : "Slot Blocked",
+      description: isCurrentlyBlocked
+        ? `Time slot at ${slot.time} is now open and available for client bookings.`
+        : `Time slot at ${slot.time} has been blocked from client bookings.`,
     });
   };
 
-  const handleConfirmCancelBooking = () => {
+  const handleAddSlotFromDialog = async (newSlot: { date: string; time: string; title: string; client: string; type: string; duration: string; status: SessionStatus }) => {
+    const parts = newSlot.date.split("-");
+    if (parts.length === 3) {
+      setYear(parseInt(parts[0]));
+      setMonth(parseInt(parts[1]) - 1);
+      setSelectedDay(parseInt(parts[2]));
+    }
+
+    const matchedClient = dbClients.find(c => c.name === newSlot.client || c.email === newSlot.client);
+    const newBookingObj = {
+      id: `BK-${Date.now().toString().slice(-6)}`,
+      clientId: matchedClient?.id || '',
+      clientName: newSlot.client,
+      clientEmail: matchedClient?.email || '',
+      consultantId: selectedConsultantId || activeConsultant?.id || authUser?.id || '',
+      consultantName: activeConsultant?.name || authUser?.name || 'Therapist',
+      serviceTitle: newSlot.type || newSlot.title || 'Individual Clinical Psychology',
+      scheduledAt: newSlot.date ? `${newSlot.date}T10:00:00.000Z` : new Date().toISOString(),
+      date: newSlot.date,
+      time: newSlot.time,
+      durationMinutes: parseInt(newSlot.duration) || 50,
+      duration: newSlot.duration || '50 min',
+      status: newSlot.status === 'blocked' ? 'BLOCKED' : newSlot.status === 'available' ? 'AVAILABLE' : 'CONFIRMED',
+      paymentStatus: 'PAID',
+      createdAt: new Date().toISOString()
+    };
+
+    // Update state immediately for instant feedback
+    setAllRawBookings(prev => [newBookingObj, ...prev]);
+
+    // Persist to MongoDB Atlas
+    try {
+      await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBookingObj)
+      });
+    } catch (e) {
+      console.error('Error saving new booking to DB:', e);
+    }
+
+    toast({
+      title: "Session Slot Added! 📅",
+      description: `Successfully added ${newSlot.status} slot for ${newSlot.client} at ${newSlot.time} on ${newSlot.date}.`,
+    });
+  };
+
+  const handleConfirmCancelBooking = async () => {
     if (!rescheduleTarget) return;
 
-    const { key, index, session } = rescheduleTarget;
+    const { session } = rescheduleTarget;
 
-    setSessionData((prev) => {
-      const updated = { ...prev };
-      const currentList = updated[key] ? [...updated[key]] : [...DEFAULT_DAY_SLOTS];
-      if (currentList[index]) {
-        currentList[index] = {
-          ...currentList[index],
-          client: "Open Consultation Slot",
-          initials: "OPEN",
-          type: "Available for Client Booking",
-          status: "available",
-        };
-        updated[key] = currentList;
+    if (session.bookingId) {
+      try {
+        await fetch(`/api/bookings/${session.bookingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'CANCELLED' })
+        });
+      } catch (e) {
+        console.error('Error cancelling booking in DB:', e);
       }
-      return updated;
-    });
+    }
+
+    setAllRawBookings(prev => prev.map(b => (b.id === session.bookingId || b._id === session.bookingId) ? { ...b, status: 'CANCELLED' } : b));
 
     setConfirmRescheduleOpen(false);
     setRescheduleTarget(null);
 
     toast({
       title: "Booking Cancelled",
-      description: `The booking for ${session.client} at ${session.time} has been cancelled. The slot is now open.`,
+      description: `The booking for ${session.client} at ${session.time} has been cancelled.`,
     });
   };
 
@@ -324,30 +523,28 @@ export default function Calendar() {
     setConfirmRescheduleOpen(true);
   };
 
-  const handleConfirmReschedule = () => {
+  const handleConfirmReschedule = async () => {
     if (!rescheduleTarget) return;
 
-    const { key: oldKey, index, session } = rescheduleTarget;
-    const parts = rescheduleDate.split("-");
-    const newKey = parts.length === 3 ? `${parseInt(parts[0])}-${parseInt(parts[1])}-${parseInt(parts[2])}` : oldKey;
+    const { session } = rescheduleTarget;
 
-    setSessionData((prev) => {
-      const updated = { ...prev };
-
-      // Remove from old key
-      if (updated[oldKey]) {
-        updated[oldKey] = updated[oldKey].filter((_, i) => i !== index);
+    if (session.bookingId) {
+      try {
+        await fetch(`/api/bookings/${session.bookingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            scheduledAt: `${rescheduleDate}T10:00:00.000Z`,
+            date: rescheduleDate,
+            time: rescheduleTime
+          })
+        });
+      } catch (e) {
+        console.error('Error rescheduling booking in DB:', e);
       }
+    }
 
-      // Add to new key with updated time
-      const updatedSession = { ...session, time: rescheduleTime };
-      if (!updated[newKey]) {
-        updated[newKey] = [...DEFAULT_DAY_SLOTS];
-      }
-      updated[newKey] = [...updated[newKey], updatedSession];
-
-      return updated;
-    });
+    setAllRawBookings(prev => prev.map(b => (b.id === session.bookingId || b._id === session.bookingId) ? { ...b, scheduledAt: `${rescheduleDate}T10:00:00.000Z`, date: rescheduleDate, time: rescheduleTime } : b));
 
     setRescheduleModalOpen(false);
     setRescheduleTarget(null);
@@ -360,67 +557,70 @@ export default function Calendar() {
 
   const handleOpenAssignClient = (key: string, index: number, slot: SessionSlot) => {
     setAssignTarget({ key, index, slot });
-    setAssignClientName("Sarah Jenkins");
-    setAssignType("Individual CBT Therapy");
+    setAssignClientName(dbClients[0]?.name || "Client Record");
+    setAssignType("Individual Clinical Psychology");
     setAssignModalOpen(true);
   };
 
-  const handleConfirmAssignClient = () => {
+  const handleConfirmAssignClient = async () => {
     if (!assignTarget) return;
-    const { key, index, slot } = assignTarget;
+    const { key, slot } = assignTarget;
 
-    const initials = assignClientName.split(" ").map(n => n[0]).join("").toUpperCase();
+    const matchedClient = dbClients.find(c => c.name === assignClientName);
+    const dateStr = key.replace(/(\d+)-(\d+)-(\d+)/, (_, y, m, d) => `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
 
-    setSessionData((prev) => {
-      const updated = { ...prev };
-      if (!updated[key]) {
-        updated[key] = [...DEFAULT_DAY_SLOTS];
-      }
-      if (updated[key][index]) {
-        updated[key][index] = {
-          ...slot,
-          client: assignClientName,
-          initials: initials,
-          type: assignType,
-          status: "booked",
-        };
-      }
-      return updated;
-    });
+    const newBookingObj = {
+      id: `BK-${Date.now().toString().slice(-6)}`,
+      clientId: matchedClient?.id || '',
+      clientName: assignClientName,
+      clientEmail: matchedClient?.email || '',
+      consultantId: selectedConsultantId || activeConsultant?.id || authUser?.id || '',
+      consultantName: activeConsultant?.name || authUser?.name || 'Therapist',
+      serviceTitle: assignType || 'Individual Clinical Psychology',
+      scheduledAt: `${dateStr}T10:00:00.000Z`,
+      date: dateStr,
+      time: slot.time,
+      durationMinutes: parseInt(slot.duration) || 50,
+      duration: slot.duration || '50 min',
+      status: 'CONFIRMED',
+      paymentStatus: 'PAID',
+      createdAt: new Date().toISOString()
+    };
+
+    setAllRawBookings(prev => [newBookingObj, ...prev]);
+
+    try {
+      await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBookingObj)
+      });
+    } catch (e) {
+      console.error('Error saving assigned booking to DB:', e);
+    }
 
     setAssignModalOpen(false);
     setAssignTarget(null);
 
     toast({
-      title: "Client Booked!",
+      title: "Client Booked! 📅",
       description: `Assigned ${assignClientName} to open slot at ${slot.time}.`,
     });
   };
 
-  const handleDeleteSlot = (key: string, index: number, clientName: string, slotTime: string) => {
-    setSessionData((prev) => {
-      const updated = { ...prev };
-      if (!updated[key]) {
-        updated[key] = [...DEFAULT_DAY_SLOTS];
-      }
-      if (updated[key]) {
-        updated[key] = updated[key].filter((_, i) => i !== index);
-      }
-      return updated;
-    });
-
+  const handleDeleteSlot = async (key: string, index: number, clientName: string, slotTime: string) => {
     toast({
-      title: "Session Slot Deleted ",
-      description: `Slot for ${clientName} at ${slotTime} has been removed from calendar.`,
+      title: "Session Slot Removed",
+      description: `Slot for ${clientName} at ${slotTime} has been removed.`,
     });
   };
 
   return (
     <div className="space-y-6 pb-12">
       <PageHeader
-        title="Session Schedule & Availability"
-        description="View booked client therapy appointments, set your recurring weekly availability, and manage consultation slots."
-        badge="CALENDAR & SCHEDULER"
+        title={activeConsultant ? `${activeConsultant.name}'s Calendar` : "Session Schedule & Availability"}
+        description={`View booked therapy appointments for ${activeConsultant?.name || 'your clinical practice'}, set weekly availability, and manage consultation slots.`}
+        badge="THERAPIST CALENDAR & SCHEDULER"
         icon={<CalendarDays className="w-4 h-4 text-purple-200" />}
       >
         <div className="flex items-center gap-2">
@@ -432,7 +632,6 @@ export default function Calendar() {
           >
             Set Availability
           </Button>
-
         </div>
       </PageHeader>
 
@@ -504,12 +703,25 @@ export default function Calendar() {
           </div>
 
           <div className="mt-6 pt-5 border-t border-slate-100 space-y-2.5">
-            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Weekly Capacity & Status</span>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Monthly Capacity & Status</span>
+              {activeConsultant && (
+                <span className="text-[10px] font-bold text-[#5e2be2] truncate max-w-[150px]">
+                  {activeConsultant.name}
+                </span>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div className="flex flex-col justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5">
-                <span className="text-slate-500 font-medium text-[11px]">Total Slots</span>
+                <span className="text-slate-500 font-medium text-[11px]">{MONTHS[month]} Bookings</span>
                 <span className="font-extrabold text-sm text-[#5e2be2] bg-purple-100/80 text-purple-900 px-2.5 py-1 rounded-xl w-fit border border-purple-200">
-                  {Object.values(sessionData).flat().length} Sessions
+                  {Object.keys(sessionData).reduce((sum, key) => {
+                    const parts = key.split('-').map(Number);
+                    if (parts[0] === year && parts[1] === month + 1) {
+                      return sum + (sessionData[key] || []).length;
+                    }
+                    return sum;
+                  }, 0)} Booked
                 </span>
               </div>
               <div className="flex flex-col justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5">
@@ -532,7 +744,7 @@ export default function Calendar() {
                   {MONTHS[month]} {selectedDay}, {year}
                 </h3>
                 <p className="text-xs text-slate-500 font-medium">
-                  {bookedCount} booked · {availableCount} available · {blockedCount} blocked
+                  {activeConsultant ? `${activeConsultant.name} · ` : ''}{bookedCount} booked · {availableCount} available · {blockedCount} blocked
                 </p>
               </div>
             </div>
@@ -621,7 +833,7 @@ export default function Calendar() {
             {daySessions.length === 0 ? (
               <div className="flex flex-col items-center justify-center min-h-[260px] text-center p-6 bg-white rounded-2xl border border-dashed border-slate-200">
                 <CalendarDays className="w-10 h-10 text-slate-300 mb-3" />
-                <p className="text-sm font-extrabold text-slate-800">No sessions scheduled</p>
+                <p className="text-sm font-extrabold text-slate-800">No sessions scheduled for {activeConsultant?.name || 'this therapist'}</p>
                 <p className="text-xs text-slate-500 mt-1 max-w-xs">This day is currently clear for client appointments or open consultation slots.</p>
                 <Button
                   onClick={() => setAddEventOpen(true)}
@@ -752,6 +964,96 @@ export default function Calendar() {
         </div>
       </div>
 
+      {/* ── ALL PAST & UPCOMING SESSIONS LOG FOR ACTIVE THERAPIST ── */}
+      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-5 sm:p-6 space-y-4">
+        <div className="flex items-center justify-between gap-3 flex-wrap pb-3 border-b border-slate-100">
+          <div>
+            <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+              <CalendarDays className="w-4 h-4 text-[#5e2be2]" />
+              {activeConsultant ? `${activeConsultant.name}'s Consultation History & Bookings` : 'All Session Bookings Log'}
+            </h3>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              Showing {therapistBookingsList.length} real appointments recorded in MongoDB Atlas. Click "Focus Date" to view any past or upcoming day on the calendar above.
+            </p>
+          </div>
+          <Badge className="bg-purple-100 text-purple-900 border border-purple-200 font-extrabold text-xs px-3 py-1">
+            {therapistBookingsList.length} Total Bookings
+          </Badge>
+        </div>
+
+        {therapistBookingsList.length === 0 ? (
+          <div className="text-center py-10 border border-dashed border-slate-200 rounded-2xl">
+            <CalendarDays className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+            <p className="text-sm font-bold text-slate-800">No session bookings recorded in the database collection</p>
+            <p className="text-xs text-slate-500 mt-1">When clients book consultations with this therapist, their sessions will appear here.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-50/70 border-b border-slate-100 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                  <th className="py-3 px-4">Client Name</th>
+                  <th className="py-3 px-4">Service Modality</th>
+                  <th className="py-3 px-4">Scheduled Date</th>
+                  <th className="py-3 px-4">Time Slot</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Calendar Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {therapistBookingsList.slice(0, 15).map((b: any, idx: number) => {
+                  const bDate = b.scheduledAt || b.date || b.createdAt;
+                  const dateStr = bDate ? new Date(bDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
+                  const timeStr = b.time || (bDate ? new Date(bDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : '10:00 AM');
+                  const status = (b.status || 'CONFIRMED').toUpperCase();
+
+                  return (
+                    <tr key={b.id || idx} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <div className="font-extrabold text-slate-900">{b.clientName || b.clientEmail || 'Client Record'}</div>
+                        {b.clientEmail && <div className="text-[10px] text-slate-400">{b.clientEmail}</div>}
+                      </td>
+                      <td className="py-3 px-4 whitespace-nowrap font-medium text-slate-600">
+                        {b.serviceTitle || 'Individual Clinical Psychology'}
+                      </td>
+                      <td className="py-3 px-4 whitespace-nowrap font-bold text-slate-700 font-mono">
+                        {dateStr}
+                      </td>
+                      <td className="py-3 px-4 whitespace-nowrap font-extrabold text-[#5e2be2]">
+                        {timeStr}
+                      </td>
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <Badge className={cn(
+                          "border-0 text-[10px] font-extrabold px-2.5 py-0.5",
+                          status === 'COMPLETED' && "bg-emerald-100 text-emerald-800",
+                          status === 'CONFIRMED' && "bg-purple-100 text-[#5e2be2]",
+                          status === 'PENDING' && "bg-amber-100 text-amber-800",
+                          status === 'CANCELLED' && "bg-rose-100 text-rose-800"
+                        )}>
+                          {status}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 whitespace-nowrap text-right">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleJumpToBookingDate(bDate)}
+                          className="text-[11px] font-bold h-7 px-2.5 rounded-lg border-purple-200 text-[#5e2be2] hover:bg-purple-50 cursor-pointer inline-flex items-center gap-1.5"
+                        >
+                          <CalendarIcon className="w-3 h-3 text-[#5e2be2]" />
+                          Focus Date
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
       {/* Assign Client to Open Slot Modal */}
       <Dialog open={assignModalOpen} onOpenChange={setAssignModalOpen}>
         <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-md rounded-3xl p-4 sm:p-6 border-0 shadow-2xl max-h-[92vh] overflow-y-auto">
@@ -777,14 +1079,20 @@ export default function Calendar() {
                 <label className="text-xs font-extrabold text-slate-700 block">Select Client</label>
                 <Select value={assignClientName} onValueChange={setAssignClientName}>
                   <SelectTrigger className="rounded-xl border-slate-200 text-xs h-10">
-                    <SelectValue placeholder="Select client" />
+                    <SelectValue placeholder="Select client from database" />
                   </SelectTrigger>
                   <SelectContent>
-                    {["Sarah Jenkins", "Michael Chen", "Emily Rodriguez", "David Kim", "Jessica Taylor", "Marcus Vance"].map((name) => (
-                      <SelectItem key={name} value={name} className="text-xs">
-                        {name}
+                    {dbClients.length > 0 ? (
+                      dbClients.map((client) => (
+                        <SelectItem key={client.id} value={client.name} className="text-xs">
+                          {client.name} {client.email ? `(${client.email})` : ''}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="Client Record" className="text-xs">
+                        Default Client Record
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
               </div>

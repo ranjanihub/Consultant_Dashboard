@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useGetClients } from "@workspace/api-client-react";
-import AddClientDialog from "@/components/AddClientDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,9 +38,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { getAuthUser } from "@/lib/auth";
 
 export default function Clients() {
   const { toast } = useToast();
+  const authUser = getAuthUser();
   const [location, setLocation] = useLocation();
 
   const getTabFromUrl = () => {
@@ -58,7 +59,6 @@ export default function Clients() {
   const [mainTab, setMainTab] = useState<string>(getTabFromUrl);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [addClientOpen, setAddClientOpen] = useState(false);
   const [selectedRecordClient, setSelectedRecordClient] = useState<any | null>(null);
   const [activeModalTab, setActiveModalTab] = useState<"intake" | "assessments" | "mood" | "sessions" | "documents">("intake");
 
@@ -132,85 +132,76 @@ export default function Clients() {
     );
   };
 
-  const { data: clients, isLoading } = useGetClients({
-    search: search || undefined,
-    status: statusFilter !== "all" ? (statusFilter as any) : undefined
-  });
+  const [dbClients, setDbClients] = useState<any[]>([]);
+  const [isDbLoading, setIsDbLoading] = useState(true);
 
-  const DEMO_CLIENTS = [
-    {
-      id: 1,
-      code: "#CL-101",
-      name: "Sarah Jenkins",
-      email: "sarah.j@example.com",
-      phone: "+1(555) 234-5678",
-      therapist: "Dr. Alex Harrison",
-      modality: "Individual Therapy",
-      lastSession: "2026-07-28",
-      nextSession: "2026-08-01",
-      nextSessionTime: "(09:00 AM)",
-      status: "active" as const,
-      primaryGoal: "Generalized Anxiety & Workplace Stress",
-    },
-    {
-      id: 2,
-      code: "#CL-102",
-      name: "Michael & Jennifer Chen",
-      email: "m.chen@example.com",
-      phone: "+1(555) 876-5432",
-      therapist: "Dr. Elena Rostova",
-      modality: "Couple Therapy",
-      lastSession: "2026-07-29",
-      nextSession: "2026-08-01",
-      nextSessionTime: "(10:30 AM)",
-      status: "active" as const,
-      primaryGoal: "Marital Communication & Emotional Regulation",
-    },
-    {
-      id: 3,
-      code: "#CL-103",
-      name: "Emily Rodriguez",
-      email: "emily.r@example.com",
-      phone: "+1(555) 345-6789",
-      therapist: "Dr. Alex Harrison",
-      modality: "CBT Therapy",
-      lastSession: "2026-07-26",
-      nextSession: "2026-08-02",
-      nextSessionTime: "(02:00 PM)",
-      status: "active" as const,
-      primaryGoal: "Panic Disorder & Agoraphobia Management",
-    },
-    {
-      id: 4,
-      code: "#CL-104",
-      name: "David Kim",
-      email: "david.kim@example.com",
-      phone: "+1(555) 456-7890",
-      therapist: "Dr. Alex Harrison",
-      modality: "Individual Therapy",
-      lastSession: "2026-07-24",
-      nextSession: "2026-08-03",
-      nextSessionTime: "(11:15 AM)",
-      status: "active" as const,
-      primaryGoal: "Social Anxiety in Executive Leadership",
-    },
-    {
-      id: 5,
-      code: "#CL-105",
-      name: "Jessica Taylor",
-      email: "jessica.t@example.com",
-      phone: "+1(555) 567-8901",
-      therapist: "Dr. Alex Harrison",
-      modality: "Panic CBT",
-      lastSession: "2026-07-12",
-      nextSession: undefined,
-      nextSessionTime: "",
-      status: "completed" as const,
-      primaryGoal: "Interoceptive Panic Exposure Remission",
-    },
-  ];
+  const fetchRealClientsFromDb = async () => {
+    try {
+      setIsDbLoading(true);
+      const myName = authUser?.name || 'Sadaf Bhimani';
+      const myId = authUser?.id || '';
 
-  const clientList = (Array.isArray(clients) && clients.length > 0) ? clients : DEMO_CLIENTS;
+      const queryParams = `?consultantId=${encodeURIComponent(myId)}&consultantName=${encodeURIComponent(myName)}&role=client`;
+
+      const [usersRes, bookingsRes] = await Promise.all([
+        fetch(`/api/users${queryParams}`).then(r => r.ok ? r.json() : { users: [] }).catch(() => ({ users: [] })),
+        fetch(`/api/bookings${queryParams}`).then(r => r.ok ? r.json() : { bookings: [] }).catch(() => ({ bookings: [] }))
+      ]);
+
+      const rawUsers = Array.isArray(usersRes?.users) ? usersRes.users : [];
+      const rawBookings = Array.isArray(bookingsRes?.bookings) ? bookingsRes.bookings : [];
+
+      const formatted = rawUsers.map((u: any, idx: number) => {
+        const userBooking = rawBookings.find((b: any) => 
+          (b.clientEmail && b.clientEmail.toLowerCase() === (u.email || '').toLowerCase()) ||
+          b.clientId === String(u._id || u.id) ||
+          (b.clientName && b.clientName.toLowerCase() === (u.name || '').toLowerCase())
+        );
+
+        const dateStr = u.createdAt ? new Date(u.createdAt).toISOString().split('T')[0] : '2026-08-20';
+
+        return {
+          id: String(u._id || u.id || idx + 1),
+          code: `#CL-${101 + idx}`,
+          name: u.name || u.email?.split('@')[0] || 'Client User',
+          email: u.email || 'client@example.com',
+          phone: u.phoneNumber || u.phone || '+91 98765 43210',
+          therapist: u.assignedTherapistName || userBooking?.consultantName || userBooking?.therapistName || myName,
+          modality: userBooking?.serviceTitle || 'Individual Clinical Psychology',
+          lastSession: userBooking?.date?.split('T')[0] || dateStr,
+          nextSession: userBooking?.date?.split('T')[0] || '2026-09-02',
+          nextSessionTime: userBooking?.time || '(10:00 AM)',
+          status: (u.status ? u.status.toLowerCase() : ((u.emailVerified || userBooking) ? 'active' : 'new')),
+          primaryGoal: u.therapyGoals?.[0] || 'Anxiety Management & CBT Progression',
+          avatar: u.image || undefined,
+          createdAt: u.createdAt
+        };
+      });
+
+      setDbClients(formatted);
+    } catch (err) {
+      console.error('Error fetching clients from MongoDB:', err);
+    } finally {
+      setIsDbLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRealClientsFromDb();
+
+    const handleRefresh = () => fetchRealClientsFromDb();
+    window.addEventListener('client_created', handleRefresh);
+    return () => {
+      window.removeEventListener('client_created', handleRefresh);
+    };
+  }, [authUser?.name, authUser?.id]);
+
+  const clientList = dbClients;
+  const isLoading = isDbLoading;
+
+  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [sortBy, setSortBy] = useState<"recent" | "name" | "status">("recent");
 
   const filteredClients = clientList.filter((c: any) => {
     const q = search.toLowerCase().trim();
@@ -225,6 +216,21 @@ export default function Clients() {
     return matchesSearch && matchesStatus;
   });
 
+  const sortedClients = [...filteredClients].sort((a, b) => {
+    if (sortBy === "name") return (a.name || "").localeCompare(b.name || "");
+    if (sortBy === "status") return (a.status || "").localeCompare(b.status || "");
+    return new Date(b.createdAt || b.lastSession || 0).getTime() - new Date(a.createdAt || a.lastSession || 0).getTime();
+  });
+
+  const totalPages = rowsPerPage === 0 ? 1 : Math.max(1, Math.ceil(sortedClients.length / rowsPerPage));
+  const validCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedClients = rowsPerPage === 0 
+    ? sortedClients 
+    : sortedClients.slice((validCurrentPage - 1) * rowsPerPage, validCurrentPage * rowsPerPage);
+
+  const startRow = sortedClients.length === 0 ? 0 : (validCurrentPage - 1) * (rowsPerPage || sortedClients.length) + 1;
+  const endRow = rowsPerPage === 0 ? sortedClients.length : Math.min(validCurrentPage * rowsPerPage, sortedClients.length);
+
   const activeCount = clientList.filter((c: any) => c.status === "active" || c.status === "new").length;
 
   const getStatusBadge = (status: string) => {
@@ -234,6 +240,9 @@ export default function Clients() {
     }
     if (s === 'completed') {
       return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-slate-100 text-slate-700">Completed</span>;
+    }
+    if (s === 'inactive') {
+      return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-rose-100 text-rose-700">Inactive</span>;
     }
     return <span className="text-xs px-3 py-1 font-bold rounded-full inline-block bg-emerald-100 text-emerald-700">Active</span>;
   };
@@ -260,47 +269,81 @@ export default function Clients() {
             <Users className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[11px] font-semibold text-purple-200 block uppercase tracking-wider">Total Registered Clients</span>
-            <span className="text-xl font-extrabold text-white">{activeCount} Active Records</span>
+            <span className="text-[11px] font-semibold text-purple-200 block uppercase tracking-wider">My Client Records</span>
+            <span className="text-xl font-extrabold text-white">{activeCount} Active {activeCount === 1 ? 'Record' : 'Records'}</span>
           </div>
         </div>
       </div>
 
-      <AddClientDialog open={addClientOpen} onOpenChange={setAddClientOpen} />
+      {/* FILTER, SEARCH & ROW CONTROL BAR */}
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input 
+              placeholder="Search by client name, email, phone, ID, or therapist..." 
+              className="pl-11 h-11 bg-slate-50 border-slate-200 rounded-2xl text-xs font-medium focus:bg-white"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
 
-      {/* FILTER & SEARCH BAR */}
-      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input 
-            placeholder="Search by client name, email, phone, ID, or therapist..." 
-            className="pl-11 h-11 bg-slate-50 border-slate-200 rounded-2xl text-xs font-medium focus:bg-white"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Status Filter Buttons */}
+            <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl">
+              {[
+                { id: "all", label: "All" },
+                { id: "active", label: "Active" },
+                { id: "new", label: "New" },
+                { id: "completed", label: "Completed" },
+                { id: "inactive", label: "Inactive" },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    setStatusFilter(item.id);
+                    setCurrentPage(1);
+                  }}
+                  className={cn(
+                    "px-4 py-1.5 rounded-xl text-xs font-extrabold capitalize transition-all cursor-pointer whitespace-nowrap",
+                    statusFilter === item.id 
+                      ? "bg-[#5e2be2] text-white shadow-sm" 
+                      : "text-slate-600 hover:text-slate-900"
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar">
-          {[
-            { id: "all", label: "All" },
-            { id: "active", label: "Active" },
-            { id: "new", label: "New" },
-            { id: "completed", label: "Completed" },
-          ].map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setStatusFilter(item.id)}
-              className={cn(
-                "px-5 py-2 rounded-full text-xs font-extrabold capitalize transition-all cursor-pointer whitespace-nowrap",
-                statusFilter === item.id 
-                  ? "bg-[#5e2be2] text-white shadow-md shadow-[#5e2be2]/20" 
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              )}
-            >
-              {item.label}
-            </button>
-          ))}
+            {/* Row Per Page Filter */}
+            <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Show:</span>
+              <Select 
+                value={String(rowsPerPage)} 
+                onValueChange={(val) => {
+                  setRowsPerPage(Number(val));
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="h-9 w-28 bg-slate-50 border-slate-200 rounded-xl text-xs font-bold text-slate-700">
+                  <SelectValue placeholder="10 rows" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-slate-200">
+                  <SelectItem value="5" className="text-xs font-semibold">5 rows</SelectItem>
+                  <SelectItem value="10" className="text-xs font-semibold">10 rows</SelectItem>
+                  <SelectItem value="25" className="text-xs font-semibold">25 rows</SelectItem>
+                  <SelectItem value="50" className="text-xs font-semibold">50 rows</SelectItem>
+                  <SelectItem value="100" className="text-xs font-semibold">100 rows</SelectItem>
+                  <SelectItem value="0" className="text-xs font-semibold">All rows</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -311,17 +354,28 @@ export default function Clients() {
             <Skeleton key={n} className="h-16 rounded-2xl" />
           ))}
         </div>
-      ) : filteredClients.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-3xl border border-slate-200">
-          <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-sm font-bold text-slate-900">No clients match your filter</h3>
-          <p className="text-xs text-slate-500 mt-1">Try adjusting your search query or status filter.</p>
+      ) : sortedClients.length === 0 ? (
+        <div className="text-center py-16 px-4 bg-white rounded-3xl border border-slate-200 space-y-4 shadow-xs">
+          <div className="w-16 h-16 bg-purple-50 text-[#5e2be2] rounded-2xl flex items-center justify-center mx-auto">
+            <Users className="w-8 h-8" />
+          </div>
+          <div className="max-w-md mx-auto">
+            <h3 className="text-base font-extrabold text-slate-900">
+              {search ? "No clients match your filter" : "No Clients Assigned Yet"}
+            </h3>
+            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              {search 
+                ? "Try adjusting your search query or status filter." 
+                : `There are currently no clients booked or assigned to ${authUser?.name || 'your consultant profile'}. When a client books a session through the platform or an administrator assigns a client, their profile will appear here.`
+              }
+            </p>
+          </div>
         </div>
       ) : (
         <>
           {/* Mobile Card List View (Visible on mobile viewports < 768px) */}
           <div className="space-y-3.5 md:hidden">
-            {filteredClients.map((clientItem: any) => (
+            {paginatedClients.map((clientItem: any) => (
               <div key={clientItem.id} className="bg-white p-4.5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
                 <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
                   <div>
@@ -377,7 +431,7 @@ export default function Clients() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
-                  {filteredClients.map((clientItem: any) => (
+                  {paginatedClients.map((clientItem: any) => (
                     <tr key={clientItem.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-4 px-6 whitespace-nowrap">
                         <div className="font-extrabold text-slate-900 text-sm">
@@ -385,7 +439,7 @@ export default function Clients() {
                         </div>
                       </td>
                       <td className="py-4 px-6 font-medium text-slate-600 whitespace-nowrap">
-                        {clientItem.modality || 'Individual Therapy'}
+                        {clientItem.modality || 'Individual Clinical Psychology'}
                       </td>
                       <td className="py-4 px-6 font-medium text-slate-500 font-mono whitespace-nowrap">
                         {clientItem.lastSession || '2026-07-28'}
@@ -394,7 +448,7 @@ export default function Clients() {
                         {clientItem.nextSession ? (
                           <div>
                             <span className="block">{clientItem.nextSession}</span>
-                            <span className="block text-[11px] font-normal text-slate-500">{clientItem.nextSessionTime || '(09:00 AM)'}</span>
+                            <span className="block text-[11px] font-normal text-slate-500">{clientItem.nextSessionTime || '(10:00 AM)'}</span>
                           </div>
                         ) : (
                           <span className="text-slate-400 font-normal">-</span>
@@ -414,6 +468,61 @@ export default function Clients() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* MODERN TABLE PAGINATION & ROW FILTER FOOTER */}
+            <div className="p-4 sm:px-6 bg-slate-50/80 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-600">
+              <div>
+                Showing <span className="font-extrabold text-slate-900">{startRow}</span> to <span className="font-extrabold text-slate-900">{endRow}</span> of <span className="font-extrabold text-[#5e2be2]">{sortedClients.length}</span> client records
+              </div>
+
+              {rowsPerPage !== 0 && totalPages > 1 && (
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={validCurrentPage <= 1}
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    className="h-8 px-3 rounded-xl border-slate-200 text-xs font-bold"
+                  >
+                    Previous
+                  </Button>
+
+                  <div className="flex items-center gap-1 px-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum = i + 1;
+                      if (totalPages > 5 && validCurrentPage > 3) {
+                        pageNum = validCurrentPage - 2 + i;
+                        if (pageNum > totalPages) pageNum = totalPages - 4 + i;
+                      }
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={cn(
+                            "w-8 h-8 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center",
+                            validCurrentPage === pageNum
+                              ? "bg-[#5e2be2] text-white shadow-sm"
+                              : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
+                          )}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={validCurrentPage >= totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    className="h-8 px-3 rounded-xl border-slate-200 text-xs font-bold"
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </>

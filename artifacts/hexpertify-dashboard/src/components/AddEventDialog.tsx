@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Check, Video, Lock, Clock, CalendarDays } from "lucide-react";
 
+import { getAuthUser } from "@/lib/auth";
+
 const EVENT_TYPES = [
   { value: "session",   label: "Client Session",    icon: Video,        color: "bg-primary/10 text-primary border-primary/20" },
   { value: "blocked",   label: "Block Time",        icon: Lock,         color: "bg-slate-100 text-slate-600 border-slate-200" },
@@ -37,11 +39,6 @@ const TIMES = Array.from({ length: 28 }, (_, i) => {
 
 const DURATIONS = ["30 min", "50 min", "60 min", "80 min", "90 min", "120 min"];
 
-const CLIENTS = [
-  "Sarah Jenkins", "Michael Chen", "Emily Rodriguez", "David Kim", "Jessica Taylor",
-  "Amanda Miller", "Robert Johnson", "Olivia Bennett", "Ryan Alvarez",
-];
-
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -50,18 +47,51 @@ interface Props {
 }
 
 export default function AddEventDialog({ open, onOpenChange, defaultDate, onAddSlot }: Props) {
+  const authUser = getAuthUser();
   const [saving, setSaving] = useState(false);
   const [saved,  setSaved]  = useState(false);
+  const [clients, setClients] = useState<{ id: string; name: string; email: string }[]>([]);
+
+  useEffect(() => {
+    const myId = authUser?.id || '';
+    const myName = authUser?.name || '';
+    const query = new URLSearchParams();
+    if (myId) query.set('consultantId', myId);
+    if (myName) query.set('consultantName', myName);
+    query.set('role', 'client');
+
+    fetch(`/api/users?${query.toString()}`)
+      .then(res => res.json())
+      .then(data => {
+        const raw = Array.isArray(data?.users) ? data.users : [];
+        const clientList = raw.map((u: any) => ({
+          id: String(u._id || u.id),
+          name: u.name || u.email?.split('@')[0] || 'Client',
+          email: u.email || ''
+        }));
+        setClients(clientList);
+        if (clientList.length > 0) {
+          setForm(prev => ({ ...prev, client: clientList[0].name }));
+        }
+      })
+      .catch(() => {});
+  }, [authUser?.id, authUser?.name]);
 
   const [form, setForm] = useState({
     type:     "session",
-    client:   "Sarah Jenkins",
+    client:   "",
     date:     defaultDate ?? new Date().toISOString().slice(0, 10),
     start:    "10:00 AM",
     end:      "10:50 AM",
     duration: "50 min",
-    title:    "CBT Follow-up Session",
+    title:    "Clinical Psychology Consultation",
   });
+
+  useEffect(() => {
+    if (defaultDate) {
+      setForm(prev => ({ ...prev, date: defaultDate }));
+    }
+  }, [defaultDate, open]);
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
 
@@ -71,28 +101,23 @@ export default function AddEventDialog({ open, onOpenChange, defaultDate, onAddS
     onOpenChange(false);
     setTimeout(() => {
       setSaved(false);
-      setForm({ type: "session", client: "Sarah Jenkins", date: defaultDate ?? new Date().toISOString().slice(0, 10), start: "10:00 AM", end: "10:50 AM", duration: "50 min", title: "CBT Follow-up Session" });
+      setForm({ type: "session", client: clients[0]?.name || "", date: defaultDate ?? new Date().toISOString().slice(0, 10), start: "10:00 AM", end: "10:50 AM", duration: "50 min", title: "Clinical Psychology Consultation" });
     }, 300);
   };
 
   const handleSave = async () => {
     setSaving(true);
-    await new Promise(r => setTimeout(r, 400));
+    await new Promise(r => setTimeout(r, 200));
 
     if (onAddSlot) {
-      let status: "booked" | "available" | "blocked" = "available";
-      if (form.type === "session") status = "booked";
-      else if (form.type === "blocked") status = "blocked";
-      else status = "available";
-
       onAddSlot({
         date: form.date,
         time: form.start,
-        title: form.title || (status === "blocked" ? "Blocked Time Slot" : "Open Consultation Slot"),
-        client: form.type === "session" ? (form.client || "Client") : status === "blocked" ? "Blocked Time Slot" : "Open Consultation Slot",
-        type: form.type === "session" ? "Individual CBT Therapy" : status === "blocked" ? "Unavailable / Blocked by Therapist" : "Available for Client Booking",
-        duration: form.duration || "50 min",
-        status,
+        title: form.title,
+        client: isSession ? (form.client || "Client Record") : (form.type === "blocked" ? "Blocked Time Slot" : "Open Consultation Slot"),
+        type: isSession ? "Individual Clinical Psychology" : form.title,
+        duration: form.duration,
+        status: form.type === "blocked" ? "blocked" : form.type === "available" ? "available" : "booked",
       });
     }
 
@@ -100,7 +125,7 @@ export default function AddEventDialog({ open, onOpenChange, defaultDate, onAddS
     setSaved(true);
     setTimeout(() => {
       handleClose();
-    }, 600);
+    }, 400);
   };
 
   const canSave = isSession
@@ -115,7 +140,7 @@ export default function AddEventDialog({ open, onOpenChange, defaultDate, onAddS
           <DialogHeader>
             <DialogTitle className="text-xl sm:text-2xl font-bold text-white">Add Event</DialogTitle>
             <DialogDescription className="text-white/70 text-xs sm:text-sm mt-1">
-              Schedule a session, block time, or mark availability.
+              Schedule a session, block time, or mark availability for {authUser?.name || 'your profile'}.
             </DialogDescription>
           </DialogHeader>
 
@@ -148,12 +173,22 @@ export default function AddEventDialog({ open, onOpenChange, defaultDate, onAddS
           {isSession ? (
             <div className="space-y-1.5">
               <Label>Client <span className="text-destructive">*</span></Label>
-              <Select value={form.client} onValueChange={v => set("client", v)}>
-                <SelectTrigger><SelectValue placeholder="Select a client" /></SelectTrigger>
-                <SelectContent>
-                  {CLIENTS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              {clients.length === 0 ? (
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-500 font-medium">
+                  No clients assigned to {authUser?.name || 'your consultant profile'} yet. When clients book sessions with you, they will appear here.
+                </div>
+              ) : (
+                <Select value={form.client} onValueChange={v => set("client", v)}>
+                  <SelectTrigger><SelectValue placeholder="Select your client" /></SelectTrigger>
+                  <SelectContent>
+                    {clients.map((c) => (
+                      <SelectItem key={c.id || c.name} value={c.name}>
+                        {c.name} {c.email ? `(${c.email})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           ) : (
             <div className="space-y-1.5">

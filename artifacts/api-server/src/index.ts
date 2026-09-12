@@ -7,7 +7,7 @@ dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 import app from "./app";
 import { logger } from "./lib/logger";
 
-const rawPort = process.env["PORT"] || "5050";
+const rawPort = process.env["API_PORT"] || "5050";
 
 const port = Number(rawPort);
 

@@ -100,13 +100,25 @@ export default function SetAvailabilityDialog({ open, onOpenChange }: Props) {
 
   const handleSave = async () => {
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 700));
+    try {
+      const storedUser = localStorage.getItem("hexpertify_auth_user");
+      const user = storedUser ? JSON.parse(storedUser) : null;
+      if (user?.id) {
+        await fetch(`/api/consultants/${user.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ availability: schedule })
+        });
+      }
+    } catch (err) {
+      console.error('Error saving availability to DB:', err);
+    }
     setSaving(false);
     setSaved(true);
     setTimeout(() => {
       setSaved(false);
       onOpenChange(false);
-    }, 900);
+    }, 800);
   };
 
   const enabledCount = Object.values(schedule).filter((d) => d.enabled).length;
