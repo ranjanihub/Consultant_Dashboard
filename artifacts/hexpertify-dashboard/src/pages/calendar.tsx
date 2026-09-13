@@ -736,7 +736,7 @@ export default function Calendar() {
           </div>
         </div>
 
-        <div className="lg:col-span-7 p-5 xl:p-6 bg-slate-50/30 flex flex-col overflow-y-auto">
+        <div className="lg:col-span-7 p-5 xl:p-6 bg-slate-50/30 flex flex-col">
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-100">
               <div>
