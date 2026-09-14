@@ -35,6 +35,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/page-header";
 import { ActivityGamePlayer } from "@/components/activity-game-player";
 import { cn } from "@/lib/utils";
+import { getAuthUser } from "@/lib/auth";
 
 export interface ClientAssignment {
   clientName: string;
@@ -59,15 +60,6 @@ export interface ActivityItem {
   frequency?: string; // Default fallback frequency
   timeOfDay?: string; // Default time of day
 }
-
-const CLIENT_LIST = [
-  "Sarah Jenkins",
-  "Michael Chen",
-  "Emily Rodriguez",
-  "David Kim",
-  "Amanda Miller",
-  "Alex Morgan"
-];
 
 const FREQUENCY_OPTIONS = [
   { id: "Daily", label: "Daily", description: "Once every day (Recommended)", icon: "⚡" },
@@ -182,15 +174,19 @@ const CATEGORIES = ["All", "MINDFULNESS", "CBT", "GRATITUDE", "BREATHING", "SOMA
 
 export default function ActivitiesPage() {
   const { toast } = useToast();
+  const authUser = getAuthUser();
   const [activities, setActivities] = useState<ActivityItem[]>(INITIAL_ACTIVITIES);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
+  // Consultant's assigned clients state
+  const [clientList, setClientList] = useState<string[]>([]);
+  const [clientObjects, setClientObjects] = useState<{ id: string; name: string; email: string }[]>([]);
+  const [isLoadingClients, setIsLoadingClients] = useState<boolean>(true);
+
   // Preview Activity Modal State
   const [activeActivity, setActiveActivity] = useState<ActivityItem | null>(null);
   const [previewTab, setPreviewTab] = useState<"game" | "instructions">("game");
-
-
 
   // Assign Modal Multi-Step State
   const [assignModalActivity, setAssignModalActivity] = useState<ActivityItem | null>(null);
@@ -208,6 +204,68 @@ export default function ActivitiesPage() {
   const [editDescription, setEditDescription] = useState("");
   const [editInstructions, setEditInstructions] = useState("");
 
+  // Load clients strictly assigned under this consultant
+  useEffect(() => {
+    const fetchConsultantClients = async () => {
+      try {
+        setIsLoadingClients(true);
+        const myName = authUser?.name || '';
+        const myId = String(authUser?.id || '');
+
+        const queryParams = `?consultantId=${encodeURIComponent(myId)}&consultantName=${encodeURIComponent(myName)}&role=client`;
+        const [usersRes, bookingsRes] = await Promise.all([
+          fetch(`/api/users${queryParams}`).then(r => r.ok ? r.json() : { users: [] }).catch(() => ({ users: [] })),
+          fetch(`/api/bookings${queryParams}`).then(r => r.ok ? r.json() : { bookings: [] }).catch(() => ({ bookings: [] }))
+        ]);
+
+        const rawUsers = Array.isArray(usersRes?.users) ? usersRes.users : [];
+        const rawBookings = Array.isArray(bookingsRes?.bookings) ? bookingsRes.bookings : [];
+
+        const myBookings = rawBookings.filter((b: any) => {
+          const bCid = String(b.consultantId || b.therapistId || '').toLowerCase().trim();
+          const bCname = String(b.consultantName || b.therapistName || '').toLowerCase().trim();
+          return (myId && bCid === myId) || (myName && bCname.includes(myName.toLowerCase())) || (myName && myName.toLowerCase().includes(bCname) && bCname.length > 3);
+        });
+
+        const myUsers = rawUsers.filter((u: any) => {
+          const role = String(u.role || '').toUpperCase();
+          if (role === 'ADMIN' || role === 'THERAPIST' || role === 'CONSULTANT') return false;
+          const uAssignedName = String(u.assignedTherapistName || u.therapist || '').toLowerCase().trim();
+          const uAssignedId = String(u.assignedTherapistId || '').toLowerCase().trim();
+          const isAssigned = (myId && uAssignedId === myId) || (myName && uAssignedName.includes(myName.toLowerCase())) || (myName && myName.toLowerCase().includes(uAssignedName) && uAssignedName.length > 3);
+          const hasBooking = myBookings.some((b: any) =>
+            (b.clientEmail && u.email && b.clientEmail.toLowerCase() === u.email.toLowerCase()) ||
+            (b.clientId && String(u._id || u.id) === String(b.clientId)) ||
+            (b.clientName && u.name && b.clientName.toLowerCase() === u.name.toLowerCase())
+          );
+          return isAssigned || hasBooking;
+        });
+
+        const cObjs = myUsers.map((u: any) => ({
+          id: String(u._id || u.id || ''),
+          name: u.name || u.email?.split('@')[0] || 'Client User',
+          email: u.email || ''
+        }));
+        setClientObjects(cObjs);
+
+        const clientNames = Array.from(new Set(cObjs.map((c: any) => c.name).filter(Boolean)));
+        setClientList(clientNames);
+      } catch (err) {
+        console.error('Failed to load consultant clients in activities:', err);
+      } finally {
+        setIsLoadingClients(false);
+      }
+    };
+
+    fetchConsultantClients();
+    window.addEventListener('auth_state_change', fetchConsultantClients);
+    window.addEventListener('client_data_updated', fetchConsultantClients);
+    return () => {
+      window.removeEventListener('auth_state_change', fetchConsultantClients);
+      window.removeEventListener('client_data_updated', fetchConsultantClients);
+    };
+  }, [authUser?.id, authUser?.name]);
+
   // Fetch activities from backend API if available
   useEffect(() => {
     const loadActivities = async () => {
@@ -222,7 +280,7 @@ export default function ActivitiesPage() {
               ? item.assignedTo
               : typeof item.assignedTo === "string" && item.assignedTo
               ? [item.assignedTo]
-              : ["Sarah Jenkins"],
+              : [],
             frequency: item.frequency || "Daily",
             timeOfDay: item.timeOfDay || "Morning (8:00 AM)"
           }));
@@ -239,8 +297,6 @@ export default function ActivitiesPage() {
     setActiveActivity(act);
     setPreviewTab("game");
   };
-
-
 
   const handleDelete = async (act: ActivityItem) => {
     try {
@@ -259,11 +315,15 @@ export default function ActivitiesPage() {
   const openAssignModal = (act: ActivityItem, targetClient?: string) => {
     setAssignModalActivity(act);
     setAssignStep(targetClient ? 2 : 1);
-    const clients = targetClient ? [targetClient] : (act.assignedTo || ["Sarah Jenkins"]);
+    const clients = targetClient 
+      ? [targetClient] 
+      : (act.assignedTo && act.assignedTo.length > 0
+          ? act.assignedTo.filter((c: string) => clientList.includes(c))
+          : (clientList.length > 0 ? [clientList[0]] : []));
     setSelectedClientsToAssign(clients);
 
     const initialFreqs: Record<string, { frequency: string; timeOfDay: string }> = {};
-    CLIENT_LIST.forEach((cName) => {
+    clientList.forEach((cName) => {
       const existing = act.clientAssignments?.find((ca) => ca.clientName === cName);
       initialFreqs[cName] = {
         frequency: existing?.frequency || act.frequency || "Daily",
@@ -282,10 +342,10 @@ export default function ActivitiesPage() {
   };
 
   const toggleSelectAllClients = () => {
-    if (selectedClientsToAssign.length === CLIENT_LIST.length) {
+    if (selectedClientsToAssign.length === clientList.length) {
       setSelectedClientsToAssign([]);
     } else {
-      setSelectedClientsToAssign([...CLIENT_LIST]);
+      setSelectedClientsToAssign([...clientList]);
     }
   };
 
@@ -322,8 +382,19 @@ export default function ActivitiesPage() {
     });
   };
 
-  const handleConfirmAssign = () => {
+  const handleConfirmAssign = async () => {
     if (!assignModalActivity) return;
+
+    const clientsPayload = selectedClientsToAssign.map((cName) => {
+      const matched = clientObjects.find((c) => c.name === cName);
+      return {
+        clientId: matched?.id || '',
+        clientName: cName,
+        clientEmail: matched?.email || '',
+        frequency: clientFrequencies[cName]?.frequency || "Daily",
+        timeOfDay: clientFrequencies[cName]?.timeOfDay || "Morning (8:00 AM)",
+      };
+    });
 
     const updatedAssignments: ClientAssignment[] = selectedClientsToAssign.map((cName) => ({
       clientName: cName,
@@ -344,9 +415,31 @@ export default function ActivitiesPage() {
       )
     );
 
+    // Persist assignment and dispatch in-app notifications to clients
+    try {
+      await fetch('/api/activities/assign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          activityId: assignModalActivity.id,
+          activityTitle: assignModalActivity.title,
+          activityCategory: assignModalActivity.category,
+          consultantId: authUser?.id || '',
+          consultantName: authUser?.name || 'Your Consultant',
+          assignedTo: selectedClientsToAssign,
+          clients: clientsPayload
+        })
+      });
+    } catch (err) {
+      console.error('Failed to post activity assignment:', err);
+    }
+
+    window.dispatchEvent(new CustomEvent('client_data_updated'));
+    window.dispatchEvent(new CustomEvent('notification_created'));
+
     toast({
-      title: "Per-Client Frequencies Saved!",
-      description: `"${assignModalActivity.title}" assigned to ${selectedClientsToAssign.length} client(s) with custom frequency schedules.`,
+      title: "Activity Assigned & Clients Notified!",
+      description: `"${assignModalActivity.title}" assigned to ${selectedClientsToAssign.length} client(s). In-app notification dispatched to their panel.`,
     });
 
     setAssignModalActivity(null);
@@ -512,16 +605,22 @@ export default function ActivitiesPage() {
                         <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                           Quick Assign to Client:
                         </div>
-                        {CLIENT_LIST.slice(0, 4).map((clientName) => (
-                          <DropdownMenuItem
-                            key={clientName}
-                            onClick={() => openAssignModal(act, clientName)}
-                            className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold rounded-lg cursor-pointer text-slate-700 hover:bg-slate-50"
-                          >
-                            <span>{clientName}</span>
-                            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                          </DropdownMenuItem>
-                        ))}
+                        {clientList.length > 0 ? (
+                          clientList.slice(0, 4).map((clientName) => (
+                            <DropdownMenuItem
+                              key={clientName}
+                              onClick={() => openAssignModal(act, clientName)}
+                              className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold rounded-lg cursor-pointer text-slate-700 hover:bg-slate-50"
+                            >
+                              <span>{clientName}</span>
+                              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                            </DropdownMenuItem>
+                          ))
+                        ) : (
+                          <div className="px-3 py-1.5 text-xs text-slate-400 italic">
+                            No clients assigned
+                          </div>
+                        )}
 
                         <DropdownMenuSeparator className="my-1" />
 
@@ -734,47 +833,59 @@ export default function ActivitiesPage() {
               <div className="space-y-4 my-3">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                    Clients ({selectedClientsToAssign.length} selected)
+                    My Assigned Clients ({selectedClientsToAssign.length} of {clientList.length} selected)
                   </span>
-                  <button
-                    type="button"
-                    onClick={toggleSelectAllClients}
-                    className="text-xs font-bold text-[#5e2be2] hover:underline cursor-pointer"
-                  >
-                    {selectedClientsToAssign.length === CLIENT_LIST.length ? "Deselect All" : "Select All"}
-                  </button>
+                  {clientList.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={toggleSelectAllClients}
+                      className="text-xs font-bold text-[#5e2be2] hover:underline cursor-pointer"
+                    >
+                      {selectedClientsToAssign.length === clientList.length ? "Deselect All" : "Select All"}
+                    </button>
+                  )}
                 </div>
 
                 <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                  {CLIENT_LIST.map((client) => {
-                    const isChecked = selectedClientsToAssign.includes(client);
-                    return (
-                      <div
-                        key={client}
-                        onClick={() => toggleClientSelection(client)}
-                        className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer select-none ${
-                          isChecked
-                            ? "bg-purple-50/80 border-[#5e2be2]/40 text-[#5e2be2] font-semibold"
-                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${
-                              isChecked
-                                ? "bg-[#5e2be2] border-[#5e2be2] text-white"
-                                : "border-slate-300 bg-white"
-                            }`}
-                          >
-                            {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                  {isLoadingClients ? (
+                    <div className="p-6 text-center text-xs text-slate-400 font-medium">
+                      Loading your assigned clients...
+                    </div>
+                  ) : clientList.length === 0 ? (
+                    <div className="p-6 text-center text-xs text-slate-500 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
+                      <p className="font-bold text-slate-700">No assigned clients found</p>
+                      <p className="text-slate-400">Only clients assigned to you under your consultant profile will appear here.</p>
+                    </div>
+                  ) : (
+                    clientList.map((client) => {
+                      const isChecked = selectedClientsToAssign.includes(client);
+                      return (
+                        <div
+                          key={client}
+                          onClick={() => toggleClientSelection(client)}
+                          className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer select-none ${
+                            isChecked
+                              ? "bg-purple-50/80 border-[#5e2be2]/40 text-[#5e2be2] font-semibold"
+                              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${
+                                isChecked
+                                  ? "bg-[#5e2be2] border-[#5e2be2] text-white"
+                                  : "border-slate-300 bg-white"
+                              }`}
+                            >
+                              {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                            </div>
+                            <span className="text-sm font-semibold">{client}</span>
                           </div>
-                          <span className="text-sm font-semibold">{client}</span>
+                          <span className="text-[11px] text-slate-400 font-medium">Assigned Client</span>
                         </div>
-
-
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
               </div>
             )}

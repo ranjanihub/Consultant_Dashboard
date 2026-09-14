@@ -965,20 +965,20 @@ export default function Assessments() {
   const [assessments, setAssessments] = useState<ClinicalAssessment[]>(mockAssessmentsData);
   const [submissions, setSubmissions] = useState<AssessmentSubmission[]>([]);
   const [assignments, setAssignments] = useState<AssessmentAssignment[]>([]);
-  const [clientList, setClientList] = useState<string[]>(["Ranjani B"]);
+  const [clientList, setClientList] = useState<string[]>([]);
   const [clientObjects, setClientObjects] = useState<any[]>([]);
 
   // Load real submissions, assignments, and respected clients from MongoDB Atlas
   useEffect(() => {
     async function loadData() {
       try {
-        const myName = authUser?.name || 'Sadaf Bhimani';
+        const myName = authUser?.name || '';
         const myId = String(authUser?.id || '');
 
         const [assessRes, usersRes, bookingsRes] = await Promise.all([
           fetch(`/api/assessments?consultantName=${encodeURIComponent(myName)}`).then(r => r.ok ? r.json() : { submissions: [], assignments: [] }).catch(() => ({ submissions: [], assignments: [] })),
-          fetch('/api/users').then(r => r.ok ? r.json() : { users: [] }).catch(() => ({ users: [] })),
-          fetch('/api/bookings').then(r => r.ok ? r.json() : { bookings: [] }).catch(() => ({ bookings: [] }))
+          fetch(`/api/users?consultantId=${encodeURIComponent(myId)}&consultantName=${encodeURIComponent(myName)}&role=client`).then(r => r.ok ? r.json() : { users: [] }).catch(() => ({ users: [] })),
+          fetch(`/api/bookings?consultantId=${encodeURIComponent(myId)}&consultantName=${encodeURIComponent(myName)}`).then(r => r.ok ? r.json() : { bookings: [] }).catch(() => ({ bookings: [] }))
         ]);
 
         if (Array.isArray(assessRes?.submissions)) {
@@ -1020,10 +1020,6 @@ export default function Assessments() {
             cMap.set(b.clientName, { id: b.clientId || b.id, name: b.clientName, email: b.clientEmail });
           }
         });
-
-        if (cMap.size === 0) {
-          cMap.set("Ranjani B", { id: "client-ranjani", name: "Ranjani B", email: "ranjaniranjani5694@gmail.com" });
-        }
 
         const cObjs = Array.from(cMap.values());
         setClientObjects(cObjs);

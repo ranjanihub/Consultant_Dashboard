@@ -12,15 +12,15 @@ export interface AuthUser {
 }
 
 export const DEFAULT_THERAPIST: AuthUser = {
-  id: "consultant-1",
-  name: "Sadaf Bhimani",
+  id: "doc-1",
+  name: "Dr. Evelyn Reed",
   title: "Licensed Clinical Psychologist",
   profession: "Licensed Clinical Psychologist",
-  email: "sadafbhimani21@gmail.com",
+  email: "dr.evelyn@hexpertify.com",
   role: "therapist",
-  avatarInitials: "SB",
-  photoUrl: "https://res.cloudinary.com/ddgvdabyf/image/upload/v1766954534/uploads/orwxj9dw0f2bnj5cgxex.webp",
-  image: "https://res.cloudinary.com/ddgvdabyf/image/upload/v1766954534/uploads/orwxj9dw0f2bnj5cgxex.webp"
+  avatarInitials: "ER",
+  photoUrl: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80",
+  image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80"
 };
 
 const STORAGE_KEY = "hexpertify_auth_user";

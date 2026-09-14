@@ -169,7 +169,14 @@ export default function Messages() {
         const matchedDbMessages = rawMessages.filter((m: any) => {
           const mCEmail = (m.clientEmail || m.recipientEmail || m.senderEmail || '').toLowerCase();
           const mCId = String(m.clientId || m.recipientId || m.senderId || '');
-          return (clientEmailLower && mCEmail === clientEmailLower) || (clientIdStr && mCId === clientIdStr);
+          const isMyClient = (clientEmailLower && mCEmail === clientEmailLower) || (clientIdStr && mCId === clientIdStr);
+
+          // Strictly match consultant identity
+          const mThId = String(m.consultantId || m.therapistId || m.receiverId || m.senderId || '').toLowerCase().trim();
+          const mThName = String(m.consultantName || m.therapistName || m.receiverName || m.senderName || '').toLowerCase().trim();
+          const isMyConsultant = (myId && mThId === myId) || (myName && mThName.includes(myName)) || (myName && myName.includes(mThName) && mThName.length > 3);
+
+          return isMyClient && isMyConsultant;
         });
 
         let history: Message[] = [];
@@ -187,17 +194,10 @@ export default function Messages() {
             };
           });
         } else {
-          history = [
-            {
-              id: 1,
-              sender: "therapist",
-              text: `Hello ${client.name.split(' ')[0]}, looking forward to our upcoming ${client.serviceTitle} session. Let me know if you have any questions beforehand.`,
-              time: "Yesterday, 3:15 PM"
-            }
-          ];
+          history = [];
         }
 
-        const lastMsg = history[history.length - 1];
+        const lastMsg = history.length > 0 ? history[history.length - 1] : null;
 
         return {
           id: client.id,
@@ -205,9 +205,9 @@ export default function Messages() {
           name: client.name,
           status: "offline",
           serviceTitle: client.serviceTitle,
-          lastMessage: lastMsg?.text || "Session scheduled",
+          lastMessage: lastMsg?.text || "No messages yet",
           unreadCount: 0,
-          time: lastMsg?.time || "Today",
+          time: lastMsg?.time || "",
           lastActivityTime: lastActivity,
           history
         };
@@ -609,28 +609,42 @@ export default function Messages() {
 
             {/* Chat body */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {activeChat.history.map((msg) => {
-                const isTherapist = msg.sender === "therapist";
-                return (
-                  <div key={msg.id} className={`flex ${isTherapist ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[70%] flex flex-col ${isTherapist ? "items-end" : "items-start"}`}>
-                      <div
-                        className={`px-4 py-2.5 rounded-2xl text-[13px] leading-relaxed shadow-xs ${
-                          isTherapist
-                            ? "bg-[#5e2be2] text-white rounded-tr-none"
-                            : "bg-white text-slate-800 rounded-tl-none border border-slate-200"
-                        }`}
-                      >
-                        {msg.text}
-                      </div>
-                      <div className="flex items-center gap-1 mt-1 px-1">
-                        <span className="text-[10px] text-slate-400 font-medium">{msg.time}</span>
-                        {isTherapist && <CheckCheck className="w-3.5 h-3.5 text-[#5e2be2]" />}
+              {activeChat.history.length === 0 ? (
+                <div className="h-full flex items-center justify-center p-8 text-center min-h-[300px]">
+                  <div className="space-y-3 max-w-xs">
+                    <div className="w-12 h-12 rounded-full bg-purple-100 text-[#5e2be2] flex items-center justify-center mx-auto">
+                      <MessageSquare className="w-6 h-6 stroke-[2]" />
+                    </div>
+                    <h3 className="font-extrabold text-sm text-slate-800">No Messages Yet</h3>
+                    <p className="text-xs text-slate-500 font-medium">
+                      Send a message to start communicating with {activeChat.name} regarding their clinical care.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                activeChat.history.map((msg) => {
+                  const isTherapist = msg.sender === "therapist";
+                  return (
+                    <div key={msg.id} className={`flex ${isTherapist ? "justify-end" : "justify-start"}`}>
+                      <div className={`max-w-[70%] flex flex-col ${isTherapist ? "items-end" : "items-start"}`}>
+                        <div
+                          className={`px-4 py-2.5 rounded-2xl text-[13px] leading-relaxed shadow-xs ${
+                            isTherapist
+                              ? "bg-[#5e2be2] text-white rounded-tr-none"
+                              : "bg-white text-slate-800 rounded-tl-none border border-slate-200"
+                          }`}
+                        >
+                          {msg.text}
+                        </div>
+                        <div className="flex items-center gap-1 mt-1 px-1">
+                          <span className="text-[10px] text-slate-400 font-medium">{msg.time}</span>
+                          {isTherapist && <CheckCheck className="w-3.5 h-3.5 text-[#5e2be2]" />}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
 
               {/* Real-time Typing Bubble */}
               {isClientTyping && (
