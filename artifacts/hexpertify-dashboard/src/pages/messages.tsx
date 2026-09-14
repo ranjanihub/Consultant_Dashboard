@@ -227,110 +227,86 @@ export default function Messages() {
     }
   };
 
+  // Initial load, 2.5s polling loop, and focus sync
   useEffect(() => {
     loadMessagesData(true);
+
+    // Active real-time poller (every 2.5s)
+    const poller = setInterval(() => {
+      loadMessagesData(false);
+    }, 2500);
+
+    const handleFocus = () => loadMessagesData(false);
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleFocus);
+
+    return () => {
+      clearInterval(poller);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleFocus);
+    };
   }, [authUser]);
 
-  // ⚡ INSTANT 0ms REAL-TIME SERVER-SENT EVENTS (SSE) LISTENER FOR MESSAGES & LIVE PRESENCE
+  // ⚡ INSTANT 0ms REAL-TIME SERVER-SENT EVENTS (SSE) LISTENER WITH AUTO-RECONNECT
   useEffect(() => {
-    const sse = new EventSource(`/api/messages/stream?email=${encodeURIComponent(authUser?.email || '')}&role=consultant`);
+    const userEmail = (authUser?.email || '').toLowerCase().trim();
+    if (!userEmail) return;
 
-    sse.onmessage = (event) => {
+    let sse: EventSource | null = null;
+    let reconnectTimer: NodeJS.Timeout | null = null;
+    let isSubscribed = true;
+
+    const connectSSE = () => {
+      if (!isSubscribed) return;
       try {
-        const parsed = JSON.parse(event.data);
+        sse = new EventSource(`/api/messages/stream?email=${encodeURIComponent(userEmail)}&role=consultant`);
 
-        // 1. Live Presence Update (Connected / Disconnected)
-        if (parsed.type === 'CONNECTED' && parsed.onlineEmails) {
-          setOnlineEmails(new Set(parsed.onlineEmails.map((e: string) => e.toLowerCase())));
-        }
+        sse.onmessage = (event) => {
+          try {
+            const parsed = JSON.parse(event.data);
 
-        if (parsed.type === 'PRESENCE_CHANGE' && parsed.data?.onlineEmails) {
-          setOnlineEmails(new Set(parsed.data.onlineEmails.map((e: string) => e.toLowerCase())));
-        }
-
-        // 2. Instant New Message Delivery + Jump to 1st Place + Notification
-        if (parsed.type === 'NEW_MESSAGE' && parsed.data) {
-          const newMsg = parsed.data;
-          const isSenderTherapist = (newMsg.senderRole === 'therapist' || newMsg.sender === 'therapist');
-
-          const formattedMessage: Message = {
-            id: newMsg.id || newMsg._id || Date.now(),
-            sender: isSenderTherapist ? 'therapist' : 'client',
-            text: newMsg.content || newMsg.text || '',
-            time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-          };
-
-          // Play chime and show toast if sent by client
-          if (!isSenderTherapist) {
-            playNotificationChime();
-            setIncomingNotification({
-              senderName: newMsg.clientName || newMsg.senderName || 'Client',
-              text: formattedMessage.text
-            });
-            setTimeout(() => setIncomingNotification(null), 5000);
-
-            if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-              try {
-                new Notification(`💬 Message from ${newMsg.clientName || newMsg.senderName}`, {
-                  body: formattedMessage.text,
-                  icon: '/hexpertify-logo.png'
-                });
-              } catch {}
+            if (parsed.type === 'CONNECTED' && parsed.onlineEmails) {
+              setOnlineEmails(new Set(parsed.onlineEmails.map((e: string) => e.toLowerCase())));
             }
-          }
 
-          setChats(prevChats => {
-            let targetChat: Chat | null = null;
-            const otherChats: Chat[] = [];
+            if (parsed.type === 'PRESENCE_CHANGE' && parsed.data?.onlineEmails) {
+              setOnlineEmails(new Set(parsed.data.onlineEmails.map((e: string) => e.toLowerCase())));
+            }
 
-            for (const chat of prevChats) {
-              const matchesClient = 
-                (newMsg.clientEmail && chat.clientEmail && newMsg.clientEmail.toLowerCase() === chat.clientEmail.toLowerCase()) ||
-                (newMsg.clientId && String(chat.id) === String(newMsg.clientId)) ||
-                (newMsg.clientName && chat.name && newMsg.clientName.toLowerCase() === chat.name.toLowerCase());
+            if (parsed.type === 'NEW_MESSAGE' && parsed.data) {
+              loadMessagesData(false);
+              setIsClientTyping(false);
+              setTimeout(scrollToBottom, 50);
+            }
 
-              if (matchesClient) {
-                const alreadyHas = chat.history.some(m => String(m.id) === String(formattedMessage.id));
-                const isCurrentlyOpen = String(chat.id) === String(activeChatIdRef.current);
-
-                targetChat = {
-                  ...chat,
-                  lastMessage: formattedMessage.text,
-                  time: "Just now",
-                  lastActivityTime: Date.now(),
-                  unreadCount: isCurrentlyOpen || isSenderTherapist ? 0 : (chat.unreadCount + 1),
-                  history: alreadyHas ? chat.history : [...chat.history, formattedMessage]
-                };
-              } else {
-                otherChats.push(chat);
+            if (parsed.type === 'TYPING' && parsed.data) {
+              const { senderRole, isTyping } = parsed.data;
+              if (senderRole === 'client') {
+                setIsClientTyping(Boolean(isTyping));
               }
             }
+          } catch (err) {}
+        };
 
-            if (targetChat) {
-              // 🏆 BRING THIS CLIENT TO THE VERY 1st PLACE IN THE LIST!
-              return [targetChat, ...otherChats];
-            }
-            return prevChats;
-          });
-
-          setIsClientTyping(false);
-          setTimeout(scrollToBottom, 50);
-        }
-
-        // 3. Instant Live Typing Indicator
-        if (parsed.type === 'TYPING' && parsed.data) {
-          const { senderRole, isTyping } = parsed.data;
-          if (senderRole === 'client') {
-            setIsClientTyping(Boolean(isTyping));
+        sse.onerror = () => {
+          if (sse) sse.close();
+          if (isSubscribed) {
+            reconnectTimer = setTimeout(connectSSE, 4000);
           }
+        };
+      } catch {
+        if (isSubscribed) {
+          reconnectTimer = setTimeout(connectSSE, 4000);
         }
-      } catch (err) {
-        console.error('SSE Message parsing error:', err);
       }
     };
 
+    connectSSE();
+
     return () => {
-      sse.close();
+      isSubscribed = false;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (sse) sse.close();
     };
   }, [authUser]);
 
