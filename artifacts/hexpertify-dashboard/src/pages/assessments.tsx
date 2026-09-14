@@ -976,7 +976,7 @@ export default function Assessments() {
         const myId = String(authUser?.id || '');
 
         const [assessRes, usersRes, bookingsRes] = await Promise.all([
-          fetch(`/api/assessments?consultantName=${encodeURIComponent(myName)}`).then(r => r.ok ? r.json() : { submissions: [], assignments: [] }).catch(() => ({ submissions: [], assignments: [] })),
+          fetch(`/api/assessments?consultantId=${encodeURIComponent(myId)}&consultantName=${encodeURIComponent(myName)}`).then(r => r.ok ? r.json() : { submissions: [], assignments: [] }).catch(() => ({ submissions: [], assignments: [] })),
           fetch(`/api/users?consultantId=${encodeURIComponent(myId)}&consultantName=${encodeURIComponent(myName)}&role=client`).then(r => r.ok ? r.json() : { users: [] }).catch(() => ({ users: [] })),
           fetch(`/api/bookings?consultantId=${encodeURIComponent(myId)}&consultantName=${encodeURIComponent(myName)}`).then(r => r.ok ? r.json() : { bookings: [] }).catch(() => ({ bookings: [] }))
         ]);
@@ -1029,6 +1029,8 @@ export default function Assessments() {
       }
     }
     loadData();
+    const interval = setInterval(loadData, 3500);
+    return () => clearInterval(interval);
   }, [authUser?.name, authUser?.id]);
 
   // Active Navigation Tab: 'library' | 'submissions' | 'assignments'
