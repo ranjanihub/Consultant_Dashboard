@@ -248,7 +248,7 @@ export default function ActivitiesPage() {
         }));
         setClientObjects(cObjs);
 
-        const clientNames = Array.from(new Set(cObjs.map((c: any) => c.name).filter(Boolean)));
+        const clientNames: string[] = Array.from(new Set(cObjs.map((c: any) => String(c.name)).filter(Boolean)));
         setClientList(clientNames);
       } catch (err) {
         console.error('Failed to load consultant clients in activities:', err);
