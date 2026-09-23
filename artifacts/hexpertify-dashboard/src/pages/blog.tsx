@@ -34,6 +34,7 @@ import {
   Calendar,
   Filter,
   Info,
+  Image as ImageIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 
@@ -43,7 +44,7 @@ const postSchema = z.object({
   category: z.string().min(1, "Please select a category."),
   tags: z.string().optional(),
   content: z.string().min(1, "Content is required."),
-  featuredImage: z.string().url("Must be a valid URL.").optional().or(z.literal("")),
+  featuredImage: z.string().optional().nullable().or(z.literal("")),
 });
 
 const outlineSchema = z.object({
@@ -56,12 +57,17 @@ const outlineSchema = z.object({
 
 /* ── types ────────────────────────────────────────────────── */
 interface BlogPostItem {
-  id: number;
+  id: number | string;
   title: string;
   category: string;
   tags?: string[];
   content: string;
   featuredImage?: string | null;
+  fileUrl?: string | null;
+  fileName?: string | null;
+  fileType?: string | null;
+  fileSize?: number | null;
+  isPdf?: boolean;
   status: "published" | "submitted" | "draft" | string;
   author?: string;
   createdAt: string;
@@ -98,6 +104,49 @@ function timeAgo(dateString: string | Date) {
   if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
   if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
   return `${Math.floor(secs / 86400)}d ago`;
+}
+
+// ── PDF Utilities ──────────────────────────────────────────
+export function getPdfBlobUrl(urlOrDataUrl?: string | null): string {
+  if (!urlOrDataUrl) return "";
+  if (!urlOrDataUrl.startsWith("data:")) return urlOrDataUrl;
+  try {
+    const parts = urlOrDataUrl.split(",");
+    const mimeMatch = parts[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : "application/pdf";
+    const base64Data = parts[1] || "";
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Uint8Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const blob = new Blob([byteNumbers], { type: mime });
+    return URL.createObjectURL(blob);
+  } catch (err) {
+    console.error("Failed to convert Data URL to Blob URL:", err);
+    return urlOrDataUrl;
+  }
+}
+
+export function openPdfWindow(urlOrDataUrl?: string | null) {
+  if (!urlOrDataUrl) return;
+  const blobUrl = getPdfBlobUrl(urlOrDataUrl);
+  if (blobUrl) {
+    const win = window.open(blobUrl, "_blank", "noopener,noreferrer");
+    if (win) win.focus();
+  }
+}
+
+export function downloadPdfFile(urlOrDataUrl?: string | null, fileName: string = "Document.pdf") {
+  if (!urlOrDataUrl) return;
+  const blobUrl = getPdfBlobUrl(urlOrDataUrl);
+  if (!blobUrl) return;
+  const link = document.createElement("a");
+  link.href = blobUrl;
+  link.download = fileName.endsWith(".pdf") ? fileName : `${fileName}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 /* ── tab pill ─────────────────────────────────────────────── */
@@ -212,6 +261,7 @@ function FullBlogForm({
   const submitPost = useSubmitBlogPost();
   const [contentMode, setContentMode] = useState<"text" | "file">("text");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [fileDataUrl, setFileDataUrl] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof postSchema>>({
     resolver: zodResolver(postSchema),
@@ -226,14 +276,23 @@ function FullBlogForm({
   });
 
   function onSubmit(values: z.infer<typeof postSchema>) {
+    const isPdf = uploadedFile
+      ? (uploadedFile.type === 'application/pdf' || uploadedFile.name.toLowerCase().endsWith('.pdf'))
+      : false;
+
     submitPost.mutate(
       {
         data: {
           title: values.title,
           category: values.category,
           tags: values.tags ? values.tags.split(",").map((t) => t.trim()) : [],
-          content: values.content,
+          content: contentMode === "file" && uploadedFile ? `[Attached Document: ${uploadedFile.name}]` : values.content,
           featuredImage: values.featuredImage || null,
+          fileUrl: contentMode === "file" ? fileDataUrl : null,
+          fileName: contentMode === "file" && uploadedFile ? uploadedFile.name : null,
+          fileType: contentMode === "file" && uploadedFile ? (uploadedFile.type || (isPdf ? 'application/pdf' : 'text/plain')) : null,
+          fileSize: contentMode === "file" && uploadedFile ? uploadedFile.size : null,
+          isPdf: contentMode === "file" ? isPdf : false,
           author: "Dr. Evelyn Reed, PhD",
           authorEmail: "dr.evelyn@hexpertify.com",
           authorRole: "Licensed Clinical Psychologist",
@@ -244,10 +303,14 @@ function FullBlogForm({
       {
         onSuccess: () => {
           toast({
-            title: "Blog post submitted successfully!",
-            description: "Your post is now listed in your submitted blogs.",
+            title: isPdf ? "PDF Blog post submitted for editorial review!" : "Blog post submitted successfully!",
+            description: isPdf
+              ? `PDF "${uploadedFile?.name}" has been submitted for admin review.`
+              : "Your post is now listed in your submitted blogs.",
           });
           form.reset();
+          setUploadedFile(null);
+          setFileDataUrl(null);
           onSuccessSubmit();
         },
         onError: () =>
@@ -343,6 +406,156 @@ function FullBlogForm({
               />
             </div>
 
+            {/* Featured / Cover Image Section */}
+            <FormField
+              control={form.control}
+              name="featuredImage"
+              render={({ field }) => (
+                <FormItem className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="flex items-center gap-1.5 font-bold text-sm text-slate-800">
+                      <ImageIcon className="w-4 h-4 text-primary" />
+                      Article Cover Image <span className="text-xs font-normal text-muted-foreground">(Optional)</span>
+                    </FormLabel>
+                    {field.value ? (
+                      <button
+                        type="button"
+                        onClick={() => field.onChange("")}
+                        className="text-xs text-destructive hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                      >
+                        <X className="w-3 h-3" /> Remove Cover Image
+                      </button>
+                    ) : null}
+                  </div>
+
+                  {/* If Cover Image is selected -> Live Banner Preview */}
+                  {field.value ? (
+                    <div className="relative rounded-2xl overflow-hidden border border-border shadow-sm group">
+                      <img
+                        src={field.value}
+                        alt="Cover Preview"
+                        className="w-full h-44 sm:h-52 object-cover bg-slate-100"
+                        onError={() => {
+                          toast({ title: "Image Error", description: "Failed to load image from URL", variant: "destructive" });
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <label className="px-3.5 py-2 rounded-xl bg-white text-slate-900 text-xs font-bold shadow-lg hover:bg-slate-100 transition-all cursor-pointer flex items-center gap-1.5">
+                          <Upload className="w-3.5 h-3.5 text-primary" /> Change Image
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/jpg,image/webp"
+                            className="sr-only"
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f) {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => {
+                                  field.onChange(ev.target?.result as string);
+                                };
+                                reader.readAsDataURL(f);
+                              }
+                            }}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => field.onChange("")}
+                          className="px-3.5 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold shadow-lg hover:bg-rose-700 transition-all flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Remove
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Image Upload Box + Direct URL input + Quick Presets */
+                    <div className="p-4 rounded-2xl border border-dashed border-border bg-secondary/20 space-y-3">
+                      <div className="flex flex-col sm:flex-row items-center gap-3">
+                        {/* File Upload Button */}
+                        <label className="w-full sm:w-auto px-4 py-2 rounded-xl bg-white hover:bg-primary/5 text-primary border border-primary/30 hover:border-primary text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0">
+                          <Upload className="w-4 h-4" />
+                          <span>Upload Image File</span>
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/jpg,image/webp"
+                            className="sr-only"
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f) {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => {
+                                  field.onChange(ev.target?.result as string);
+                                };
+                                reader.readAsDataURL(f);
+                              }
+                            }}
+                          />
+                        </label>
+
+                        <span className="text-xs text-muted-foreground font-medium">or link:</span>
+
+                        {/* Direct URL input */}
+                        <FormControl className="flex-1 w-full">
+                          <Input
+                            placeholder="Paste image link (https://...)"
+                            value={field.value || ""}
+                            onChange={(e) => field.onChange(e.target.value)}
+                            className="bg-white text-xs"
+                          />
+                        </FormControl>
+                      </div>
+
+                      {/* Curated Aesthetic Presets */}
+                      <div className="pt-2 border-t border-border/60">
+                        <p className="text-[11px] font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
+                          <Sparkles className="w-3 h-3 text-primary" /> Quick cover presets:
+                        </p>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {[
+                            {
+                              label: "Mindfulness & Zen",
+                              url: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&auto=format&fit=crop&q=80",
+                            },
+                            {
+                              label: "Brain Science",
+                              url: "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=800&auto=format&fit=crop&q=80",
+                            },
+                            {
+                              label: "Clinical Therapy",
+                              url: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&auto=format&fit=crop&q=80",
+                            },
+                            {
+                              label: "Calm Nature",
+                              url: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&auto=format&fit=crop&q=80",
+                            },
+                          ].map((preset) => (
+                            <button
+                              key={preset.label}
+                              type="button"
+                              onClick={() => field.onChange(preset.url)}
+                              className="group/preset relative h-14 rounded-xl overflow-hidden border border-border/80 hover:border-primary hover:shadow-md transition-all text-left cursor-pointer"
+                            >
+                              <img
+                                src={preset.url}
+                                alt={preset.label}
+                                className="w-full h-full object-cover group-hover/preset:scale-105 transition-transform duration-300"
+                              />
+                              <div className="absolute inset-0 bg-slate-950/40 group-hover/preset:bg-slate-950/20 transition-colors flex items-end p-1.5">
+                                <span className="text-[10px] font-bold text-white leading-tight drop-shadow-sm">
+                                  {preset.label}
+                                </span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {/* Content with Write / Upload toggle */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -410,6 +623,7 @@ function FullBlogForm({
                     type="button"
                     onClick={() => {
                       setUploadedFile(null);
+                      setFileDataUrl(null);
                       form.setValue("content", "");
                     }}
                     className="text-muted-foreground hover:text-destructive transition-colors"
@@ -438,7 +652,12 @@ function FullBlogForm({
                       const f = e.target.files?.[0];
                       if (f) {
                         setUploadedFile(f);
-                        form.setValue("content", f.name);
+                        form.setValue("content", `[Attached Document: ${f.name}]`);
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                          setFileDataUrl(ev.target?.result as string);
+                        };
+                        reader.readAsDataURL(f);
                       }
                     }}
                   />
@@ -486,6 +705,7 @@ function OutlineForm({
   const submitOutline = useSubmitBlogOutline();
   const [outlineMode, setOutlineMode] = useState<"text" | "pdf">("text");
   const [uploadedPdf, setUploadedPdf] = useState<File | null>(null);
+  const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof outlineSchema>>({
     resolver: zodResolver(outlineSchema),
@@ -519,6 +739,11 @@ function OutlineForm({
           targetAudience: values.targetAudience,
           keywords: values.keywords.split(",").map((k) => k.trim()),
           notes: finalNotes || null,
+          fileUrl: uploadedPdf ? pdfDataUrl : null,
+          fileName: uploadedPdf ? uploadedPdf.name : null,
+          fileType: uploadedPdf ? (uploadedPdf.type || 'application/pdf') : null,
+          fileSize: uploadedPdf ? uploadedPdf.size : null,
+          isPdf: Boolean(uploadedPdf),
           author: "Dr. Evelyn Reed, PhD",
           authorEmail: "dr.evelyn@hexpertify.com",
           authorRole: "Licensed Clinical Psychologist",
@@ -534,6 +759,7 @@ function OutlineForm({
           });
           form.reset();
           setUploadedPdf(null);
+          setPdfDataUrl(null);
           onSuccessSubmit();
         },
         onError: () =>
@@ -685,6 +911,11 @@ function OutlineForm({
                           const f = e.target.files?.[0];
                           if (f) {
                             setUploadedPdf(f);
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              setPdfDataUrl(ev.target?.result as string);
+                            };
+                            reader.readAsDataURL(f);
                             if (!form.getValues("keyPoints")) {
                               form.setValue(
                                 "keyPoints",
@@ -798,6 +1029,23 @@ export default function Blog() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const [previewPost, setPreviewPost] = useState<BlogPostItem | null>(null);
+  const [activeBlobUrl, setActiveBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    if (previewPost?.fileUrl) {
+      const bUrl = getPdfBlobUrl(previewPost.fileUrl);
+      setActiveBlobUrl(bUrl);
+      cleanup = () => {
+        if (bUrl && bUrl.startsWith("blob:")) {
+          URL.revokeObjectURL(bUrl);
+        }
+      };
+    } else {
+      setActiveBlobUrl(null);
+    }
+    return cleanup;
+  }, [previewPost?.fileUrl]);
 
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [restoreValues, setRestoreValues] = useState<
@@ -893,7 +1141,7 @@ export default function Blog() {
 
     const matchesStatus =
       statusFilter === "all" ||
-      (statusFilter === "published" && p.status === "published") ||
+      (statusFilter === "published" && (p.status === "published" || p.status === "approved")) ||
       (statusFilter === "submitted" && (p.status === "submitted" || p.status === "pending")) ||
       (statusFilter === "draft" && p.status === "draft");
 
@@ -906,7 +1154,7 @@ export default function Blog() {
       case "approved":
         return (
           <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-100 flex items-center gap-1 font-bold">
-            <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Published
+            <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Approved
           </Badge>
         );
       case "submitted":
@@ -935,7 +1183,7 @@ export default function Blog() {
     <div className="space-y-8 pb-12">
       <PageHeader
         title={view === "list" ? "Submitted Blogs & Articles" : "Submit New Blog Post"}
-        description="Publish psychoeducational content, mental health articles, and practice updates (live after admin review)."
+        description="Submit psychoeducational content, mental health articles, and clinical updates for admin review."
         badge="CONTENT MANAGEMENT"
         icon={<PenTool className="w-4 h-4 text-purple-200" />}
       >
@@ -994,7 +1242,7 @@ export default function Blog() {
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {st === "submitted" ? "Pending" : st}
+                    {st === "submitted" ? "Pending" : st === "published" ? "Approved" : "All"}
                   </button>
                 ))}
               </div>
@@ -1162,9 +1410,97 @@ export default function Blog() {
                 </div>
               </div>
 
-              <div className="prose prose-slate max-w-none text-sm leading-relaxed whitespace-pre-line text-gray-700 bg-slate-50/60 p-5 rounded-xl border border-slate-100">
-                {previewPost.content}
-              </div>
+              {(() => {
+                const isPdf = Boolean(
+                  previewPost.isPdf ||
+                  previewPost.fileType === 'application/pdf' ||
+                  previewPost.fileName?.toLowerCase().endsWith('.pdf') ||
+                  previewPost.content?.toLowerCase().endsWith('.pdf') ||
+                  previewPost.fileUrl?.startsWith('data:application/pdf')
+                );
+                const pdfName = previewPost.fileName || (previewPost.content?.endsWith('.pdf') ? previewPost.content : 'Document.pdf');
+
+                if (isPdf) {
+                  return (
+                    <div className="space-y-4">
+                      {/* PDF Header Card */}
+                      <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-12 h-12 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                            <FileText className="w-6 h-6" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-rose-200 text-rose-800 uppercase tracking-wider">
+                                PDF Document
+                              </span>
+                              {previewPost.fileSize && (
+                                <span className="text-xs text-rose-700 font-medium">
+                                  {(previewPost.fileSize / 1024).toFixed(1)} KB
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm font-bold text-slate-900 truncate mt-0.5">
+                              {pdfName}
+                            </p>
+                          </div>
+                        </div>
+
+                        {previewPost.fileUrl && (
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => openPdfWindow(previewPost.fileUrl!)}
+                              className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+                            >
+                              Open in New Tab
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => downloadPdfFile(previewPost.fileUrl!, pdfName)}
+                              className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                            >
+                              Download PDF
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* PDF Interactive Frame if fileUrl exists */}
+                      {activeBlobUrl ? (
+                        <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 shadow-inner">
+                          <object
+                            data={`${activeBlobUrl}#toolbar=1&navpanes=1&scrollbar=1`}
+                            type="application/pdf"
+                            className="w-full h-[400px] sm:h-[480px] border-none"
+                          >
+                            <iframe
+                              src={`${activeBlobUrl}#toolbar=1`}
+                              className="w-full h-[400px] sm:h-[480px] border-none"
+                              title={pdfName}
+                            />
+                          </object>
+                        </div>
+                      ) : (
+                        <div className="p-6 rounded-2xl border border-dashed border-rose-200 bg-rose-50/50 text-center space-y-1">
+                          <p className="text-xs font-bold text-rose-800">
+                            Attached Document: {pdfName}
+                          </p>
+                          <p className="text-[11px] text-slate-500">
+                            (Document metadata attached. Open in viewer or submit a new version with preview.)
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="prose prose-slate max-w-none text-sm leading-relaxed whitespace-pre-line text-gray-700 bg-slate-50/60 p-5 rounded-xl border border-slate-100">
+                    {previewPost.content}
+                  </div>
+                );
+              })()}
 
               {previewPost.tags && previewPost.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 pt-2 border-t border-border">

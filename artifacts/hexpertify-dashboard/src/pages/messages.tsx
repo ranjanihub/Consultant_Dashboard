@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Send, Search, ArrowLeft, MessageSquare, Users, CheckCheck, Bell } from "lucide-react";
+import { Send, Search, ArrowLeft, MessageSquare, Users, CheckCheck, Bell, X } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -426,14 +426,31 @@ export default function Messages() {
       
       {/* Floating In-App Toast Notification Banner */}
       {incomingNotification && (
-        <div className="absolute top-4 right-4 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-purple-500/30 flex items-center gap-3 animate-in slide-in-from-top-2 duration-300">
+        <div 
+          onClick={() => {
+            setMobileView('chat');
+            setIncomingNotification(null);
+          }}
+          className="absolute top-4 right-4 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-purple-500/30 flex items-center gap-3 animate-in slide-in-from-top-2 duration-300 cursor-pointer hover:bg-slate-800 transition-colors"
+        >
           <div className="w-8 h-8 rounded-full bg-[#5e2be2] flex items-center justify-center shrink-0">
             <Bell className="w-4 h-4 text-white animate-bounce" />
           </div>
-          <div className="text-xs">
+          <div className="text-xs flex-1 min-w-0 pr-1">
             <p className="font-extrabold text-purple-200">New message from {incomingNotification.senderName}</p>
             <p className="text-slate-300 truncate max-w-[240px]">{incomingNotification.text}</p>
           </div>
+          <button 
+            type="button" 
+            onClick={(e) => {
+              e.stopPropagation();
+              setIncomingNotification(null);
+            }}
+            className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            aria-label="Close notification"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 
