@@ -724,7 +724,7 @@ function OutlineForm({
     let finalNotes = values.notes || "";
 
     if (uploadedPdf) {
-      const pdfNote = `[Attached PDF Pitch Document: ${uploadedPdf.name} (${(uploadedPdf.size / 1024).toFixed(1)} KB)]`;
+      const pdfNote = `[Attached PDF Document: ${uploadedPdf.name} (${(uploadedPdf.size / 1024).toFixed(1)} KB)]`;
       if (!finalKeyPoints.length) {
         finalKeyPoints = [pdfNote];
       }
@@ -752,9 +752,9 @@ function OutlineForm({
       {
         onSuccess: () => {
           toast({
-            title: "Outline pitched successfully!",
+            title: "Outline submitted successfully!",
             description: uploadedPdf
-              ? `Pitch outline with attached PDF "${uploadedPdf.name}" submitted!`
+              ? `Outline with attached PDF "${uploadedPdf.name}" submitted!`
               : "Our editorial team will review your outline shortly.",
           });
           form.reset();
@@ -765,7 +765,7 @@ function OutlineForm({
         onError: () =>
           toast({
             title: "Error",
-            description: "Failed to pitch outline.",
+            description: "Failed to submit outline.",
             variant: "destructive",
           }),
       }
@@ -782,10 +782,10 @@ function OutlineForm({
     <Card className="shadow-sm border-border">
       <CardHeader className="bg-secondary/30 pb-4 border-b border-border">
         <CardTitle className="text-lg flex items-center gap-2">
-          <FileText className="w-5 h-5 text-primary" /> Article Proposal & PDF Pitch Upload
+          <FileText className="w-5 h-5 text-primary" /> Article Proposal & PDF Upload
         </CardTitle>
         <CardDescription>
-          Pitching ensures your topic aligns with our current content needs. You can write your outline or upload a PDF pitch document.
+          Submitting an outline ensures your topic aligns with our current content needs. You can write your outline or upload a PDF document.
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
@@ -812,7 +812,7 @@ function OutlineForm({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium leading-none flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-primary" /> Outline Format & PDF Pitch Upload
+                  <FileText className="w-4 h-4 text-primary" /> Outline Format & PDF Upload
                 </label>
                 <div className="flex items-center gap-1 p-1 bg-secondary rounded-lg border border-border">
                   <button
@@ -837,7 +837,7 @@ function OutlineForm({
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <Upload className="w-3 h-3" /> Upload PDF Pitch
+                    <Upload className="w-3 h-3" /> Upload PDF Document
                   </button>
                 </div>
               </div>
@@ -876,7 +876,7 @@ function OutlineForm({
                           {uploadedPdf.name}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          PDF Pitch Document • {(uploadedPdf.size / (1024 * 1024)).toFixed(2)} MB • Ready for submission
+                          PDF Document • {(uploadedPdf.size / (1024 * 1024)).toFixed(2)} MB • Ready for submission
                         </p>
                       </div>
                       <button
@@ -894,7 +894,7 @@ function OutlineForm({
                       </div>
                       <div className="text-center">
                         <p className="text-sm font-bold text-gray-900">
-                          Upload Blog Outline Pitch PDF Document
+                          Upload Blog Outline PDF Document
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           Drag & drop your <span className="font-bold text-red-600">PDF</span> file here or <span className="text-primary font-semibold underline">browse file</span>
@@ -919,7 +919,7 @@ function OutlineForm({
                             if (!form.getValues("keyPoints")) {
                               form.setValue(
                                 "keyPoints",
-                                `[Attached PDF Pitch Document: ${f.name}]`
+                                `[Attached PDF Document: ${f.name}]`
                               );
                             }
                           }
@@ -1000,11 +1000,11 @@ function OutlineForm({
                 disabled={submitOutline.isPending}
               >
                 {submitOutline.isPending ? (
-                  "Pitching…"
+                  "Submitting…"
                 ) : (
                   <>
                     <Send className="w-4 h-4 mr-2" />
-                    Pitch Outline
+                    Submit Outline
                   </>
                 )}
               </Button>
@@ -1335,7 +1335,7 @@ export default function Blog() {
                 active={tab === "outline"}
                 onClick={() => setTab("outline")}
                 icon={FileText}
-                label="Blog Outline Pitch"
+                label="Blog Outline Proposal"
               />
             </div>
           </div>
